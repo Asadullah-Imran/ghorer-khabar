@@ -12,13 +12,31 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, type KeyboardEvent } from "react";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
 
   // Dummy Cart Count (Replace with real state later)
   const cartCount = 3;
+
+  const handleSearch = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      router.push(
+        `/explore?q=${encodeURIComponent(e.currentTarget.value)}&tab=dishes`
+      );
+    }
+  };
+
+  const handleSearchClick = () => {
+    const query = searchQuery.trim();
+    if (query.length > 0) {
+      router.push(`/explore?q=${encodeURIComponent(query)}&tab=dishes`);
+    }
+  };
 
   return (
     <>
@@ -45,8 +63,17 @@ export default function Navbar() {
               <input
                 type="text"
                 placeholder="Search for bhorta, curry, or chefs..."
-                className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-24 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch}
               />
+              <button
+                onClick={handleSearchClick}
+                className="absolute right-1 top-1.5 bg-teal-600 hover:bg-teal-700 text-white text-sm px-3 py-1 rounded-full"
+              >
+                Search
+              </button>
             </div>
           </div>
 
@@ -133,6 +160,9 @@ export default function Navbar() {
               type="text"
               placeholder="Search..."
               className="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearch}
             />
             <Link
               href="/profile"
