@@ -39,6 +39,46 @@ export const WEEKLY_BEST_DISHES = [
     kitchen: "Mayer Hater Ranna",
     deliveryTime: "30 min",
   },
+  {
+    id: "d7",
+    name: "Bhuna Khichuri",
+    price: 180,
+    rating: 4.5,
+    image:
+      "https://images.unsplash.com/photo-1543353071-873f17a7a5c6?q=80&w=600&auto=format",
+    kitchen: "Comfort Bowl",
+    deliveryTime: "30 min",
+  },
+  {
+    id: "d8",
+    name: "Beef Tehari",
+    price: 350,
+    rating: 4.6,
+    image:
+      "https://images.unsplash.com/photo-1604908538419-01b05f5960d7?q=80&w=600&auto=format",
+    kitchen: "Old Dhaka Spices",
+    deliveryTime: "50 min",
+  },
+  {
+    id: "d10",
+    name: "Morog Polao",
+    price: 320,
+    rating: 4.7,
+    image:
+      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format",
+    kitchen: "Biye Bari Style",
+    deliveryTime: "45 min",
+  },
+  {
+    id: "d13",
+    name: "Ilish Bharta",
+    price: 300,
+    rating: 4.5,
+    image:
+      "https://images.unsplash.com/photo-1526318472351-c75fcf070305?q=80&w=600&auto=format",
+    kitchen: "Padma Kitchen",
+    deliveryTime: "35 min",
+  },
 ];
 
 export const MONTHLY_TOP_KITCHENS = [
@@ -68,6 +108,33 @@ export const MONTHLY_TOP_KITCHENS = [
     image:
       "https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?q=80&w=600&auto=format",
     specialty: "Spicy Bhortas",
+  },
+  {
+    id: "k4",
+    name: "Padma Kitchen",
+    rating: 4.7,
+    reviews: 68,
+    image:
+      "https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=600&auto=format",
+    specialty: "Fish Specials",
+  },
+  {
+    id: "k5",
+    name: "Comfort Bowl",
+    rating: 4.5,
+    reviews: 92,
+    image:
+      "https://images.unsplash.com/photo-1543353071-873f17a7a5c6?q=80&w=600&auto=format",
+    specialty: "Rice & Dal",
+  },
+  {
+    id: "k6",
+    name: "Gulshan Home Kitchen",
+    rating: 4.6,
+    reviews: 55,
+    image:
+      "https://images.unsplash.com/photo-1604908554275-91788e2a75cd?q=80&w=600&auto=format",
+    specialty: "Mughlai",
   },
 ];
 
@@ -110,6 +177,46 @@ export const RECOMMENDED_DISHES = [
     image:
       "https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=600&auto=format",
     kitchen: "Daily Budget",
+    deliveryTime: "20 min",
+  },
+  {
+    id: "r5",
+    name: "Bhuna Khichuri",
+    price: 180,
+    rating: 4.5,
+    image:
+      "https://images.unsplash.com/photo-1543353071-873f17a7a5c6?q=80&w=600&auto=format",
+    kitchen: "Comfort Bowl",
+    deliveryTime: "30 min",
+  },
+  {
+    id: "r6",
+    name: "Beef Tehari",
+    price: 350,
+    rating: 4.6,
+    image:
+      "https://images.unsplash.com/photo-1604908538419-01b05f5960d7?q=80&w=600&auto=format",
+    kitchen: "Old Dhaka Spices",
+    deliveryTime: "50 min",
+  },
+  {
+    id: "r7",
+    name: "Morog Polao",
+    price: 320,
+    rating: 4.7,
+    image:
+      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format",
+    kitchen: "Biye Bari Style",
+    deliveryTime: "45 min",
+  },
+  {
+    id: "r8",
+    name: "Dal Tadka",
+    price: 120,
+    rating: 4.2,
+    image:
+      "https://images.unsplash.com/photo-1604908554127-27fa99850b90?q=80&w=600&auto=format",
+    kitchen: "Comfort Bowl",
     deliveryTime: "20 min",
   },
 ];
