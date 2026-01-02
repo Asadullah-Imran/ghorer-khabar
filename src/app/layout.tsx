@@ -1,5 +1,3 @@
-import Footer from "@/components/Navigation/Footer";
-import Navbar from "@/components/Navigation/Navbar";
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
@@ -32,9 +30,7 @@ export default function RootLayout({
       <body
         className={`${plusJakartaSans.variable} font-sans bg-background-light text-brand-dark`}
       >
-        <Navbar />
         <main className="min-h-screen">{children}</main>
-        <Footer />
       </body>
     </html>
   );

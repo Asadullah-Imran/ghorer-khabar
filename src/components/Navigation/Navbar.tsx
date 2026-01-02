@@ -1,109 +1,159 @@
 "use client";
 
+import {
+  ChefHat,
+  FileText,
+  Home,
+  LogOut,
+  Menu,
+  Search,
+  ShoppingBag,
+  User,
+  X,
+} from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const pathname = usePathname();
+export default function Navbar() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navLinks = [
-    { name: "How It Works", href: "#how-it-works" },
-    { name: "Our Story", href: "#story" },
-    { name: "Safety & Trust", href: "#safety" },
-    { name: "Browse Menu", href: "#chefs" },
-  ];
+  // Dummy Cart Count (Replace with real state later)
+  const cartCount = 3;
 
   return (
-    <nav className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-[#f5f3f0]">
-      <div className="px-4 md:px-10 py-3 flex items-center justify-between max-w-7xl mx-auto">
-        {/* Logo */}
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex items-center justify-center size-10 rounded-full bg-primary/20 text-brand-teal">
-              <span className="material-symbols-outlined">soup_kitchen</span>
+    <>
+      {/* --- DESKTOP TOP NAVBAR --- */}
+      <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm h-16">
+        <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
+          {/* 1. Logo */}
+          <Link href="/feed" className="flex items-center gap-2">
+            <div className="bg-yellow-400 p-1.5 rounded-lg">
+              <ChefHat size={24} className="text-teal-900" />
             </div>
-            <h2 className="text-brand-dark text-xl font-bold tracking-tight">
-              Ghorer Khabar
-            </h2>
+            <span className="font-bold text-xl text-teal-900 tracking-tight hidden sm:block">
+              Ghorer<span className="text-yellow-500">Khabar</span>
+            </span>
           </Link>
-        </div>
 
-        {/* Desktop Menu */}
-        <div className="hidden md:flex flex-1 justify-end gap-8 items-center">
-          <div className="flex gap-6">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-sm font-medium text-brand-dark hover:text-brand-teal transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
+          {/* 2. Search Bar (Hidden on small mobile, visible on desktop) */}
+          <div className="hidden md:flex flex-1 max-w-md mx-8">
+            <div className="relative w-full">
+              <Search
+                className="absolute left-3 top-2.5 text-gray-400"
+                size={18}
+              />
+              <input
+                type="text"
+                placeholder="Search for bhorta, curry, or chefs..."
+                className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+              />
+            </div>
           </div>
-          <div className="flex gap-3">
-            <button className="flex items-center justify-center rounded-xl h-10 px-5 bg-white border border-brand-teal text-brand-teal text-sm font-bold transition-colors hover:bg-brand-teal/5">
-              Log In
+
+          {/* 3. Right Actions */}
+          <div className="flex items-center gap-6">
+            {/* Switch to Chef Mode (Desktop Only) */}
+            <button className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-teal-700 transition">
+              <ChefHat size={18} />
+              <span>Switch to Chef</span>
             </button>
-            <button className="flex items-center justify-center rounded-xl h-10 px-5 bg-primary text-brand-dark text-sm font-bold shadow-sm transition-colors hover:bg-primary/90">
-              Sign Up
+
+            {/* Cart Icon */}
+            <button className="relative p-2 text-gray-600 hover:text-teal-700 transition">
+              <ShoppingBag size={24} />
+              {cartCount > 0 && (
+                <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
+                  {cartCount}
+                </span>
+              )}
             </button>
-            <a
-              href="#seller"
-              className="hidden lg:flex items-center justify-center rounded-xl h-10 px-5 bg-brand-teal text-white text-sm font-bold shadow-sm transition-colors hover:bg-brand-teal/90"
+
+            {/* Profile Dropdown (Simplified as Avatar) */}
+            <Link
+              href="/profile"
+              className="hidden md:block w-9 h-9 bg-gray-200 rounded-full overflow-hidden border-2 border-white shadow-sm"
             >
-              Become a Chef
-            </a>
+              <img
+                src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
+                alt="Profile"
+              />
+            </Link>
+
+            {/* Mobile Menu Toggle (Hamburger) */}
+            <button
+              className="md:hidden p-2 text-gray-600"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X /> : <Menu />}
+            </button>
           </div>
         </div>
+      </nav>
 
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden text-brand-dark"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
+      {/* --- MOBILE BOTTOM NAVIGATION (Fixed at bottom) --- */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-6 flex justify-between z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+        <Link
+          href="/feed"
+          className="flex flex-col items-center gap-1 text-teal-600"
         >
-          <span className="material-symbols-outlined text-3xl">
-            {isMenuOpen ? "close" : "menu"}
-          </span>
-        </button>
+          <Home size={22} />
+          <span className="text-[10px] font-medium">Home</span>
+        </Link>
+
+        <Link
+          href="/search"
+          className="flex flex-col items-center gap-1 text-gray-400 hover:text-teal-600"
+        >
+          <Search size={22} />
+          <span className="text-[10px] font-medium">Search</span>
+        </Link>
+
+        <Link
+          href="/orders"
+          className="flex flex-col items-center gap-1 text-gray-400 hover:text-teal-600"
+        >
+          <FileText size={22} />
+          <span className="text-[10px] font-medium">Orders</span>
+        </Link>
+
+        <Link
+          href="/profile"
+          className="flex flex-col items-center gap-1 text-gray-400 hover:text-teal-600"
+        >
+          <User size={22} />
+          <span className="text-[10px] font-medium">Profile</span>
+        </Link>
       </div>
 
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-[#f5f3f0] px-4 py-6">
+      {/* --- MOBILE MENU OVERLAY (If Hamburger is clicked) --- */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 bg-white z-40 top-16 p-4 animate-in slide-in-from-top-5">
           <div className="flex flex-col gap-4">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-base font-medium text-brand-dark hover:text-brand-teal transition-colors py-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {link.name}
-              </a>
-            ))}
-            <div className="flex flex-col gap-3 pt-4 border-t">
-              <button className="flex items-center justify-center rounded-xl h-12 bg-white border border-brand-teal text-brand-teal text-sm font-bold transition-colors hover:bg-brand-teal/5">
-                Log In
-              </button>
-              <button className="flex items-center justify-center rounded-xl h-12 bg-primary text-brand-dark text-sm font-bold shadow-sm transition-colors hover:bg-primary/90">
-                Sign Up
-              </button>
-              <a
-                href="#seller"
-                className="flex items-center justify-center rounded-xl h-12 bg-brand-teal text-white text-sm font-bold shadow-sm transition-colors hover:bg-brand-teal/90"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Become a Chef
-              </a>
-            </div>
+            <input
+              type="text"
+              placeholder="Search..."
+              className="w-full bg-gray-50 border border-gray-200 p-3 rounded-xl"
+            />
+            <Link
+              href="/profile"
+              className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
+            >
+              <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
+              <div>
+                <p className="font-bold text-sm">Asad User</p>
+                <p className="text-xs text-gray-500">View Profile</p>
+              </div>
+            </Link>
+            <div className="h-px bg-gray-100 my-2"></div>
+            <button className="flex items-center gap-3 p-2 text-gray-600 font-medium">
+              <ChefHat size={20} /> Switch to Chef View
+            </button>
+            <button className="flex items-center gap-3 p-2 text-red-500 font-medium">
+              <LogOut size={20} /> Sign Out
+            </button>
           </div>
         </div>
       )}
-    </nav>
+    </>
   );
-};
-
-export default Navbar;
+}
