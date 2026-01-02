@@ -1,11 +1,11 @@
-import BuyerSection from "@/components/HomeSections/BuyerSection";
-import CTASection from "@/components/HomeSections/CTASection";
-import FeaturedChefs from "@/components/HomeSections/FeaturedChefs";
-import Hero from "@/components/HomeSections/Hero";
-import HowItWorks from "@/components/HomeSections/HowItWorks";
-import PatternDivider from "@/components/HomeSections/PatternDivider";
-import SellerSection from "@/components/HomeSections/SellerSection";
-import TrustBanner from "@/components/HomeSections/TrustBanner";
+import BuyerSection from "@/components/Home/BuyerSection";
+import CTASection from "@/components/Home/CTASection";
+import FeaturedChefs from "@/components/Home/FeaturedChefs";
+import Hero from "@/components/Home/Hero";
+import HowItWorks from "@/components/Home/HowItWorks";
+import PatternDivider from "@/components/Home/PatternDivider";
+import SellerSection from "@/components/Home/SellerSection";
+import TrustBanner from "@/components/Home/TrustBanner";
 
 export default function Home() {
   return (
