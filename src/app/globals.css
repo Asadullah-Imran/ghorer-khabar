@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+/* Tailwind plugin (v4 syntax) */
+/* Forms plugin temporarily disabled until package is installed */
+/* @plugin "@tailwindcss/forms"; */
+
+/* Theme tokens (Tailwind v4) */
+@theme {
+  --color-primary: #feb728;
+  --color-brand-teal: #477e77;
+  --color-brand-dark: #181610;
+  --color-background-light: #f8f7f5;
+  --color-background-dark: #231c0f;
+  --color-text-dark: #131615;
+  --color-text-muted: #6e7c7a;
+
+  --font-display: "Plus Jakarta Sans", sans-serif;
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+
+  --radius: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+}
+
+/* Custom utility for slow pulse */
+@layer utilities {
+  .animate-pulse-slow {
+    animation: pulse 3s ease-in-out infinite;
+  }
+}
+
+/* Base styles (from Tailwind v3-style snippet), adapted for v4 */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply antialiased;
+  }
+
+  .material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  }
+
+  .fill-icon {
+    font-variation-settings: "FILL" 1;
+  }
+}
+
+/* Extra utilities */
+@layer utilities {
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
