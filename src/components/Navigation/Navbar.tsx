@@ -9,10 +9,10 @@ import {
   User,
   X,
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
-import { useState, type KeyboardEvent } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState, type KeyboardEvent } from "react";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -34,7 +34,9 @@ export default function Navbar() {
   // Search Handler
   const handleSearch = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
-      router.push(`/explore?q=${encodeURIComponent(e.currentTarget.value)}&tab=dishes`);
+      router.push(
+        `/explore?q=${encodeURIComponent(e.currentTarget.value)}&tab=dishes`
+      );
     }
   };
 
@@ -56,7 +58,10 @@ export default function Navbar() {
           {/* Search Bar */}
           <div className="hidden md:flex flex-1 max-w-md mx-8">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-2.5 text-gray-400" size={18} />
+              <Search
+                className="absolute left-3 top-2.5 text-gray-400"
+                size={18}
+              />
               <input
                 type="text"
                 placeholder="Search for bhorta, curry, or chefs..."
@@ -74,7 +79,10 @@ export default function Navbar() {
             </button>
 
             {/* Cart Icon */}
-            <Link href="/cart" className="relative p-2 text-gray-600 hover:text-teal-700 transition">
+            <Link
+              href="/cart"
+              className="relative p-2 text-gray-600 hover:text-teal-700 transition"
+            >
               <ShoppingBag size={24} />
               {cartCount > 0 && (
                 <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
@@ -107,22 +115,38 @@ export default function Navbar() {
 
       {/* --- MOBILE BOTTOM NAVIGATION --- */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-6 flex justify-between z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-        <Link href="/feed" className={`flex flex-col items-center gap-1 ${pathname === '/feed' ? 'text-teal-600' : 'text-gray-400'}`}>
+        <Link
+          href="/feed"
+          className={`flex flex-col items-center gap-1 ${
+            pathname === "/feed" ? "text-teal-600" : "text-gray-400"
+          }`}
+        >
           <Home size={22} />
           <span className="text-[10px] font-medium">Home</span>
         </Link>
 
-        <Link href="/explore" className={`flex flex-col items-center gap-1 ${pathname === '/explore' ? 'text-teal-600' : 'text-gray-400'}`}>
+        <Link
+          href="/explore"
+          className={`flex flex-col items-center gap-1 ${
+            pathname === "/explore" ? "text-teal-600" : "text-gray-400"
+          }`}
+        >
           <Search size={22} />
           <span className="text-[10px] font-medium">Explore</span>
         </Link>
 
-        <Link href="/orders" className="flex flex-col items-center gap-1 text-gray-400 hover:text-teal-600">
+        <Link
+          href="/orders"
+          className="flex flex-col items-center gap-1 text-gray-400 hover:text-teal-600"
+        >
           <ShoppingBag size={22} />
           <span className="text-[10px] font-medium">Orders</span>
         </Link>
 
-        <Link href="/profile" className="flex flex-col items-center gap-1 text-gray-400 hover:text-teal-600">
+        <Link
+          href="/profile"
+          className="flex flex-col items-center gap-1 text-gray-400 hover:text-teal-600"
+        >
           <User size={22} />
           <span className="text-[10px] font-medium">Profile</span>
         </Link>
