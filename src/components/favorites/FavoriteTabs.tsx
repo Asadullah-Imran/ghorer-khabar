@@ -1,6 +1,6 @@
 "use client";
 
-import { ChefHat, Utensils } from "lucide-react";
+import { CalendarCheck, ChefHat, Utensils } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export default function FavoriteTabs() {
@@ -8,7 +8,6 @@ export default function FavoriteTabs() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Default to 'dishes' if no param is set
   const activeTab = searchParams.get("tab") || "dishes";
 
   const setTab = (tab: string) => {
@@ -17,30 +16,31 @@ export default function FavoriteTabs() {
     router.replace(`${pathname}?${params.toString()}`);
   };
 
+  const getTabClass = (tabName: string) =>
+    `flex items-center gap-2 pb-3 px-2 text-sm font-bold border-b-2 transition-colors ${
+      activeTab === tabName
+        ? "border-teal-600 text-teal-800"
+        : "border-transparent text-gray-400 hover:text-gray-600"
+    }`;
+
   return (
-    <div className="flex gap-4 border-b border-gray-200 mb-6">
+    <div className="flex gap-4 border-b border-gray-200 mb-6 overflow-x-auto scrollbar-hide">
       <button
         onClick={() => setTab("dishes")}
-        className={`flex items-center gap-2 pb-3 px-2 text-sm font-bold border-b-2 transition-colors ${
-          activeTab === "dishes"
-            ? "border-teal-600 text-teal-800"
-            : "border-transparent text-gray-400 hover:text-gray-600"
-        }`}
+        className={getTabClass("dishes")}
       >
-        <Utensils size={16} />
-        Favorite Dishes
+        <Utensils size={16} /> Dishes
       </button>
 
       <button
         onClick={() => setTab("kitchens")}
-        className={`flex items-center gap-2 pb-3 px-2 text-sm font-bold border-b-2 transition-colors ${
-          activeTab === "kitchens"
-            ? "border-teal-600 text-teal-800"
-            : "border-transparent text-gray-400 hover:text-gray-600"
-        }`}
+        className={getTabClass("kitchens")}
       >
-        <ChefHat size={16} />
-        Favorite Kitchens
+        <ChefHat size={16} /> Kitchens
+      </button>
+
+      <button onClick={() => setTab("plans")} className={getTabClass("plans")}>
+        <CalendarCheck size={16} /> Plans
       </button>
     </div>
   );

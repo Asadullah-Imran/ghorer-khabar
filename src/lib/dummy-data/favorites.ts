@@ -53,3 +53,28 @@ export const FAVORITE_KITCHENS = [
     area: "Dhanmondi",
   },
 ];
+
+export const FAVORITE_PLANS = [
+  {
+    id: "p1",
+    name: "Standard Office Lunch",
+    kitchen: "Chef Rina Begum",
+    price: 3500,
+    type: "Lunch",
+    mealsPerMonth: 20,
+    rating: 4.8,
+    image:
+      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400&auto=format",
+  },
+  {
+    id: "p2",
+    name: "Low-Carb Dinner Box",
+    kitchen: "Fit & Fresh",
+    price: 4500,
+    type: "Dinner",
+    mealsPerMonth: 20,
+    rating: 4.9,
+    image:
+      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=400&auto=format",
+  },
+];
