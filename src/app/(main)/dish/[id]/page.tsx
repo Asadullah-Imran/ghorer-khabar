@@ -184,7 +184,12 @@ export default async function SingleDishPage({ params }: PageProps) {
             <IngredientTransparency ingredients={dish.ingredients} />
 
             {/* Sticky Action Bar (Client) */}
-            <DishActions id={dish.id} name={dish.name} image={dish.images[0]} price={dish.price} />
+            <DishActions
+              id={dish.id}
+              name={dish.name}
+              image={dish.images[0]}
+              price={dish.price}
+            />
           </div>
         </div>
       </div>

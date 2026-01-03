@@ -1,8 +1,8 @@
 "use client";
 
+import { useCart } from "@/components/cart/CartProvider";
 import { Minus, Plus, ShieldCheck, ShoppingBag } from "lucide-react";
 import { useState } from "react";
-import { useCart } from "@/components/cart/CartProvider";
 
 export default function DishActions({
   id,

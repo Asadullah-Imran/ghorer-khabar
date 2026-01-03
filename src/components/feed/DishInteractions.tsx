@@ -1,8 +1,8 @@
 "use client";
 
+import { useCart } from "@/components/cart/CartProvider";
 import { Heart, Plus } from "lucide-react";
 import { useState } from "react";
-import { useCart } from "@/components/cart/CartProvider";
 
 export function AddToCartBtn({
   minimal = false,
@@ -16,7 +16,12 @@ export function AddToCartBtn({
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem({ id: item.id, name: item.name, price: item.price, image: item.image });
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+    });
   };
 
   return (
