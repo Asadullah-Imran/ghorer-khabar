@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light">
+    <html lang="en" className="light" suppressHydrationWarning>
       <head>
         <link
           rel="stylesheet"
@@ -28,6 +28,7 @@ export default function RootLayout({
         />
       </head>
       <body
+        suppressHydrationWarning
         className={`${plusJakartaSans.variable} font-sans bg-background-light text-brand-dark`}
       >
         <main className="min-h-screen">{children}</main>
