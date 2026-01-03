@@ -1,0 +1,283 @@
+"use client";
+
+import { TrendingUp, DollarSign, ShoppingBag, Star, Brain, Calendar, ThumbsUp, ThumbsDown, Sparkles } from "lucide-react";
+import { ANALYTICS_DATA } from "@/lib/dummy-data/chef";
+
+export default function AnalyticsPage() {
+  return (
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-black text-gray-900">Analytics & Insights</h1>
+          <p className="text-gray-500 mt-2">Track your growth and AI-driven recommendations.</p>
+        </div>
+        <button className="w-fit px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition flex items-center gap-2 font-semibold text-gray-700">
+          <Calendar size={18} />
+          Last 30 Days
+        </button>
+      </div>
+
+      {/* KPI Overview - 4 Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Revenue */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 bg-yellow-100 rounded-lg">
+              <DollarSign className="text-yellow-600" size={24} />
+            </div>
+            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">
+              +{ANALYTICS_DATA.kpis.revenueGrowth}%
+            </span>
+          </div>
+          <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
+          <p className="text-3xl font-black text-gray-900">
+            ৳{ANALYTICS_DATA.kpis.totalRevenue.toLocaleString()}
+          </p>
+        </div>
+
+        {/* Net Profit */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 bg-teal-100 rounded-lg">
+              <TrendingUp className="text-teal-600" size={24} />
+            </div>
+            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">
+              +{ANALYTICS_DATA.kpis.profitGrowth}%
+            </span>
+          </div>
+          <p className="text-sm text-gray-600 mb-1">Est. Profit</p>
+          <p className="text-3xl font-black text-gray-900">
+            ৳{ANALYTICS_DATA.kpis.netProfit.toLocaleString()}
+          </p>
+        </div>
+
+        {/* Total Orders */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <ShoppingBag className="text-blue-600" size={24} />
+            </div>
+            <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">
+              +{ANALYTICS_DATA.kpis.ordersGrowth}%
+            </span>
+          </div>
+          <p className="text-sm text-gray-600 mb-1">Total Orders</p>
+          <p className="text-3xl font-black text-gray-900">{ANALYTICS_DATA.kpis.totalOrders}</p>
+        </div>
+
+        {/* Avg Rating */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <div className="flex items-start justify-between mb-3">
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <Star className="text-orange-500 fill-orange-500" size={24} />
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 mb-1">Avg. Rating</p>
+          <p className="text-3xl font-black text-gray-900">
+            {ANALYTICS_DATA.kpis.avgRating}
+            <span className="text-lg text-gray-500">/{ANALYTICS_DATA.kpis.maxRating}</span>
+          </p>
+        </div>
+      </div>
+
+      {/* Performance Charts - Middle Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Revenue vs Profit Chart */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Revenue vs. Profit</h2>
+          
+          {/* Chart Legend */}
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-yellow-400 rounded"></div>
+              <span className="text-sm text-gray-600">Revenue</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-teal-600 rounded"></div>
+              <span className="text-sm text-gray-600">Profit</span>
+            </div>
+          </div>
+
+          {/* Mock Line Chart */}
+          <div className="relative h-64">
+            {/* Y-axis labels */}
+            <div className="absolute left-0 top-0 bottom-8 flex flex-col justify-between text-xs text-gray-500 pr-2">
+              <span>৳50K</span>
+              <span>৳40K</span>
+              <span>৳30K</span>
+              <span>৳20K</span>
+              <span>৳10K</span>
+              <span>৳0</span>
+            </div>
+
+            {/* Chart Area */}
+            <div className="ml-12 h-full flex items-end justify-between gap-4 border-l-2 border-b-2 border-gray-300 pl-4 pb-8">
+              {ANALYTICS_DATA.revenueChart.weeks.map((week, index) => {
+                const revenueHeight = (ANALYTICS_DATA.revenueChart.revenue[index] / 50000) * 100;
+                const profitHeight = (ANALYTICS_DATA.revenueChart.profit[index] / 50000) * 100;
+
+                return (
+                  <div key={week} className="flex-1 relative h-full flex flex-col justify-end">
+                    {/* Revenue Bar */}
+                    <div
+                      className="w-full bg-yellow-400 rounded-t relative group cursor-pointer hover:bg-yellow-500 transition"
+                      style={{ height: `${revenueHeight}%` }}
+                    >
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                        ৳{(ANALYTICS_DATA.revenueChart.revenue[index] / 1000).toFixed(0)}K
+                      </div>
+                    </div>
+                    {/* Profit Bar Overlay */}
+                    <div
+                      className="w-full bg-teal-600 rounded-t absolute bottom-0 left-0 group cursor-pointer hover:bg-teal-700 transition"
+                      style={{ height: `${profitHeight}%` }}
+                    >
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                        ৳{(ANALYTICS_DATA.revenueChart.profit[index] / 1000).toFixed(0)}K
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* X-axis labels */}
+            <div className="ml-12 mt-2 flex justify-between text-xs text-gray-600 font-semibold">
+              {ANALYTICS_DATA.revenueChart.weeks.map((week) => (
+                <span key={week} className="flex-1 text-center">{week}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Top Selling Dishes */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">Top Selling Dishes</h2>
+          
+          <div className="space-y-5">
+            {ANALYTICS_DATA.topDishes.map((dish, index) => (
+              <div key={dish.name}>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl font-black text-yellow-500">#{index + 1}</span>
+                    <span className="font-semibold text-gray-900">{dish.name}</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-600">{dish.sales} orders</span>
+                </div>
+                {/* Progress Bar */}
+                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full transition-all duration-500"
+                    style={{ width: `${dish.percentage}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* AI Kitchen Intelligence - Bottom Row */}
+      <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-xl p-6">
+        <div className="flex items-center gap-2 mb-6">
+          <Brain className="text-purple-600" size={28} />
+          <h2 className="text-2xl font-bold text-gray-900">AI Kitchen Intelligence</h2>
+          <Sparkles className="text-purple-500" size={20} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Review Sentiment Analysis */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">What Customers Are Saying</h3>
+            
+            <div className="space-y-4">
+              {/* Positive Sentiment */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <ThumbsUp className="text-green-600" size={18} />
+                  <span className="font-semibold text-green-700">Positive Feedback</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {ANALYTICS_DATA.sentiment.positive.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-3 py-1.5 bg-green-100 text-green-700 text-sm font-semibold rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Negative Sentiment */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <ThumbsDown className="text-red-600" size={18} />
+                  <span className="font-semibold text-red-700">Areas for Improvement</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {ANALYTICS_DATA.sentiment.negative.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-3 py-1.5 bg-red-100 text-red-700 text-sm font-semibold rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Recommendations */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Actionable Insights</h3>
+            
+            <div className="space-y-4">
+              {ANALYTICS_DATA.aiInsights.map((insight) => (
+                <div
+                  key={insight.id}
+                  className="p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 border-l-4 border-yellow-400 rounded-lg"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h4 className="font-bold text-gray-900">{insight.title}</h4>
+                    <span
+                      className={`px-2 py-0.5 text-xs font-bold rounded ${
+                        insight.impact === "high"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-orange-100 text-orange-700"
+                      }`}
+                    >
+                      {insight.impact.toUpperCase()}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-700 mb-3">{insight.description}</p>
+                  <button className="px-4 py-2 bg-yellow-400 text-gray-900 font-semibold rounded-lg hover:bg-yellow-500 transition text-sm">
+                    Apply Suggestion
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Additional Stats Footer */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 text-center">
+          <p className="text-sm text-gray-600 mb-1">Customer Retention</p>
+          <p className="text-3xl font-black text-teal-600">78%</p>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 text-center">
+          <p className="text-sm text-gray-600 mb-1">Avg. Order Value</p>
+          <p className="text-3xl font-black text-yellow-500">৳352</p>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 text-center">
+          <p className="text-sm text-gray-600 mb-1">Fulfillment Rate</p>
+          <p className="text-3xl font-black text-green-600">96%</p>
+        </div>
+      </div>
+    </div>
+  );
+}
