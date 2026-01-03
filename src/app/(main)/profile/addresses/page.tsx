@@ -1,4 +1,4 @@
-import AddressList from "@/components/address/AddressList";
+import AddressList from "@/components/profile/address/AddressList";
 import { SAVED_ADDRESSES } from "@/lib/dummy-data/addresses";
 import { ArrowLeft, MapPin } from "lucide-react";
 import Link from "next/link";

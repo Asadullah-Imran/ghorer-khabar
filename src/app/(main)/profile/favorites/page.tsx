@@ -1,4 +1,4 @@
-import FavoriteTabs from "@/components/favorites/FavoriteTabs";
+import FavoriteTabs from "@/components/profile/favorites/FavoriteTabs";
 import DishCard from "@/components/shared/DishCard";
 import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard"; // Import the new card

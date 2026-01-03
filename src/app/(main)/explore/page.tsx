@@ -1,7 +1,13 @@
 import FilterTabs from "@/components/explore/FilterTabs";
 import DishCard from "@/components/shared/DishCard";
 import KitchenCard from "@/components/shared/KitchenCard";
-import { ALL_DISHES, ALL_KITCHENS, CATEGORIES } from "@/lib/dummy-data/explore";
+import PlanCard from "@/components/shared/PlanCard";
+import {
+  ALL_DISHES,
+  ALL_KITCHENS,
+  ALL_PLANS,
+  CATEGORIES,
+} from "@/lib/dummy-data/explore";
 
 // Define the type for URL search params
 interface SearchParamsProps {
@@ -9,13 +15,12 @@ interface SearchParamsProps {
 }
 
 export default async function ExplorePage({ searchParams }: SearchParamsProps) {
-  // Await searchParams before accessing properties (Next.js 15 requirement, good practice generally)
   const params = await searchParams;
 
   const tab = (params.tab as string) || "dishes";
   const category = (params.category as string) || "All";
   const sort = (params.sort as string) || "recommended";
-  const query = (params.q as string) || ""; // For text search
+  const query = (params.q as string) || "";
 
   // --- FILTERING LOGIC (Server Side) ---
 
@@ -30,6 +35,13 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
     k.name.toLowerCase().includes(query.toLowerCase())
   );
 
+  // PLANS Filter
+  const filteredPlans = ALL_PLANS.filter(
+    (p) =>
+      p.name.toLowerCase().includes(query.toLowerCase()) ||
+      p.kitchen.toLowerCase().includes(query.toLowerCase())
+  );
+
   // 2. Filter by Category (Dishes only)
   if (tab === "dishes" && category !== "All") {
     filteredDishes = filteredDishes.filter((d) => d.category === category);
@@ -40,8 +52,12 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
     if (sort === "price_asc") filteredDishes.sort((a, b) => a.price - b.price);
     if (sort === "price_desc") filteredDishes.sort((a, b) => b.price - a.price);
     if (sort === "rating") filteredDishes.sort((a, b) => b.rating - a.rating);
+  } else if (tab === "plans") {
+    if (sort === "price_asc") filteredPlans.sort((a, b) => a.price - b.price);
+    if (sort === "price_desc") filteredPlans.sort((a, b) => b.price - a.price);
+    if (sort === "rating") filteredPlans.sort((a, b) => b.rating - a.rating);
   } else {
-    // Kitchen sorting (usually just rating)
+    // Kitchen sorting
     if (sort === "rating") filteredKitchens.sort((a, b) => b.rating - a.rating);
   }
 
@@ -89,6 +105,21 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
             )}
           </>
         )}
+
+        {/* --- PLANS GRID --- */}
+        {tab === "plans" && (
+          <>
+            {filteredPlans.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {filteredPlans.map((plan) => (
+                  <PlanCard key={plan.id} data={plan} />
+                ))}
+              </div>
+            ) : (
+              <EmptyState type="Plan" />
+            )}
+          </>
+        )}
       </div>
     </div>
   );
@@ -101,7 +132,7 @@ function EmptyState({ type }: { type: string }) {
       <div className="bg-gray-200 p-4 rounded-full mb-4">
         <span className="text-4xl">🍳</span>
       </div>
-      <h3 className="text-lg font-bold text-gray-900">No {type}es Found</h3>
+      <h3 className="text-lg font-bold text-gray-900">No {type}s Found</h3>
       <p className="text-gray-500 text-sm mt-1">
         Try changing your filters or search for something else.
       </p>

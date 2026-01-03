@@ -1,7 +1,9 @@
 import DishCard from "@/components/shared/DishCard";
 import KitchenCard from "@/components/shared/KitchenCard";
+import PlanCard from "@/components/shared/PlanCard"; // 1. Import PlanCard
 import SectionHeader from "@/components/shared/SectionHeader";
 import {
+  FEATURED_PLANS,
   MONTHLY_TOP_KITCHENS,
   RECOMMENDED_DISHES,
   WEEKLY_BEST_DISHES,
@@ -10,9 +12,7 @@ import {
 export default function FeedPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {" "}
-      {/* pb-24 for mobile nav space */}
-      {/* 1. Welcome / Hero Section (Optional but nice) */}
+      {/* 1. Welcome Section */}
       <section className="bg-white border-b border-gray-100 py-6 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-xl md:text-2xl font-bold text-teal-900">
@@ -23,16 +23,15 @@ export default function FeedPage() {
           </p>
         </div>
       </section>
+
       <div className="max-w-7xl mx-auto space-y-10 py-8">
-        {/* 2. Weekly Best Dishes (Horizontal Scroll) */}
+        {/* 2. Weekly Best Dishes */}
         <section>
           <SectionHeader
             title="Weekly Best Dishes"
             subtitle="Most loved by foodies this week"
             href="/explore?tab=dishes&sort=weekly_best"
           />
-
-          {/* Horizontal Scroll Container */}
           <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-4 scrollbar-hide snap-x">
             {WEEKLY_BEST_DISHES.map((dish) => (
               <div key={dish.id} className="snap-center">
@@ -42,14 +41,13 @@ export default function FeedPage() {
           </div>
         </section>
 
-        {/* 3. Monthly Top Kitchens (Horizontal Scroll) */}
+        {/* 3. Monthly Top Kitchens */}
         <section>
           <SectionHeader
             title="Top Kitchens of January"
             subtitle="Cleanest kitchens with 5-star ratings"
             href="/explore?tab=kitchens&sort=top_rated"
           />
-
           <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-4 scrollbar-hide snap-x">
             {MONTHLY_TOP_KITCHENS.map((kitchen) => (
               <div key={kitchen.id} className="snap-center">
@@ -59,25 +57,38 @@ export default function FeedPage() {
           </div>
         </section>
 
-        {/* 4. Recommended For You (Grid Layout) */}
+        {/* 4. NEW: Featured Subscription Plans */}
+        <section>
+          <SectionHeader
+            title="Monthly Meal Plans"
+            subtitle="Save time & money with recurring meals"
+            href="/explore?tab=plans"
+          />
+          <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-4 scrollbar-hide snap-x">
+            {FEATURED_PLANS.map((plan) => (
+              <div key={plan.id} className="snap-center min-w-[280px]">
+                <PlanCard data={plan} />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 5. Recommended For You (Grid) */}
         <section className="px-4 md:px-0">
           <SectionHeader
             title="Recommended For You"
             subtitle="Based on your spice preferences"
             href="/explore?tab=dishes&filter=recommended"
           />
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {RECOMMENDED_DISHES.map((dish) => (
               <DishCard key={dish.id} data={dish} />
             ))}
-            {/* Duplicate for demo to show full grid */}
+            {/* Duplicate for demo grid */}
             {RECOMMENDED_DISHES.map((dish) => (
               <DishCard key={`dup-${dish.id}`} data={dish} />
             ))}
           </div>
-
-          {/* 'Load More' Button at bottom of grid */}
           <div className="mt-8 text-center">
             <a
               href="/explore"

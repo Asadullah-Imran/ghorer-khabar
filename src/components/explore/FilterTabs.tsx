@@ -1,6 +1,11 @@
 "use client";
 
-import { SlidersHorizontal } from "lucide-react";
+import {
+  CalendarCheck,
+  ChefHat,
+  SlidersHorizontal,
+  Utensils,
+} from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 interface FilterTabsProps {
@@ -12,12 +17,10 @@ export default function FilterTabs({ categories }: FilterTabsProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Get current state from URL or default
   const activeTab = searchParams.get("tab") || "dishes";
   const activeCategory = searchParams.get("category") || "All";
   const activeSort = searchParams.get("sort") || "recommended";
 
-  // Helper to update URL
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     if (value === "All" && key === "category") {
@@ -28,30 +31,36 @@ export default function FilterTabs({ categories }: FilterTabsProps) {
     router.replace(`${pathname}?${params.toString()}`);
   };
 
+  // Helper for styling active/inactive tabs
+  const getTabClass = (tabName: string) =>
+    `flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 transition ${
+      activeTab === tabName
+        ? "border-teal-600 text-teal-700"
+        : "border-transparent text-gray-500 hover:text-gray-700"
+    }`;
+
   return (
     <div className="bg-white sticky top-16 z-30 border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4">
-        {/* 1. Main Toggle (Dishes vs Kitchens) */}
-        <div className="flex w-full md:w-auto border-b border-gray-100">
+        {/* 1. Main Toggle (Dishes vs Kitchens vs Plans) */}
+        <div className="flex w-full overflow-x-auto scrollbar-hide border-b border-gray-100">
           <button
             onClick={() => updateParam("tab", "dishes")}
-            className={`flex-1 md:flex-none px-6 py-4 text-sm font-bold border-b-2 transition ${
-              activeTab === "dishes"
-                ? "border-teal-600 text-teal-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
+            className={getTabClass("dishes")}
           >
-            Dishes
+            <Utensils size={16} /> Dishes
           </button>
           <button
             onClick={() => updateParam("tab", "kitchens")}
-            className={`flex-1 md:flex-none px-6 py-4 text-sm font-bold border-b-2 transition ${
-              activeTab === "kitchens"
-                ? "border-teal-600 text-teal-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
+            className={getTabClass("kitchens")}
           >
-            Kitchens
+            <ChefHat size={16} /> Kitchens
+          </button>
+          <button
+            onClick={() => updateParam("tab", "plans")}
+            className={getTabClass("plans")}
+          >
+            <CalendarCheck size={16} /> Plans
           </button>
         </div>
 
@@ -76,7 +85,7 @@ export default function FilterTabs({ categories }: FilterTabsProps) {
             </div>
           )}
 
-          {/* Sort Dropdown (Simplified) */}
+          {/* Sort Dropdown */}
           <div className="ml-auto flex items-center gap-2">
             <SlidersHorizontal size={16} className="text-gray-400" />
             <select

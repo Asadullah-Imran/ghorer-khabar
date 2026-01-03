@@ -291,3 +291,55 @@ export const SORT_OPTIONS = [
   { label: "Price: High to Low", value: "price_desc" },
   { label: "Top Rated", value: "rating" },
 ];
+// ... existing ALL_DISHES, ALL_KITCHENS ...
+
+export const ALL_PLANS = [
+  {
+    id: "p1",
+    name: "Standard Office Lunch",
+    kitchen: "Chef Rina Begum",
+    price: 3500,
+    type: "Lunch",
+    mealsPerMonth: 20,
+    rating: 4.8,
+    image:
+      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400&auto=format",
+    description: "Daily rice, daal, and one meat curry.",
+  },
+  {
+    id: "p2",
+    name: "Low-Carb Dinner Box",
+    kitchen: "Fit & Fresh",
+    price: 4500,
+    type: "Dinner",
+    mealsPerMonth: 20,
+    rating: 4.9,
+    image:
+      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=400&auto=format",
+    description: "High protein, no rice, lots of veggies.",
+  },
+  {
+    id: "p3",
+    name: "Student Budget Tiffin",
+    kitchen: "Mayer Hater Ranna",
+    price: 2500,
+    type: "Lunch",
+    mealsPerMonth: 22,
+    rating: 4.6,
+    image:
+      "https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?q=80&w=400&auto=format",
+    description: "Affordable home-style meals for students.",
+  },
+  {
+    id: "p4",
+    name: "Premium Family Feast",
+    kitchen: "Gulshan Home Kitchen",
+    price: 8000,
+    type: "Dinner",
+    mealsPerMonth: 15,
+    rating: 4.9,
+    image:
+      "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=400&auto=format",
+    description: "Large portions serving 2 adults.",
+  },
+];
