@@ -11,7 +11,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useCart } from "@/components/cart/CartProvider";
 
 // Types
 type CartItem = {
@@ -19,9 +20,9 @@ type CartItem = {
   name: string;
   price: number;
   quantity: number;
-  image: string;
-  tags: string[];
-  tagColors: string[];
+  image?: string;
+  tags?: string[];
+  tagColors?: string[];
 };
 
 type CartData = {
@@ -35,38 +36,88 @@ export default function CartPageContent({
 }: {
   initialData: CartData;
 }) {
-  const [items, setItems] = useState<CartItem[]>(initialData.items);
+  const [localItems, setLocalItems] = useState<CartItem[]>(initialData.items);
+  const {
+    items: dynamicItems,
+    incrementItem,
+    removeItem: removeDynamicItem,
+    clearCart: clearDynamicCart,
+  } = useCart();
+
+  const mergedItems: CartItem[] = useMemo(() => {
+    const byId: Record<string, CartItem> = {};
+    for (const item of localItems) {
+      byId[item.id] = { ...item };
+    }
+    for (const d of dynamicItems) {
+      const existing = byId[d.id];
+      if (existing) {
+        byId[d.id] = {
+          ...existing,
+          quantity: existing.quantity + d.quantity,
+          // Prefer dynamic image/name/price if provided
+          name: d.name ?? existing.name,
+          price: d.price ?? existing.price,
+          image: d.image ?? existing.image,
+        };
+      } else {
+        byId[d.id] = {
+          id: d.id,
+          name: d.name,
+          price: d.price,
+          quantity: d.quantity,
+          image: d.image,
+          tags: [],
+          tagColors: [],
+        };
+      }
+    }
+    return Object.values(byId);
+  }, [localItems, dynamicItems]);
 
   // --- LOGIC ---
   const updateQty = (id: string, delta: number) => {
-    setItems((prev) =>
-      prev.map((item) => {
-        if (item.id === id) {
-          const newQty = Math.max(0, item.quantity + delta);
-          return { ...item, quantity: newQty };
-        }
-        return item;
-      })
-    );
+    const isDynamic = dynamicItems.some((i) => i.id === id);
+    if (isDynamic) {
+      incrementItem(id, delta);
+    } else {
+      setLocalItems((prev) =>
+        prev.map((item) => {
+          if (item.id === id) {
+            const newQty = Math.max(0, item.quantity + delta);
+            return { ...item, quantity: newQty };
+          }
+          return item;
+        })
+      );
+    }
   };
 
   const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    const isDynamic = dynamicItems.some((i) => i.id === id);
+    if (isDynamic) {
+      removeDynamicItem(id);
+    } else {
+      setLocalItems((prev) => prev.filter((item) => item.id !== id));
+    }
   };
 
-  const clearCart = () => setItems([]);
+  const clearCart = () => {
+    setLocalItems([]);
+    clearDynamicCart();
+  };
 
   // --- CALCULATIONS ---
-  const subtotal = items.reduce(
+  const subtotal = mergedItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0
   );
-  const deliveryFee = items.length > 0 ? initialData.fees.delivery : 0;
-  const platformFee = items.length > 0 ? initialData.fees.platform : 0;
+  const deliveryFee = mergedItems.length > 0 ? initialData.fees.delivery : 0;
+  const platformFee = mergedItems.length > 0 ? initialData.fees.platform : 0;
   const total = subtotal + deliveryFee + platformFee;
 
   // --- UI ---
-  if (items.length === 0) {
+  if (mergedItems.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
         <div className="bg-gray-100 p-6 rounded-full mb-4">
@@ -138,7 +189,7 @@ export default function CartPageContent({
 
         {/* Items List */}
         <div className="flex flex-col gap-4">
-          {items.map((item) => (
+          {mergedItems.map((item) => (
             <div
               key={item.id}
               className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200 items-start sm:items-center justify-between"
@@ -162,19 +213,21 @@ export default function CartPageContent({
                   </p>
 
                   {/* Tags */}
-                  <div className="flex gap-2 mt-1">
-                    {item.tags.map((tag, i) => {
-                      const color = item.tagColors[i] || "gray";
-                      return (
-                        <span
-                          key={i}
-                          className={`px-2 py-0.5 rounded text-xs font-medium bg-${color}-100 text-${color}-700`}
-                        >
-                          {tag}
-                        </span>
-                      );
-                    })}
-                  </div>
+                  {item.tags && item.tags.length > 0 && (
+                    <div className="flex gap-2 mt-1">
+                      {item.tags.map((tag, i) => {
+                        const color = item.tagColors?.[i] || "gray";
+                        return (
+                          <span
+                            key={i}
+                            className={`px-2 py-0.5 rounded text-xs font-medium bg-${color}-100 text-${color}-700`}
+                          >
+                            {tag}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -234,7 +287,7 @@ export default function CartPageContent({
           <div className="flex flex-col gap-3 pb-6 border-b border-gray-100">
             <div className="flex justify-between items-center">
               <p className="text-gray-500 text-sm">
-                Subtotal ({items.length} items)
+                Subtotal ({mergedItems.length} items)
               </p>
               <p className="text-gray-900 font-medium">৳{subtotal}</p>
             </div>
