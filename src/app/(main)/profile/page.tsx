@@ -132,9 +132,12 @@ export default function ProfilePage() {
                   <CalendarCheck size={20} className="text-teal-700" />
                   Active Tiffin Plan
                 </h3>
-                <button className="text-sm font-semibold text-teal-700 hover:underline">
+                <Link
+                  href={`/profile/subscription/${ACTIVE_SUBSCRIPTION.id}`}
+                  className="text-sm font-semibold text-teal-700 hover:underline"
+                >
                   Manage Plan
-                </button>
+                </Link>
               </div>
 
               <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
@@ -293,7 +296,7 @@ export default function ProfilePage() {
               </Link>
 
               <Link
-                href="/feed?tab=plans"
+                href="/profile/subscription"
                 className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors text-left group"
               >
                 <div className="bg-gray-100 p-2 rounded-lg text-gray-600 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">

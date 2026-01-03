@@ -29,7 +29,7 @@ export default function AllSubscriptionsPage() {
 
         {/* CTA Card */}
         <Link
-          href="/feed?category=plans"
+          href="/explore?tab=dishes&sort=recommended"
           className="border-2 border-dashed border-gray-200 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:border-teal-300 hover:bg-teal-50/50 transition-colors group"
         >
           <div className="bg-gray-50 group-hover:bg-white p-4 rounded-full mb-3 transition-colors">
