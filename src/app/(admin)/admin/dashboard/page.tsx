@@ -14,7 +14,7 @@ import {
   Bell,
 } from 'lucide-react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
-import AdminHeader from '@/components/admin/AdminHeader';
+
 import { 
   ADMIN_STATS, RECENT_ORDERS, RECENT_ACTIVITY, 
   CATEGORY_DATA, MONTHLY_ORDER_DATA 
@@ -32,7 +32,7 @@ export default function AdminDashboard() {
 
       {/* --- Main Content Area --- */}
       <main className="flex-1 overflow-y-auto flex flex-col">
-        <AdminHeader />
+      
 
         {/* Content Container */}
         <div className="p-8 space-y-8">

@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import {
   Search, Filter, ChevronDown, Download, Plus,
   MoreVertical, CheckCircle2, Trash2, Archive
 } from 'lucide-react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
-import AdminHeader from '@/components/admin/AdminHeader';
+
 import { USER_STATS, USERS_LIST } from '@/lib/dummy-data/admin/userData';
 
 export default function UserManagement() {
@@ -18,7 +19,7 @@ export default function UserManagement() {
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto flex flex-col">
-        <AdminHeader />
+        
 
         {/* Page Content */}
         <div className="p-8 space-y-8 flex-1">
@@ -88,13 +89,15 @@ export default function UserManagement() {
                   <tr key={user.id} className="hover:bg-surface-darker/50 transition-colors">
                     <td className="px-6 py-4"><input type="checkbox" className="rounded bg-background-dark border border-border-dark" /></td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-border-dark rounded-full" />
-                        <div>
-                          <p className="font-bold">{user.name}</p>
-                          <p className="text-xs text-text-muted">ID: {user.id}</p>
+                      <Link href={`/admin/userDetails?id=${user.id}`}>
+                        <div className="flex items-center gap-3 cursor-pointer group">
+                          <div className="w-10 h-10 bg-border-dark rounded-full" />
+                          <div>
+                            <p className="font-bold group-hover:text-primary transition-colors">{user.name}</p>
+                            <p className="text-xs text-text-muted">ID: {user.id}</p>
+                          </div>
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1 w-fit ${
