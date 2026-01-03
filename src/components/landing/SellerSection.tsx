@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const SellerSection = () => {
   const features = [
     {
@@ -65,9 +67,12 @@ const SellerSection = () => {
             </div>
 
             <div className="mt-4">
-              <button className="rounded-xl px-6 py-3 bg-brand-teal text-white font-bold hover:bg-brand-teal/90 transition-colors w-fit shadow-lg shadow-brand-teal/20">
+              <Link
+                href="/register?role=seller"
+                className="rounded-xl px-6 py-3 bg-brand-teal text-white font-bold hover:bg-brand-teal/90 transition-colors w-fit shadow-lg shadow-brand-teal/20"
+              >
                 Become a Partner Chef
-              </button>
+              </Link>
             </div>
           </div>
 

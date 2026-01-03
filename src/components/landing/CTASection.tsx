@@ -1,14 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const CTASection = () => {
   const [email, setEmail] = useState("");
+  const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Email submitted:", email);
     setEmail("");
+    router.push("/register");
   };
 
   return (
@@ -46,6 +50,12 @@ const CTASection = () => {
             Get Started
           </button>
         </form>
+
+        <p className="text-sm text-white/80 mt-6">
+          Already with us? <Link href="/login" className="font-bold text-white hover:underline">
+            Log in
+          </Link>
+        </p>
       </div>
     </section>
   );
