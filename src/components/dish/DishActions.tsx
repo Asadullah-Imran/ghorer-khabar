@@ -2,9 +2,21 @@
 
 import { Minus, Plus, ShieldCheck, ShoppingBag } from "lucide-react";
 import { useState } from "react";
+import { useCart } from "@/components/cart/CartProvider";
 
-export default function DishActions({ price }: { price: number }) {
+export default function DishActions({
+  id,
+  name,
+  image,
+  price,
+}: {
+  id: string;
+  name: string;
+  image?: string;
+  price: number;
+}) {
   const [qty, setQty] = useState(1);
+  const { addItem } = useCart();
 
   const increment = () => setQty((prev) => prev + 1);
   const decrement = () => setQty((prev) => (prev > 1 ? prev - 1 : 1));
@@ -42,7 +54,7 @@ export default function DishActions({ price }: { price: number }) {
           {/* Add Button */}
           <button
             className="flex-1 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-lg py-3 px-6 flex items-center justify-center gap-2 transition-transform active:scale-[0.98] shadow-md"
-            onClick={() => console.log(`Added ${qty} items`)}
+            onClick={() => addItem({ id, name, image, price }, qty)}
           >
             <ShoppingBag size={20} />
             Add to Cart

@@ -2,13 +2,21 @@
 
 import { Heart, Plus } from "lucide-react";
 import { useState } from "react";
+import { useCart } from "@/components/cart/CartProvider";
 
-export function AddToCartBtn({ minimal = false }: { minimal?: boolean }) {
-  // Handle the click logic here, not in the parent
+export function AddToCartBtn({
+  minimal = false,
+  item,
+}: {
+  minimal?: boolean;
+  item: { id: string; name: string; price: number; image?: string };
+}) {
+  const { addItem } = useCart();
+
   const handleAdd = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevents the Link from navigating to the details page
+    e.preventDefault();
     e.stopPropagation();
-    console.log("Added to cart!"); // Placeholder for real logic
+    addItem({ id: item.id, name: item.name, price: item.price, image: item.image });
   };
 
   return (

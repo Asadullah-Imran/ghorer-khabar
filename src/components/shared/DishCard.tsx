@@ -61,8 +61,15 @@ export default function DishCard({ data, featured }: DishProps) {
             <span className="font-bold text-lg text-gray-900">
               ৳{data.price}
             </span>
-            {/* FIX: No wrapping div with onClick here. The logic is now inside the component. */}
-            <AddToCartBtn minimal={!featured} />
+            <AddToCartBtn
+              minimal={!featured}
+              item={{
+                id: data.id,
+                name: data.name,
+                price: data.price,
+                image: data.image,
+              }}
+            />
           </div>
         </div>
       </div>
