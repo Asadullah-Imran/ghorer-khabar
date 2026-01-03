@@ -73,7 +73,10 @@ export default function Navbar() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-6">
-            <button className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-teal-700 transition">
+            <button
+              onClick={() => router.push("/chef/dashboard")}
+              className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-teal-700 transition"
+            >
               <ChefHat size={18} />
               <span>Switch to Chef</span>
             </button>
