@@ -34,3 +34,15 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+<!-- TODO TASK -->
+
+1. single dish (deep view -> moshla ingredient view) page
+2. kitchen page (buyers view)
+3. meal subscription (from to see -> chefs, users profile view) page
+4. single dish (preorder option) + (add a note to chef option) page
+5. chef menu (preorder, daily, or else -> think as buyers perspective )
+
+6. single dish page (fav button add )
+7. cart page (add multiple kitchen cart )
+8. order page (single kitchen order only )
