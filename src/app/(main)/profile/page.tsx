@@ -19,6 +19,7 @@ import {
   Utensils,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function ProfilePage() {
   return (
@@ -266,26 +267,63 @@ export default function ProfilePage() {
           </div>
 
           {/* Right: Settings / Menu */}
+
           <div className="xl:col-span-1">
             <div className="bg-white rounded-xl border border-gray-200 p-2 shadow-sm">
-              {[
-                { icon: Heart, label: "Favorites" },
-                { icon: MapPin, label: "Saved Addresses" },
-                { icon: CalendarCheck, label: "Subscription Plans" },
-                { icon: Settings, label: "Account Settings" },
-                { icon: Phone, label: "Help & Support" },
-              ].map((item, i) => (
-                <button
-                  key={i}
-                  className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors text-left"
-                >
-                  <div className="bg-gray-100 p-2 rounded-lg text-gray-600">
-                    <item.icon size={18} />
-                  </div>
-                  <span className="font-medium text-sm">{item.label}</span>
-                  <ChevronRight size={16} className="ml-auto text-gray-400" />
-                </button>
-              ))}
+              <Link
+                href="/profile/favorites"
+                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors text-left group"
+              >
+                <div className="bg-gray-100 p-2 rounded-lg text-gray-600 group-hover:bg-red-50 group-hover:text-red-500 transition-colors">
+                  <Heart size={18} />
+                </div>
+                <span className="font-medium text-sm">Favorites</span>
+                <ChevronRight size={16} className="ml-auto text-gray-400" />
+              </Link>
+
+              <Link
+                href="/profile/addresses"
+                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors text-left group"
+              >
+                <div className="bg-gray-100 p-2 rounded-lg text-gray-600 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                  <MapPin size={18} />
+                </div>
+                <span className="font-medium text-sm">Saved Addresses</span>
+                <ChevronRight size={16} className="ml-auto text-gray-400" />
+              </Link>
+
+              <Link
+                href="/feed?tab=plans"
+                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors text-left group"
+              >
+                <div className="bg-gray-100 p-2 rounded-lg text-gray-600 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                  <CalendarCheck size={18} />
+                </div>
+                <span className="font-medium text-sm">Subscription Plans</span>
+                <ChevronRight size={16} className="ml-auto text-gray-400" />
+              </Link>
+
+              <Link
+                href="/profile/settings"
+                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors text-left group"
+              >
+                <div className="bg-gray-100 p-2 rounded-lg text-gray-600 group-hover:bg-gray-200 transition-colors">
+                  <Settings size={18} />
+                </div>
+                <span className="font-medium text-sm">Account Settings</span>
+                <ChevronRight size={16} className="ml-auto text-gray-400" />
+              </Link>
+
+              <Link
+                href="/support"
+                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors text-left group"
+              >
+                <div className="bg-gray-100 p-2 rounded-lg text-gray-600 group-hover:bg-yellow-50 group-hover:text-yellow-600 transition-colors">
+                  <Phone size={18} />
+                </div>
+                <span className="font-medium text-sm">Help & Support</span>
+                <ChevronRight size={16} className="ml-auto text-gray-400" />
+              </Link>
             </div>
           </div>
         </div>
