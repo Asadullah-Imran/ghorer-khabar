@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const Hero = () => {
   return (
     <header className="relative w-full min-h-[600px] flex items-center justify-center bg-brand-dark overflow-hidden">
@@ -24,25 +26,25 @@ const Hero = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-          <a
-            href="#buyer"
+          <Link
+            href="/login"
             className="flex items-center justify-center gap-2 rounded-xl h-14 px-8 bg-primary text-brand-dark text-base font-bold transition-transform hover:scale-105 shadow-[0_0_20px_rgba(254,183,40,0.3)]"
           >
             <span className="material-symbols-outlined text-[20px]">
               search
             </span>
             Find a Meal
-          </a>
+          </Link>
 
-          <a
-            href="#seller"
+          <Link
+            href="/register?role=seller"
             className="flex items-center justify-center gap-2 rounded-xl h-14 px-8 bg-brand-teal text-white text-base font-bold transition-transform hover:scale-105 shadow-[0_0_20px_rgba(71,126,119,0.4)]"
           >
             <span className="material-symbols-outlined text-[20px]">
               soup_kitchen
             </span>
             Open Your Kitchen
-          </a>
+          </Link>
         </div>
       </div>
     </header>

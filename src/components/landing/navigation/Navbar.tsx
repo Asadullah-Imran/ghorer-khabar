@@ -44,18 +44,24 @@ const Navbar = () => {
             ))}
           </div>
           <div className="flex gap-3">
-            <button className="flex items-center justify-center rounded-xl h-10 px-5 bg-white border border-brand-teal text-brand-teal text-sm font-bold transition-colors hover:bg-brand-teal/5">
+            <Link
+              href="/login"
+              className="flex items-center justify-center rounded-xl h-10 px-5 bg-white border border-brand-teal text-brand-teal text-sm font-bold transition-colors hover:bg-brand-teal/5"
+            >
               Log In
-            </button>
-            <button className="flex items-center justify-center rounded-xl h-10 px-5 bg-primary text-brand-dark text-sm font-bold shadow-sm transition-colors hover:bg-primary/90">
+            </Link>
+            <Link
+              href="/register"
+              className="flex items-center justify-center rounded-xl h-10 px-5 bg-primary text-brand-dark text-sm font-bold shadow-sm transition-colors hover:bg-primary/90"
+            >
               Sign Up
-            </button>
-            <a
-              href="#seller"
+            </Link>
+            <Link
+              href="/register?role=seller"
               className="hidden lg:flex items-center justify-center rounded-xl h-10 px-5 bg-brand-teal text-white text-sm font-bold shadow-sm transition-colors hover:bg-brand-teal/90"
             >
               Become a Chef
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -85,19 +91,27 @@ const Navbar = () => {
               </a>
             ))}
             <div className="flex flex-col gap-3 pt-4 border-t">
-              <button className="flex items-center justify-center rounded-xl h-12 bg-white border border-brand-teal text-brand-teal text-sm font-bold transition-colors hover:bg-brand-teal/5">
+              <Link
+                href="/login"
+                className="flex items-center justify-center rounded-xl h-12 bg-white border border-brand-teal text-brand-teal text-sm font-bold transition-colors hover:bg-brand-teal/5"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Log In
-              </button>
-              <button className="flex items-center justify-center rounded-xl h-12 bg-primary text-brand-dark text-sm font-bold shadow-sm transition-colors hover:bg-primary/90">
+              </Link>
+              <Link
+                href="/register"
+                className="flex items-center justify-center rounded-xl h-12 bg-primary text-brand-dark text-sm font-bold shadow-sm transition-colors hover:bg-primary/90"
+                onClick={() => setIsMenuOpen(false)}
+              >
                 Sign Up
-              </button>
-              <a
-                href="#seller"
+              </Link>
+              <Link
+                href="/register?role=seller"
                 className="flex items-center justify-center rounded-xl h-12 bg-brand-teal text-white text-sm font-bold shadow-sm transition-colors hover:bg-brand-teal/90"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Become a Chef
-              </a>
+              </Link>
             </div>
           </div>
         </div>

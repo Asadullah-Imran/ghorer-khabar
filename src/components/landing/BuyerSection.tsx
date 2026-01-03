@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const BuyerSection = () => {
   const features = [
     {
@@ -64,15 +66,15 @@ const BuyerSection = () => {
             </div>
 
             <div className="mt-4">
-              <a
-                href="#chefs"
+              <Link
+                href="/login"
                 className="flex items-center gap-2 font-bold text-brand-teal hover:underline decoration-2 underline-offset-4"
               >
                 Browse Healthy Meals
                 <span className="material-symbols-outlined text-sm">
                   arrow_forward
                 </span>
-              </a>
+              </Link>
             </div>
           </div>
 
