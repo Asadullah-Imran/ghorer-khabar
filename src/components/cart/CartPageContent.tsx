@@ -1,5 +1,6 @@
 "use client";
 
+import { useCart } from "@/components/cart/CartProvider";
 import {
   ArrowRight,
   BadgeCheck,
@@ -12,7 +13,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { useCart } from "@/components/cart/CartProvider";
 
 // Types
 type CartItem = {
