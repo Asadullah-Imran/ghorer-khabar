@@ -1,11 +1,20 @@
+import heroBg from "@/../public/foods.jpg"; // Adjust path based on your folder structure
+import Image from "next/image";
 import Link from "next/link";
-
 const Hero = () => {
   return (
     <header className="relative w-full min-h-[600px] flex items-center justify-center bg-brand-dark overflow-hidden">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0 z-0">
-        <div className="w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-black/30" />
+        <Image
+          src={heroBg} // 2. Pass the imported variable here
+          alt="Ghorer Khabar background"
+          fill
+          priority
+          placeholder="blur" // Bonus: You get automatic blur loading with imports!
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/30" />
       </div>
 
       <div className="relative z-10 container mx-auto px-4 md:px-10 flex flex-col items-center text-center max-w-4xl pt-10">

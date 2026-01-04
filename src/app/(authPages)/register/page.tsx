@@ -1,15 +1,28 @@
 "use client";
 
-import logo from "@/lib/image/logo.png";
 import { createClient } from "@/lib/supabase/client";
-import Image from "next/image";
+import {
+  ChefHat,
+  Loader2,
+  Lock,
+  Mail,
+  ShoppingBag,
+  User,
+  UtensilsCrossed,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen" />}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <Loader2 className="animate-spin text-teal-700" />
+        </div>
+      }
+    >
       <RegisterContent />
     </Suspense>
   );
@@ -106,82 +119,135 @@ function RegisterContent() {
   };
 
   return (
-    <div className="bg-[#FDFBF7] text-gray-800 font-sans min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Decorative Blobs */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none z-0"></div>
-      <div className="absolute -top-20 -left-20 w-64 h-64 bg-red-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-      <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-[#F2A93B] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+    <div className="min-h-screen flex bg-gray-50">
+      {/* LEFT SIDE: BRANDING & TESTIMONIAL (Hidden on Mobile) */}
+      <div className="hidden lg:flex lg:w-1/2 bg-teal-900 relative overflow-hidden flex-col justify-between p-12 text-white">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/food.png')]"></div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
 
-      <div className="container mx-auto px-4 z-10 flex flex-col lg:flex-row items-center justify-center max-w-6xl gap-12 lg:gap-24">
-        {/* LEFT SIDE: BRAND INFO */}
-        <div className="hidden lg:flex flex-col items-center lg:items-start text-center lg:text-left w-full lg:w-1/2 space-y-6">
-          <Link href="/" aria-label="Home">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full border-2 border-[#3d7068] text-[#3d7068] mb-4">
-              <Image
-                src={logo}
-                alt="Logo"
-                width={56}
-                height={56}
-                className="object-cover rounded-full"
-              />
-            </div>
-          </Link>
-          <h1 className="text-5xl lg:text-6xl font-bold text-[#3A6B63] leading-tight">
-            Ghorer Khabar
-          </h1>
-          <h2 className="text-2xl font-medium text-[#F2A93B] tracking-widest uppercase">
-            Savor the Taste of Home
-          </h2>
-          <p className="text-lg text-gray-600 max-w-md leading-relaxed">
-            Join our community of food lovers. Experience the warmth of
-            home-cooked meals delivered right to your doorstep.
-          </p>
+        {/* Logo Area */}
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="bg-yellow-400 p-2 rounded-lg text-teal-900">
+            <ChefHat size={32} />
+          </div>
+          <span className="font-bold text-2xl tracking-tight">
+            Ghorer<span className="text-yellow-400">Khabar</span>
+          </span>
         </div>
 
-        {/* RIGHT SIDE: REGISTRATION FORM */}
-        <div className="w-full max-w-md lg:w-1/2">
-          <div className="bg-white p-8 md:p-10 rounded-3xl shadow-2xl border border-gray-100">
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">
-              Create Account
-            </h3>
-            <p className="text-gray-500 mb-8 text-sm">
-              Start your culinary journey with us today.
-            </p>
+        {/* Hero Text */}
+        <div className="relative z-10 max-w-lg">
+          <h1 className="text-5xl font-bold leading-tight mb-6">
+            Join the community of food lovers.
+          </h1>
+          <p className="text-teal-100 text-lg leading-relaxed mb-8">
+            &ldquo;Ghorer Khabar connected me with amazing home chefs in my
+            neighborhood. I finally found the taste of my mom&apos;s
+            cooking!&rdquo;
+          </p>
 
-            {/* Role toggle so users can pick buyer or seller */}
-            <div className="mb-6 flex gap-3">
-              {[
-                { label: "I'm buying", value: "BUYER" },
-                { label: "I'm selling", value: "SELLER" },
-              ].map((option) => {
-                const isActive = formData.role === option.value;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        role: option.value as "BUYER" | "SELLER",
-                      }))
-                    }
-                    className={`flex-1 rounded-2xl border px-4 py-3 text-sm font-semibold transition-all ${
-                      isActive
-                        ? "bg-[#3A6B63] text-white border-[#3A6B63] shadow-lg"
-                        : "bg-gray-50 text-gray-700 border-gray-200 hover:border-[#3A6B63]"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                );
-              })}
+          <div className="flex items-center gap-4">
+            <div className="flex -space-x-3">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="w-10 h-10 rounded-full border-2 border-teal-900 bg-gray-200"
+                  style={{
+                    backgroundImage: `url(https://i.pravatar.cc/150?img=${
+                      i + 10
+                    })`,
+                    backgroundSize: "cover",
+                  }}
+                ></div>
+              ))}
             </div>
+            <div className="text-sm">
+              <p className="font-bold">2k+ Happy Foodies</p>
+              <p className="text-teal-300">Joined this month</p>
+            </div>
+          </div>
+        </div>
 
-            <form onSubmit={handleRegister} className="space-y-5">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
-                  Full Name
-                </label>
+        {/* Footer */}
+        <div className="relative z-10 text-sm text-teal-400">
+          © 2024 Ghorer Khabar. All rights reserved.
+        </div>
+      </div>
+
+      {/* RIGHT SIDE: REGISTRATION FORM */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 relative">
+        {/* Mobile Logo (Visible only on small screens) */}
+        <div className="absolute top-6 left-6 lg:hidden flex items-center gap-2">
+          <div className="bg-yellow-400 p-1.5 rounded-lg text-teal-900">
+            <ChefHat size={20} />
+          </div>
+          <span className="font-bold text-lg text-teal-900">
+            Ghorer<span className="text-yellow-500">Khabar</span>
+          </span>
+        </div>
+
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center lg:text-left">
+            <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+              Create Account
+            </h2>
+            <p className="text-gray-500 mt-2">Sign up to start your journey.</p>
+          </div>
+
+          {/* Role Toggle as Cards */}
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={() =>
+                setFormData((prev) => ({ ...prev, role: "BUYER" }))
+              }
+              className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${
+                formData.role === "BUYER"
+                  ? "border-teal-600 bg-teal-50 text-teal-900"
+                  : "border-gray-200 bg-white text-gray-500 hover:border-gray-300"
+              }`}
+            >
+              <ShoppingBag
+                size={24}
+                className={
+                  formData.role === "BUYER" ? "text-teal-600" : "text-gray-400"
+                }
+              />
+              <span className="font-bold text-sm">I want to Order</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                setFormData((prev) => ({ ...prev, role: "SELLER" }))
+              }
+              className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${
+                formData.role === "SELLER"
+                  ? "border-teal-600 bg-teal-50 text-teal-900"
+                  : "border-gray-200 bg-white text-gray-500 hover:border-gray-300"
+              }`}
+            >
+              <UtensilsCrossed
+                size={24}
+                className={
+                  formData.role === "SELLER" ? "text-teal-600" : "text-gray-400"
+                }
+              />
+              <span className="font-bold text-sm">I want to Cook</span>
+            </button>
+          </div>
+
+          <form onSubmit={handleRegister} className="space-y-5">
+            {/* Full Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <User size={18} />
+                </div>
                 <input
                   type="text"
                   name="name"
@@ -189,14 +255,20 @@ function RegisterContent() {
                   placeholder="John Doe"
                   value={formData.name}
                   onChange={handleChange}
-                  className="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-[#3A6B63] outline-none"
+                  className="block w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                 />
               </div>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
-                  Email Address
-                </label>
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <Mail size={18} />
+                </div>
                 <input
                   type="email"
                   name="email"
@@ -204,14 +276,20 @@ function RegisterContent() {
                   placeholder="john@example.com"
                   value={formData.email}
                   onChange={handleChange}
-                  className="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-[#3A6B63] outline-none"
+                  className="block w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                 />
               </div>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
-                  Password
-                </label>
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <Lock size={18} />
+                </div>
                 <input
                   type="password"
                   name="password"
@@ -219,14 +297,20 @@ function RegisterContent() {
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-[#3A6B63] outline-none"
+                  className="block w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                 />
               </div>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">
-                  Confirm Password
-                </label>
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <Lock size={18} />
+                </div>
                 <input
                   type="password"
                   name="confirmPassword"
@@ -234,89 +318,87 @@ function RegisterContent() {
                   placeholder="••••••••"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="block w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:ring-2 focus:ring-[#3A6B63] outline-none"
+                  className="block w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                 />
-              </div>
-
-              <div className="flex items-center ml-1">
-                <input
-                  type="checkbox"
-                  name="terms"
-                  required
-                  checked={formData.terms}
-                  onChange={handleChange}
-                  className="h-4 w-4 text-[#3A6B63] focus:ring-[#3A6B63] border-gray-300 rounded"
-                />
-                <label className="ml-2 block text-sm text-gray-600">
-                  I agree to the{" "}
-                  <Link
-                    href="#"
-                    className="text-[#3A6B63] font-medium hover:underline"
-                  >
-                    Terms of Service
-                  </Link>
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-3 px-4 rounded-xl shadow-lg text-sm font-bold text-white bg-[#3A6B63] hover:bg-[#2d524c] transition-all transform hover:-translate-y-1 disabled:opacity-50"
-              >
-                {loading ? "Registering..." : "Register"}
-              </button>
-            </form>
-
-            <div className="my-6 relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-400">
-                  Or continue with
-                </span>
               </div>
             </div>
 
-            <div className="flex gap-3 justify-center">
-              <button
-                onClick={handleGoogleLogin}
-                className="inline-flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl bg-white text-sm text-gray-700 hover:shadow-md transition-all active:scale-95"
+            {/* Terms */}
+            <div className="flex items-start">
+              <input
+                id="terms"
+                type="checkbox"
+                name="terms"
+                required
+                checked={formData.terms}
+                onChange={handleChange}
+                className="h-4 w-4 mt-1 text-teal-600 focus:ring-teal-500 border-gray-300 rounded"
+              />
+              <label
+                htmlFor="terms"
+                className="ml-2 block text-sm text-gray-600"
               >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 48 48"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden
-                >
-                  <path
-                    d="M44.5 20H24v8.5h11.9C34.6 32.6 30.1 36 24 36c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.4 0 6.4 1.3 8.7 3.4l6.1-6.1C34.6 3.6 29.6 1.5 24 1.5 11.9 1.5 2.5 10.9 2.5 23S11.9 44.5 24 44.5c11.2 0 20.4-8 20.4-21.5 0-1.5-.2-2.6-.4-3z"
-                    fill="#4285F4"
-                  />
-                </svg>
-                Google
-              </button>
-            </div>
-
-            <div className="mt-8 text-center">
-              <p className="text-sm text-gray-600">
-                Already have an account?{" "}
+                I agree to the{" "}
                 <Link
-                  href="/login"
-                  className="font-medium text-[#3A6B63] hover:underline"
+                  href="#"
+                  className="text-teal-600 font-bold hover:underline"
                 >
-                  Sign in
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="#"
+                  className="text-teal-600 font-bold hover:underline"
+                >
+                  Privacy Policy
                 </Link>
-              </p>
+              </label>
             </div>
-            <div className="mt-8 pt-4 border-t border-gray-100 text-center">
-              <p className="text-xs text-gray-400 uppercase tracking-widest">
-                Presented by: MEGAMIND
-              </p>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex justify-center items-center gap-2 py-3.5 px-4 rounded-xl shadow-md text-sm font-bold text-white bg-teal-700 hover:bg-teal-800 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+            >
+              {loading && <Loader2 className="animate-spin" size={18} />}
+              {loading ? "Creating Account..." : "Create Account"}
+            </button>
+          </form>
+
+          {/* Social Login */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-gray-50 text-gray-400">
+                Or continue with
+              </span>
             </div>
           </div>
+
+          <button
+            onClick={handleGoogleLogin}
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 48 48">
+              <path
+                d="M44.5 20H24v8.5h11.9C34.6 32.6 30.1 36 24 36c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.4 0 6.4 1.3 8.7 3.4l6.1-6.1C34.6 3.6 29.6 1.5 24 1.5 11.9 1.5 2.5 10.9 2.5 23S11.9 44.5 24 44.5c11.2 0 20.4-8 20.4-21.5 0-1.5-.2-2.6-.4-3z"
+                fill="#4285F4"
+              />
+            </svg>
+            Google
+          </button>
+
+          <p className="text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="font-bold text-teal-700 hover:underline"
+            >
+              Sign in
+            </Link>
+          </p>
         </div>
       </div>
     </div>

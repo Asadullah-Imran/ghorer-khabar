@@ -37,7 +37,7 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
         "Order Placed Successfully! (This would redirect to a Success Page)"
       );
       setIsSubmitting(false);
-      router.push("/feed"); // Redirect back to feed for now
+      router.push("/orders/GK-8921"); // Redirect back to feed for now
     }, 2000);
   };
 
