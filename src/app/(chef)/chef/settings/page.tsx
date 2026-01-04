@@ -1,19 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import {
-  Save,
-  Clock,
-  ShieldCheck,
   AlertTriangle,
-  Trash2,
   Building2,
-  MapPin,
-  User,
-  Phone,
   CheckCircle2,
+  Clock,
+  MapPin,
+  Phone,
+  Save,
+  ShieldCheck,
+  Trash2,
+  User,
   XCircle,
 } from "lucide-react";
+import { useState } from "react";
 
 interface OperatingDay {
   day: string;
@@ -43,7 +43,9 @@ export default function SettingsPage() {
   ]);
 
   // Legal & Verification (Read-only)
-  const verificationStatus = "verified"; // "verified" | "pending" | "rejected"
+  const [verificationStatus] = useState<"verified" | "pending" | "rejected">(
+    "verified"
+  );
   const tradeLicense = "****-5678";
   const nidNumber = "****-****-4321";
 
@@ -58,7 +60,11 @@ export default function SettingsPage() {
     setOperatingHours(updated);
   };
 
-  const updateTime = (index: number, field: "openTime" | "closeTime", value: string) => {
+  const updateTime = (
+    index: number,
+    field: "openTime" | "closeTime",
+    value: string
+  ) => {
     const updated = [...operatingHours];
     updated[index][field] = value;
     setOperatingHours(updated);
@@ -94,7 +100,9 @@ export default function SettingsPage() {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <div className="flex items-center gap-2 mb-6">
           <Building2 className="text-yellow-500" size={24} />
-          <h2 className="text-2xl font-bold text-gray-900">General Information</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            General Information
+          </h2>
         </div>
 
         <div className="space-y-4">
@@ -176,7 +184,9 @@ export default function SettingsPage() {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <div className="flex items-center gap-2 mb-6">
           <Clock className="text-teal-600" size={24} />
-          <h2 className="text-2xl font-bold text-gray-900">Opening & Closing Hours</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Opening & Closing Hours
+          </h2>
         </div>
 
         <div className="space-y-3">
@@ -215,14 +225,18 @@ export default function SettingsPage() {
                   <input
                     type="time"
                     value={day.openTime}
-                    onChange={(e) => updateTime(index, "openTime", e.target.value)}
+                    onChange={(e) =>
+                      updateTime(index, "openTime", e.target.value)
+                    }
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 text-sm font-semibold"
                   />
                   <span className="text-gray-600 font-semibold">to</span>
                   <input
                     type="time"
                     value={day.closeTime}
-                    onChange={(e) => updateTime(index, "closeTime", e.target.value)}
+                    onChange={(e) =>
+                      updateTime(index, "closeTime", e.target.value)
+                    }
                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 text-sm font-semibold"
                   />
                 </div>
@@ -249,7 +263,9 @@ export default function SettingsPage() {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <div className="flex items-center gap-2 mb-6">
           <ShieldCheck className="text-teal-600" size={24} />
-          <h2 className="text-2xl font-bold text-gray-900">Legal & Verification</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Legal & Verification
+          </h2>
         </div>
 
         {/* Verification Status Badge */}
@@ -259,7 +275,9 @@ export default function SettingsPage() {
               <>
                 <CheckCircle2 className="text-green-600" size={32} />
                 <div>
-                  <p className="font-bold text-gray-900 text-lg">Verified Kitchen</p>
+                  <p className="font-bold text-gray-900 text-lg">
+                    Verified Kitchen
+                  </p>
                   <p className="text-sm text-gray-600">
                     Your kitchen has been verified by our team
                   </p>
@@ -270,7 +288,9 @@ export default function SettingsPage() {
               <>
                 <AlertTriangle className="text-orange-500" size={32} />
                 <div>
-                  <p className="font-bold text-gray-900 text-lg">Verification Pending</p>
+                  <p className="font-bold text-gray-900 text-lg">
+                    Verification Pending
+                  </p>
                   <p className="text-sm text-gray-600">
                     Your documents are under review
                   </p>
@@ -281,7 +301,9 @@ export default function SettingsPage() {
               <>
                 <XCircle className="text-red-600" size={32} />
                 <div>
-                  <p className="font-bold text-gray-900 text-lg">Verification Rejected</p>
+                  <p className="font-bold text-gray-900 text-lg">
+                    Verification Rejected
+                  </p>
                   <p className="text-sm text-gray-600">
                     Please contact support for more details
                   </p>
@@ -320,7 +342,10 @@ export default function SettingsPage() {
 
           {/* Helper Text */}
           <div className="flex items-start gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <AlertTriangle className="text-blue-600 flex-shrink-0 mt-0.5" size={18} />
+            <AlertTriangle
+              className="text-blue-600 flex-shrink-0 mt-0.5"
+              size={18}
+            />
             <p className="text-sm text-blue-800">
               <strong>Note:</strong> To update legal details or submit new
               documents, please contact our support team at{" "}
@@ -341,7 +366,9 @@ export default function SettingsPage() {
 
         <div className="space-y-4">
           <div>
-            <h3 className="font-bold text-gray-900 mb-1">Delete Kitchen Account</h3>
+            <h3 className="font-bold text-gray-900 mb-1">
+              Delete Kitchen Account
+            </h3>
             <p className="text-sm text-gray-600 mb-4">
               Permanently delete your kitchen account and all associated data.
               This action cannot be undone. All orders, menu items, and customer

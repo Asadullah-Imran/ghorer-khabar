@@ -198,7 +198,10 @@ export default function CartPageContent({
               <div className="flex items-start gap-4 flex-1">
                 <div className="relative h-20 w-20 rounded-lg overflow-hidden shrink-0 bg-gray-100">
                   <Image
-                    src={item.image}
+                    src={
+                      item.image ||
+                      "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=200&auto=format"
+                    }
                     alt={item.name}
                     fill
                     className="object-cover"
