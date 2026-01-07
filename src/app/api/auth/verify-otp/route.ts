@@ -5,8 +5,8 @@
  *     summary: Verifies OTP for user registration or password recovery
  *     description: |
  *       This endpoint handles two scenarios based on the `type` field:
- *       1. `signup`: Verifies the OTP and creates a new user in the database.
- *       2. `recovery`: Verifies the OTP and, if a new password is provided, updates the user's password.
+ *       1. `signup` or `email`: Verifies the OTP and creates a new user in the database (Supabase OTP).
+ *       2. `recovery`: Verifies the OTP and, if a new password is provided, updates the user's password (Custom OTP).
  *     requestBody:
  *       required: true
  *       content:
@@ -45,21 +45,61 @@
 
 import { hashPassword } from "@/lib/auth/hash";
 import { prisma } from "@/lib/prisma/prisma";
+import { resetPasswordWithOTP, verifyPasswordResetOTP } from "@/services/authService";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    // Added 'type' to the destructuring to handle registration vs recovery
     const { email, otp, name, password, type, role } = await req.json();
-    const cookieStore = await cookies();
+    
     console.log(
       "Received OTP verification request for email:",
       email,
       "type:",
       type
     );
+
+    // Handle password recovery with custom OTP system
+    if (type === "recovery") {
+      // Step 1: Just verify OTP (no password provided yet)
+      if (!password) {
+        try {
+          const result = await verifyPasswordResetOTP(email, otp);
+          return NextResponse.json({
+            success: true,
+            message: "OTP verified. Please enter your new password.",
+            userId: result.userId,
+          });
+        } catch (error: any) {
+          console.error("OTP verification error:", error);
+          return NextResponse.json(
+            { error: error.message || "Invalid or expired OTP" },
+            { status: 400 }
+          );
+        }
+      }
+
+      // Step 2: Reset password (password provided)
+      try {
+        const result = await resetPasswordWithOTP(email, otp, password);
+        return NextResponse.json({
+          success: true,
+          message: "Password reset successful. You can now login with your new password.",
+          userId: result.userId,
+        });
+      } catch (error: any) {
+        console.error("Password reset error:", error);
+        return NextResponse.json(
+          { error: error.message || "Invalid or expired OTP" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Handle registration with Supabase OTP
+    const cookieStore = await cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -78,12 +118,11 @@ export async function POST(req: Request) {
       }
     );
 
-    // 1. Verify OTP with dynamic type
-    // Registration uses 'email' or 'signup', Forgot Password uses 'recovery'
+    // Verify OTP with Supabase (for registration)
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token: otp,
-      type: type === "recovery" ? "recovery" : "email",
+      type: "email",
     });
 
     if (error || !data.user) {
@@ -94,7 +133,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. Hash the new password provided by the user
+    // Hash the password
     const hashedPassword = await hashPassword(password);
 
     // Normalize role; default BUYER
@@ -103,14 +142,13 @@ export async function POST(req: Request) {
         ? "SELLER"
         : "BUYER";
 
-    // 3. Sync with Prisma
-    // If 'recovery', we just update the password. If 'signup', we create the user.
+    // Create user in database
     const user = await prisma.user.upsert({
       where: { email },
       update: {
         password: hashedPassword,
-        ...(name && { name }), // Only update name if provided
-        ...(type !== "recovery" ? { role: normalizedRole } : {}),
+        ...(name && { name }),
+        role: normalizedRole,
       },
       create: {
         id: data.user.id,
@@ -118,18 +156,14 @@ export async function POST(req: Request) {
         name: name || "New User",
         password: hashedPassword,
         role: normalizedRole,
+        authProvider: "EMAIL",
+        emailVerified: true,
       },
     });
 
-    // Note: 'createServerClient' automatically set the session cookies
-    // in 'cookieStore' above upon successful 'verifyOtp'.
-
     return NextResponse.json({
       success: true,
-      message:
-        type === "recovery"
-          ? "Password reset successful"
-          : "Registration complete",
+      message: "Registration complete",
       user,
     });
   } catch (err: any) {

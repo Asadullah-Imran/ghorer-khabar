@@ -4,6 +4,9 @@ import {
   generateVerificationToken,
   getTokenExpiry,
   sendVerificationEmail,
+  generateOTP,
+  getOTPExpiry,
+  sendPasswordResetOTP,
 } from "@/lib/email/emailService";
 
 /**
@@ -206,6 +209,158 @@ export async function cleanupExpiredTokens() {
     return result.count;
   } catch (error) {
     console.error("Token cleanup error:", error);
+    throw error;
+  }
+}
+
+
+/**
+ * Initiate password reset - Send OTP to user's email
+ */
+export async function initiatePasswordReset(email: string) {
+  try {
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new Error("User not found with this email");
+    }
+
+    // Only allow password reset for email-based users
+    if (user.authProvider !== "EMAIL") {
+      throw new Error(
+        "Password reset is only available for email-based accounts. Please use Google Sign-In instead."
+      );
+    }
+
+    // Generate OTP and expiry
+    const otp = generateOTP();
+    const expiresAt = getOTPExpiry();
+
+    // Store OTP in database
+    await prisma.emailLogOTP.create({
+      data: {
+        otp,
+        userId: user.id,
+        expiresAt,
+      },
+    });
+
+    // Send OTP email
+    await sendPasswordResetOTP(email, otp, user.name || undefined);
+
+    return {
+      message: "Password reset code sent to your email",
+      email,
+    };
+  } catch (error) {
+    console.error("Password reset initiation error:", error);
+    throw error;
+  }
+}
+
+/**
+ * Verify OTP for password reset
+ */
+export async function verifyPasswordResetOTP(email: string, otp: string) {
+  try {
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: {
+        EmailLogOTPs: {
+          where: {
+            otp,
+            expiresAt: {
+              gt: new Date(), // Not expired
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 1,
+        },
+      },
+    });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    if (user.EmailLogOTPs.length === 0) {
+      throw new Error("Invalid or expired OTP");
+    }
+
+    return {
+      success: true,
+      userId: user.id,
+      email: user.email,
+    };
+  } catch (error) {
+    console.error("OTP verification error:", error);
+    throw error;
+  }
+}
+
+/**
+ * Reset password with verified OTP
+ */
+export async function resetPasswordWithOTP(
+  email: string,
+  otp: string,
+  newPassword: string
+) {
+  try {
+    // Verify OTP first
+    await verifyPasswordResetOTP(email, otp);
+
+    // Hash new password
+    const hashedPassword = await hashPassword(newPassword);
+
+    // Update user password
+    const user = await prisma.user.update({
+      where: { email },
+      data: {
+        password: hashedPassword,
+      },
+    });
+
+    // Delete all OTPs for this user (cleanup)
+    await prisma.emailLogOTP.deleteMany({
+      where: {
+        userId: user.id,
+      },
+    });
+
+    return {
+      message: "Password reset successful",
+      userId: user.id,
+    };
+  } catch (error) {
+    console.error("Password reset error:", error);
+    throw error;
+  }
+}
+
+/**
+ * Clean up expired OTPs (run as cron job)
+ */
+export async function cleanupExpiredOTPs() {
+  try {
+    const result = await prisma.emailLogOTP.deleteMany({
+      where: {
+        expiresAt: {
+          lt: new Date(),
+        },
+      },
+    });
+
+    console.log(`Cleaned up ${result.count} expired OTPs`);
+    return result.count;
+  } catch (error) {
+    console.error("OTP cleanup error:", error);
     throw error;
   }
 }
