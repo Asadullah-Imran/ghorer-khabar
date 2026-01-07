@@ -1,0 +1,343 @@
+Table users {
+  id varchar [pk]
+  name varchar
+  email varchar [unique]
+  password varchar
+  phone varchar [unique]
+  role varchar
+  emailVerified boolean
+  verificationToken varchar [unique]
+  verificationExpiry datetime
+  authProvider varchar
+  providerId varchar
+  avatar varchar
+  resetToken varchar [unique]
+  resetTokenExpiry datetime
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table addresses {
+  id varchar [pk]
+  userId varchar
+  label varchar
+  address varchar
+  zone varchar
+  isDefault boolean
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table kitchens {
+  id varchar [pk]
+  sellerId varchar
+  name varchar
+  type varchar
+  description text
+  location varchar
+  area varchar
+  distance float
+  kriScore int
+  rating decimal(3,2)
+  reviewCount int
+  isActive boolean
+  isOpen boolean
+  isVerified boolean
+  coverImage varchar
+  profileImage varchar
+  totalOrders int
+  totalRevenue decimal(10,2)
+  satisfactionRate decimal(3,2)
+  responseTime int
+  deliveryRate decimal(3,2)
+  operatingDays json
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table kitchen_gallery {
+  id varchar [pk]
+  kitchenId varchar
+  imageUrl varchar
+  "order" int
+  createdAt datetime
+}
+
+Table dishes {
+  id varchar [pk]
+  kitchenId varchar
+  name varchar
+  description text
+  price decimal(10,2)
+  category varchar
+  spiciness varchar
+  prepTime int
+  calories int
+  rating decimal(3,2)
+  reviewCount int
+  isAvailable boolean
+  isFeatured boolean
+  isVegetarian boolean
+  allergens varchar
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table dish_images {
+  id varchar [pk]
+  dishId varchar
+  imageUrl varchar
+  "order" int
+  createdAt datetime
+}
+
+Table dish_ingredients {
+  id varchar [pk]
+  dishId varchar
+  name varchar
+  icon varchar
+  detail text
+  quantity varchar
+  unit varchar
+  cost decimal(10,2)
+  "order" int
+}
+
+Table dish_tags {
+  id varchar [pk]
+  dishId varchar
+  label varchar
+  color varchar
+}
+
+Table cart_items {
+  id varchar [pk]
+  userId varchar
+  dishId varchar
+  quantity int
+  createdAt datetime
+  updatedAt datetime
+
+  indexes {
+    (userId, dishId) [unique]
+  }
+}
+
+Table orders {
+  id varchar [pk]
+  orderNumber varchar [unique]
+  userId varchar
+  kitchenId varchar
+  addressId varchar
+  status varchar
+  stage varchar
+  customerName varchar
+  customerPhone varchar
+  subtotal decimal(10,2)
+  deliveryFee decimal(10,2)
+  platformFee decimal(10,2)
+  totalAmount decimal(10,2)
+  paymentMethod varchar
+  paymentStatus varchar
+  specialNotes text
+  runnerId varchar
+  tiffinId varchar
+  estimatedTime datetime
+  deliveredAt datetime
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table order_items {
+  id varchar [pk]
+  orderId varchar
+  dishId varchar
+  quantity int
+  price decimal(10,2)
+  specialNotes text
+}
+
+Table order_tracking {
+  id varchar [pk]
+  orderId varchar [unique]
+  currentStage varchar
+  progressPercent int
+  statusMessage varchar
+  statusDetail text
+  acceptedAt datetime
+  cookingAt datetime
+  readyAt datetime
+  handoverAt datetime
+  deliveredAt datetime
+  cancelledAt datetime
+  updatedAt datetime
+}
+
+Table subscription_plans {
+  id varchar [pk]
+  kitchenId varchar
+  name varchar
+  description text
+  price decimal(10,2)
+  mealsPerDay int
+  servingsPerMeal int
+  duration int
+  isActive boolean
+  subscriberCount int
+  rating decimal(3,2)
+  coverImage varchar
+  calories int
+  protein varchar
+  carbs varchar
+  fats varchar
+  chefQuote text
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table plan_schedules {
+  id varchar [pk]
+  planId varchar
+  dayOfWeek varchar
+  mealType varchar
+  time varchar
+  dishName varchar
+  dishDesc text
+  imageUrl varchar
+}
+
+Table user_subscriptions {
+  id varchar [pk]
+  userId varchar
+  planId varchar
+  status varchar
+  startDate datetime
+  endDate datetime
+  renewalDate datetime
+  deliveryTime varchar
+  addressId varchar
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table subscription_meals {
+  id varchar [pk]
+  subscriptionId varchar
+  date date
+  mealType varchar
+  dishName varchar
+  status varchar
+  createdAt datetime
+}
+
+Table inventory_items {
+  id varchar [pk]
+  kitchenId varchar
+  name varchar
+  unit varchar
+  currentStock float
+  demandFromOrders float
+  forecastDemand float
+  reorderLevel float
+  unitCost decimal(10,2)
+  updatedAt datetime
+}
+
+Table reviews {
+  id varchar [pk]
+  userId varchar
+  dishId varchar
+  kitchenId varchar
+  rating int
+  comment text
+  isAppealed boolean
+  appealReason text
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table favorites {
+  id varchar [pk]
+  userId varchar
+  dishId varchar
+  kitchenId varchar
+  planId varchar
+  createdAt datetime
+}
+
+Table notifications {
+  id varchar [pk]
+  userId varchar
+  type varchar
+  title varchar
+  message text
+  isRead boolean
+  createdAt datetime
+}
+
+Table support_tickets {
+  id varchar [pk]
+  userId varchar
+  subject varchar
+  category varchar
+  message text
+  status varchar
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table revenue_history {
+  id varchar [pk]
+  kitchenId varchar
+  month varchar
+  year int
+  revenue decimal(10,2)
+  orderCount int
+}
+
+/* =======================
+   RELATIONSHIPS
+   ======================= */
+
+Ref: addresses.userId > users.id
+
+Ref: kitchens.sellerId > users.id
+Ref: kitchen_gallery.kitchenId > kitchens.id
+
+Ref: dishes.kitchenId > kitchens.id
+Ref: dish_images.dishId > dishes.id
+Ref: dish_ingredients.dishId > dishes.id
+Ref: dish_tags.dishId > dishes.id
+
+Ref: cart_items.userId > users.id
+Ref: cart_items.dishId > dishes.id
+
+Ref: orders.userId > users.id
+Ref: orders.kitchenId > kitchens.id
+Ref: orders.addressId > addresses.id
+
+Ref: order_items.orderId > orders.id
+Ref: order_items.dishId > dishes.id
+Ref: order_tracking.orderId > orders.id
+
+Ref: subscription_plans.kitchenId > kitchens.id
+Ref: plan_schedules.planId > subscription_plans.id
+
+Ref: user_subscriptions.userId > users.id
+Ref: user_subscriptions.planId > subscription_plans.id
+Ref: subscription_meals.subscriptionId > user_subscriptions.id
+
+Ref: inventory_items.kitchenId > kitchens.id
+
+Ref: reviews.userId > users.id
+Ref: reviews.dishId > dishes.id
+Ref: reviews.kitchenId > kitchens.id
+
+Ref: favorites.userId > users.id
+Ref: favorites.dishId > dishes.id
+Ref: favorites.kitchenId > kitchens.id
+Ref: favorites.planId > subscription_plans.id
+
+Ref: notifications.userId > users.id
+Ref: support_tickets.userId > users.id
+Ref: revenue_history.kitchenId > kitchens.id

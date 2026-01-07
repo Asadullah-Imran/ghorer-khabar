@@ -1,5 +1,4 @@
 import AddressList from "@/components/profile/address/AddressList";
-import { SAVED_ADDRESSES } from "@/lib/dummy-data/addresses";
 import { ArrowLeft, MapPin } from "lucide-react";
 import Link from "next/link";
 
@@ -10,7 +9,7 @@ export default function SavedAddressesPage() {
       <div>
         <Link
           href="/profile"
-          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-teal-700 transition-colors mb-4"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-teal transition-colors mb-4"
         >
           <ArrowLeft size={16} /> Back to Profile
         </Link>
@@ -28,7 +27,7 @@ export default function SavedAddressesPage() {
       </div>
 
       {/* Interactive List */}
-      <AddressList initialData={SAVED_ADDRESSES} />
+      <AddressList />
     </div>
   );
 }
