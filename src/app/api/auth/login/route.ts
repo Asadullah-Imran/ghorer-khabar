@@ -1,7 +1,7 @@
 import { loginSchema } from "@/lib/validation";
 import { loginUser } from "@/services/auth.service";
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 /**
  * @swagger
@@ -69,6 +69,8 @@ export async function POST(req: Request) {
     });
 
     console.log("User logged in successfully:", user);
+    console.log("Cookie set: auth_token");
+    console.log("Token starts with:", token.substring(0, 20) + "...");
 
     return NextResponse.json(
       {

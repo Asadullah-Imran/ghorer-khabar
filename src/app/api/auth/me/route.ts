@@ -1,12 +1,17 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth/jwt";
 import { prisma } from "@/lib/prisma/prisma";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
+
+    console.log("GET /api/auth/me - Cookie present:", !!token);
+    if (token) {
+      console.log("Token starts with:", token.substring(0, 20) + "...");
+    }
 
     if (!token) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });

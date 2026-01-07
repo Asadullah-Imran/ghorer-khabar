@@ -26,8 +26,8 @@ model User {
   phone              String?       @unique
   addresses          Address[]
   EmailLogOTPs       EmailLogOTP[]
-  kitchens           kitchens[]
-  menuItems          MenuItem[]
+  kitchens           Kitchen[]
+  menu_items         menu_items[]
 
   @@map("users")
 }
@@ -62,71 +62,57 @@ model EmailLogOTP {
   @@map("forget_password_otps")
 }
 
-model MenuItem {
-  id             String           @id @default(uuid())
-  chefId         String           @map("chef_id")
-  name           String
-  description    String?
-  category       String
-  price          Float
-  prepTime       Int?
-  calories       Int?
-  spiciness      String?
-  isVegetarian   Boolean          @default(false)
-  isAvailable    Boolean          @default(true)
-  rating         Float?           @default(0)
-  reviewCount    Int              @default(0)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  ingredients    Ingredient[]
-  images         MenuItemImage[]
-  chef           User             @relation(fields: [chefId], references: [id], onDelete: Cascade)
-  plan_schedules plan_schedules[]
+model ingredients {
+  id           String     @id @default(cuid())
+  menu_item_id String
+  name         String
+  quantity     Float
+  unit         String
+  cost         Float?
+  createdAt    DateTime   @default(now())
+  menu_items   menu_items @relation(fields: [menu_item_id], references: [id], onDelete: Cascade)
 
-  @@index([chefId])
-  @@map("menu_items")
+  @@index([menu_item_id])
 }
 
-model MenuItemImage {
-  id         String   @id @default(uuid())
-  menuItemId String   @map("menu_item_id")
-  imageUrl   String
-  order      Int      @default(0)
-  createdAt  DateTime @default(now())
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+model menu_item_images {
+  id           String     @id @default(cuid())
+  menu_item_id String
+  imageUrl     String
+  order        Int        @default(0)
+  createdAt    DateTime   @default(now())
+  menu_items   menu_items @relation(fields: [menu_item_id], references: [id], onDelete: Cascade)
 
-  @@index([menuItemId])
-  @@map("menu_item_images")
+  @@index([menu_item_id])
 }
 
-model Ingredient {
-  id         String   @id @default(uuid())
-  menuItemId String   @map("menu_item_id")
-  name       String
-  quantity   Float
-  unit       String
-  cost       Float?
-  createdAt  DateTime @default(now())
-  menuItem   MenuItem @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+model menu_items {
+  id               String             @id @default(cuid())
+  chef_id          String
+  name             String
+  description      String?
+  category         String
+  price            Float
+  prepTime         Int?
+  calories         Int?
+  spiciness        String?
+  isVegetarian     Boolean            @default(false)
+  isAvailable      Boolean            @default(true)
+  rating           Float?             @default(0)
+  reviewCount      Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  ingredients      ingredients[]
+  menu_item_images menu_item_images[]
+  users            User               @relation(fields: [chef_id], references: [id], onDelete: Cascade)
+  plan_schedules   plan_schedules[]
 
-  @@index([menuItemId])
-  @@map("ingredients")
+  @@index([chef_id])
 }
 
-model kitchen_gallery {
-  id         String   @id
-  kitchen_id String
-  image_url  String
-  order      Int      @default(0)
-  createdAt  DateTime @default(now())
-  kitchens   kitchens @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
-
-  @@index([kitchen_id])
-}
-
-model kitchens {
-  id                  String               @id
-  seller_id           String
+model Kitchen {
+  id                  String               @id @default(cuid())
+  sellerId            String               @map("seller_id")
   name                String
   type                String?
   description         String?
@@ -152,37 +138,30 @@ model kitchens {
   deliveryRate        Decimal?             @db.Decimal(3, 2)
   operatingDays       Json?
   createdAt           DateTime             @default(now())
-  updatedAt           DateTime
-  kitchen_gallery     kitchen_gallery[]
-  users               User                 @relation(fields: [seller_id], references: [id], onDelete: Cascade)
+  updatedAt           DateTime             @updatedAt
+  gallery             KitchenGallery[]
+  seller              User                 @relation(fields: [sellerId], references: [id], onDelete: Cascade)
   subscription_plans  subscription_plans[]
 
-  @@index([seller_id])
+  @@index([sellerId])
+  @@map("kitchens")
 }
 
-model plan_schedules {
-  id                 String             @id
-  plan_id            String
-  day_of_week        DayOfWeek
-  meal_type          MealType
-  time               String
-  dish_id            String?
-  dish_name          String
-  dish_desc          String?
-  image_url          String?
-  created_at         DateTime           @default(now())
-  updated_at         DateTime
-  menu_items         MenuItem?          @relation(fields: [dish_id], references: [id])
-  subscription_plans subscription_plans @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+model KitchenGallery {
+  id        String   @id @default(cuid())
+  kitchenId String   @map("kitchen_id")
+  imageUrl  String   @map("image_url")
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  kitchen   Kitchen  @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
 
-  @@unique([plan_id, day_of_week, meal_type, dish_id])
-  @@index([dish_id])
-  @@index([plan_id])
+  @@index([kitchenId])
+  @@map("kitchen_gallery")
 }
 
 model subscription_plans {
-  id                String           @id
-  kitchen_id        String
+  id                String           @id @default(cuid())
+  kitchen_id        String           @map("kitchen_id")
   name              String
   description       String?
   price             Float
@@ -192,18 +171,40 @@ model subscription_plans {
   subscriber_count  Int              @default(0)
   monthly_revenue   Float            @default(0)
   rating            Decimal?         @default(0) @db.Decimal(3, 2)
-  cover_image       String?
+  cover_image       String?          @map("cover_image")
   calories          Int?
   protein           String?
   carbs             String?
   fats              String?
-  chef_quote        String?
-  created_at        DateTime         @default(now())
-  updated_at        DateTime
+  chef_quote        String?          @map("chef_quote")
+  created_at        DateTime         @default(now()) @map("created_at")
+  updated_at        DateTime         @updatedAt @map("updated_at")
   plan_schedules    plan_schedules[]
-  kitchens          kitchens         @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
+  kitchen           Kitchen          @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
 
   @@index([kitchen_id])
+  @@map("subscription_plans")
+}
+
+model plan_schedules {
+  id                String             @id @default(cuid())
+  plan_id           String             @map("plan_id")
+  day_of_week       DayOfWeek          @map("day_of_week")
+  meal_type         MealType           @map("meal_type")
+  time              String             @map("time")
+  dish_id           String?            @map("dish_id")
+  dish_name         String             @map("dish_name")
+  dish_desc         String?            @map("dish_desc")
+  image_url         String?            @map("image_url")
+  created_at        DateTime           @default(now()) @map("created_at")
+  updated_at        DateTime           @updatedAt @map("updated_at")
+  menu_item         menu_items?        @relation(fields: [dish_id], references: [id])
+  subscription_plan subscription_plans @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+
+  @@unique([plan_id, day_of_week, meal_type, dish_id])
+  @@index([plan_id])
+  @@index([dish_id])
+  @@map("plan_schedules")
 }
 
 enum Role {
