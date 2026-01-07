@@ -38,7 +38,13 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ success: true, data: menuItems });
+    // Transform menu_item_images to images for frontend consistency
+    const transformedMenuItems = menuItems.map((item: any) => ({
+      ...item,
+      images: item.menu_item_images,
+    }));
+
+    return NextResponse.json({ success: true, data: transformedMenuItems });
   } catch (error) {
     console.error("Error fetching menu items:", error);
     return NextResponse.json(
