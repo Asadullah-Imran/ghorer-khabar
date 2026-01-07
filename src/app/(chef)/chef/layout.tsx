@@ -9,7 +9,7 @@ export default function ChefLayout({
 }>) {
   return (
     <ChefGuard>
-      <ChefNavbar kitchenName="Chef's Kitchen" />
+      <ChefNavbar />
       <div className="flex">
         <ChefSidebar />
         <main className="flex-1 min-h-[calc(100vh-64px)] overflow-auto">
