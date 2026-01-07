@@ -180,9 +180,9 @@ model subscription_plans {
   carbs             String?
   fats              String?
   chef_quote        String?  @map("chef_quote")
+  weekly_schedule   Json     @default("{}")
   created_at        DateTime @default(now()) @map("created_at")
   updated_at        DateTime @updatedAt @map("updated_at")
-  weekly_schedule   Json     @default("{}")
   kitchen           Kitchen  @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
 
   @@index([kitchen_id])
