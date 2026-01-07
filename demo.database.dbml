@@ -4,7 +4,7 @@ Table users {
   email varchar [unique]
   password varchar
   phone varchar [unique]
-  role varchar
+  role enum [BUYER , SELLER , ADMIN]
   emailVerified boolean
   verificationToken varchar [unique]
   verificationExpiry datetime
