@@ -46,20 +46,20 @@ export default function MenuPage() {
       const res = await fetch("/api/chef/menu");
       const data = await res.json();
 
-      console.log("=== FETCH MENU ITEMS RESPONSE ===");
-      console.log("Status:", res.status);
-      console.log("Response data:", data);
-      if (data.data) {
-        console.log("Menu items count:", data.data.length);
-        data.data.forEach((item: any, idx: number) => {
-          console.log(`Item ${idx}:`, {
-            id: item.id,
-            name: item.name,
-            images: item.menu_item_images,
-            imagesCount: item.menu_item_images?.length || 0,
-          });
-        });
-      }
+      //console.log("=== FETCH MENU ITEMS RESPONSE ===");
+      //console.log("Status:", res.status);
+     // console.log("Response data:", data);
+      // if (data.data) {
+      //  // console.log("Menu items count:", data.data.length);
+      //   // data.data.forEach((item: any, idx: number) => {
+      //   //   // console.log(`Item ${idx}:`, {
+      //   //   //   id: item.id,
+      //   //   //   name: item.name,
+      //   //   //   images: item.menu_item_images,
+      //   //   //   imagesCount: item.menu_item_images?.length || 0,
+      //   //   // });
+      //   // });
+      // }
 
       if (data.success) {
         setMenuItems(data.data || []);

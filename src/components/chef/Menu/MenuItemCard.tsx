@@ -60,13 +60,13 @@ export default function MenuItemCard({
   const primaryImage = (item.images || [])
     .sort((a, b) => (a.order || 0) - (b.order || 0))[0]?.imageUrl;
 
-  console.log("MenuItemCard - Item:", {
-    itemId: item.id,
-    itemName: item.name,
-    allImages: item.images,
-    primaryImage,
-    totalImages: (item.images || []).length,
-  });
+  // console.log("MenuItemCard - Item:", {
+  //   itemId: item.id,
+  //   itemName: item.name,
+  //   allImages: item.images,
+  //   primaryImage,
+  //   totalImages: (item.images || []).length,
+  // });
 
   return (
     <div
