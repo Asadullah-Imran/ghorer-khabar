@@ -20,6 +20,16 @@ interface ExtendedUser extends Partial<User> {
     full_name?: string;
     avatar_url?: string;
     picture?: string;
+    kitchen?: {
+      id: string;
+      onboardingCompleted: boolean;
+      isVerified: boolean;
+    };
+  };
+  kitchen?: {
+    id: string;
+    onboardingCompleted: boolean;
+    isVerified: boolean;
   };
 }
 
@@ -42,13 +52,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
+      // Fetch fresh session data from our API (which merges DB data)
+      const response = await fetch("/api/auth/session");
+      if (response.ok) {
+        const { user } = await response.json();
+        if (user) {
+          setUser(user);
+          if (user.role) setRole(user.role);
+        }
+      } else {
+        // Fallback to Supabase client if API fails
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setUser(user);
+      }
     } catch (error) {
       console.error("Error refreshing user:", error);
-      setUser(null);
+      // Don't clear user on refresh failure to prevent random logouts
+      // only clear if we are sure the session is gone
     }
   };
 
@@ -93,7 +115,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               user_metadata: {
                 name: data.user.name,
                 full_name: data.user.name,
+                kitchen: data.user.kitchen,
               },
+              kitchen: data.user.kitchen,
             });
             setRole(data.user.role || null);
             setLoading(false);

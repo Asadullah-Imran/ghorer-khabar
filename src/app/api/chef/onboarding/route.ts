@@ -1,15 +1,39 @@
+import { verifyToken } from "@/lib/auth/jwt";
 import { prisma } from "@/lib/prisma/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { chefOnboardingSchema } from "@/lib/validation";
+import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     // Get authenticated user
     const supabase = await createClient();
-    const {
+    let {
       data: { user },
     } = await supabase.auth.getUser();
+
+    // If no Supabase session, check for custom JWT
+    if (!user) {
+      const cookieStore = await cookies();
+      const token = cookieStore.get("auth_token")?.value;
+
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded && typeof decoded !== "string" && decoded.userId) {
+          // Construct a user-like object from the JWT
+          user = {
+            id: decoded.userId as string,
+            email: decoded.email,
+            role: decoded.role,
+            app_metadata: {},
+            user_metadata: {},
+            aud: "authenticated",
+            created_at: new Date().toISOString(),
+          } as any;
+        }
+      }
+    }
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

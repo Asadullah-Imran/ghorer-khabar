@@ -12,6 +12,14 @@ export default function ChefGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading) {
+      console.log("ChefGuard Check:", {
+        userEmail: user?.email,
+        role,
+        hasKitchen: !!user?.kitchen,
+        onboardingCompleted: user?.kitchen?.onboardingCompleted,
+        pathname,
+      });
+
       if (!user) {
         // Redirect to login if not authenticated
         router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
@@ -19,6 +27,16 @@ export default function ChefGuard({ children }: { children: React.ReactNode }) {
         // Redirect buyers to feed page
         console.log("Access denied: User is not a seller");
         router.push("/feed");
+      } else if (pathname === "/chef-onboarding") {
+        // If on onboarding page but already completed, redirect to dashboard
+        if (user.kitchen?.onboardingCompleted) {
+          router.push("/chef/dashboard");
+        }
+      } else {
+        // If accessing OTHER chef pages but NOT completed onboarding, redirect to onboarding
+        if (!user.kitchen?.onboardingCompleted) {
+          router.push("/chef-onboarding");
+        }
       }
     }
   }, [user, loading, role, router, pathname]);

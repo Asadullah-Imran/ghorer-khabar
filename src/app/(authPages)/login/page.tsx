@@ -63,8 +63,13 @@ function LoginForm() {
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         // Force a hard reload to ensure cookie is picked up
-        console.log("Redirecting to /feed...");
-        window.location.href = "/feed";
+        if (data.user?.role === "SELLER") {
+          console.log("Redirecting to /chef/dashboard...");
+          window.location.href = "/chef/dashboard";
+        } else {
+          console.log("Redirecting to /feed...");
+          window.location.href = "/feed";
+        }
       } else {
         const error = await res.json();
         console.error("Login failed:", error);
