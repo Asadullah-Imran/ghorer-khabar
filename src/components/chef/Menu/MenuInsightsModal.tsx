@@ -26,6 +26,8 @@ interface MenuItemReview {
   comment: string;
   customerName: string;
   date: string;
+  isAppealedByChef?: boolean;
+  appealReason?: string;
 }
 
 interface MenuInsightsModalProps {
@@ -207,7 +209,7 @@ export default function MenuInsightsModal({
                   </div>
 
                   {/* Review Text */}
-                  <p className="text-sm text-gray-700 mb-2">{review.text}</p>
+                  <p className="text-sm text-gray-700 mb-2">{review.comment}</p>
 
                   {/* Appeal Status Badge */}
                   {appealedReviews.has(review.id) && (

@@ -50,9 +50,9 @@ export async function POST(req: NextRequest) {
     console.log("Creating menu item with name:", name);
 
     // Create menu item with test data
-    const menuItem = await prisma.menuItem.create({
+    const menuItem = await prisma.menu_items.create({
       data: {
-        chefId: testChefId,
+        chef_id: testChefId,
         name,
         description,
         category,
@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
         calories,
         spiciness,
         isVegetarian,
+        updatedAt: new Date(),
         ingredients: {
           createMany: {
             data: ingredients.map((ing: any) => ({
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
             })),
           },
         },
-        images: {
+        menu_item_images: {
           createMany: {
             data: [
               {
@@ -92,7 +93,7 @@ export async function POST(req: NextRequest) {
             cost: true,
           },
         },
-        images: {
+        menu_item_images: {
           orderBy: { order: 'asc' },
           select: {
             id: true,
@@ -130,8 +131,8 @@ export async function GET(req: NextRequest) {
   try {
     const testChefId = "59afae3f-9421-4c52-b287-f86147d1303d";
 
-    const menuItems = await prisma.menuItem.findMany({
-      where: { chefId: testChefId },
+    const menuItems = await prisma.menu_items.findMany({
+      where: { chef_id: testChefId },
       include: {
         ingredients: {
           select: {
@@ -142,7 +143,7 @@ export async function GET(req: NextRequest) {
             cost: true,
           },
         },
-        images: {
+        menu_item_images: {
           orderBy: { order: 'asc' },
           select: {
             id: true,
@@ -187,8 +188,8 @@ export async function DELETE(req: NextRequest) {
     const testChefId = "test-chef-id-12345";
 
     // Verify it belongs to test chef
-    const menuItem = await prisma.menuItem.findFirst({
-      where: { id, chefId: testChefId },
+    const menuItem = await prisma.menu_items.findFirst({
+      where: { id, chef_id: testChefId },
     });
 
     if (!menuItem) {
@@ -199,7 +200,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Delete the menu item
-    await prisma.menuItem.delete({
+    await prisma.menu_items.delete({
       where: { id },
     });
 
@@ -235,8 +236,8 @@ export async function PUT(req: NextRequest) {
     const testChefId = "test-chef-id-12345";
 
     // Verify it belongs to test chef
-    const menuItem = await prisma.menuItem.findFirst({
-      where: { id, chefId: testChefId },
+    const menuItem = await prisma.menu_items.findFirst({
+      where: { id, chef_id: testChefId },
     });
 
     if (!menuItem) {
@@ -250,7 +251,7 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
 
     // Update the menu item
-    const updatedItem = await prisma.menuItem.update({
+    const updatedItem = await prisma.menu_items.update({
       where: { id },
       data: {
         ...(body.name && { name: body.name }),
@@ -265,7 +266,7 @@ export async function PUT(req: NextRequest) {
       },
       include: {
         ingredients: true,
-        images: { orderBy: { order: 'asc' } },
+        menu_item_images: { orderBy: { order: 'asc' } },
       },
     });
 

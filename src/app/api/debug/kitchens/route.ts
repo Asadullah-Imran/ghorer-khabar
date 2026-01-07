@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma/prisma";
 
 export async function GET() {
   try {
-    const kitchens = await prisma.kitchens.findMany({
+    const kitchens = await prisma.kitchen.findMany({
       take: 10,
       select: {
         id: true,

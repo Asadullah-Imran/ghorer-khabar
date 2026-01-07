@@ -6,7 +6,7 @@ export async function POST() {
     const TEMP_KITCHEN_ID = process.env.TEMP_KITCHEN_ID || "temp-kitchen-1";
 
     // Get kitchen info
-    const kitchen = await prisma.kitchens.findUnique({
+    const kitchen = await prisma.kitchen.findUnique({
       where: { id: TEMP_KITCHEN_ID },
       select: { sellerId: true },
     });

@@ -21,7 +21,7 @@ export async function POST() {
     }
 
     // Create a test kitchen
-    const kitchen = await prisma.kitchens.create({
+    const kitchen = await prisma.kitchen.create({
       data: {
         sellerId: user.id,
         name: "Test Kitchen",

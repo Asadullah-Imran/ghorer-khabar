@@ -28,16 +28,16 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const existingItem = await prisma.menuItem.findUnique({
+    const existingItem = await prisma.menu_items.findUnique({
       where: { id },
-      include: { images: true },
+      include: { menu_item_images: true },
     });
 
     if (!existingItem) {
       return NextResponse.json({ error: "Menu item not found" }, { status: 404 });
     }
 
-    if (existingItem.chefId !== user.id) {
+    if (existingItem.chef_id !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -49,14 +49,14 @@ export async function PUT(
       updateData = await req.json();
     }
 
-    const updatedItem = await prisma.menuItem.update({
+    const updatedItem = await prisma.menu_items.update({
       where: { id },
       data: updateData,
       include: {
         ingredients: {
           select: { id: true, name: true, quantity: true, unit: true, cost: true },
         },
-        images: {
+        menu_item_images: {
           orderBy: { order: "asc" },
           select: { id: true, imageUrl: true, order: true },
         },
@@ -102,26 +102,26 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const menuItem = await prisma.menuItem.findUnique({
+    const menuItem = await prisma.menu_items.findUnique({
       where: { id },
-      include: { images: true },
+      include: { menu_item_images: true },
     });
 
     if (!menuItem) {
       return NextResponse.json({ error: "Menu item not found" }, { status: 404 });
     }
 
-    if (menuItem.chefId !== user.id) {
+    if (menuItem.chef_id !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Delete images from Supabase
-    for (const image of menuItem.images) {
+    for (const image of menuItem.menu_item_images) {
       await imageService.deleteImage(image.imageUrl);
     }
 
     // Delete menu item (cascades to ingredients and images DB records)
-    await prisma.menuItem.delete({ where: { id } });
+    await prisma.menu_items.delete({ where: { id } });
 
     return NextResponse.json({
       success: true,
