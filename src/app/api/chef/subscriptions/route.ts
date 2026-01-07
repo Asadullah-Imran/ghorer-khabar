@@ -190,7 +190,7 @@ export async function POST(req: NextRequest) {
 
     const mealsPerDay = calculateMealsPerDay(validated.schedule);
       // Get kitchen to validate chef_id for dishes
-      const kitchen = await prisma.kitchen.findUnique({
+      const kitchen = await prisma.kitchens.findUnique({
         where: { id: TEMP_KITCHEN_ID },
         select: { sellerId: true },
       });

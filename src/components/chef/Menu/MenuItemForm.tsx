@@ -91,6 +91,11 @@ export default function MenuItemForm({
     e.preventDefault();
     setErrors([]);
 
+    // console.log("\n=== FORM: handleSubmit STARTED ===");
+    // console.log("Current form data:", formData);
+    // console.log("Current images:", images);
+    // console.log("Current ingredients:", ingredients);
+
     // Validation
     const newErrors: string[] = [];
     if (!formData.name.trim()) newErrors.push("Dish name is required");
@@ -98,6 +103,7 @@ export default function MenuItemForm({
     if (formData.price <= 0) newErrors.push("Price must be greater than 0");
 
     if (newErrors.length > 0) {
+     // console.log("Validation errors:", newErrors);
       setErrors(newErrors);
       return;
     }
@@ -109,6 +115,8 @@ export default function MenuItemForm({
       ingredients: ingredients,
     };
 
+  //  console.log("Menu item to save:", menuItem);
+   // console.log("=== FORM: handleSubmit calling onSave ===");
     onSave(menuItem);
   };
 

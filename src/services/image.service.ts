@@ -1,13 +1,17 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export interface UploadImageResult {
   success: boolean;
   url?: string;
+  path?: string;
   error?: string;
 }
 
 export class ImageService {
-  private bucketName = "menu-image";
+  private defaultBucket = "menu-image";
+  private allowedBuckets = ["menu-image", "nid-documents", "kitchen-images", "avatars"];
+  private allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg", "image/gif"];
+  private defaultMaxSize = 10 * 1024 * 1024; // 10MB
 
   /**
    * Upload image to Supabase Storage
@@ -15,25 +19,41 @@ export class ImageService {
    * @param folder - Folder path (e.g., 'chef-menu', 'dishes')
    * @returns Upload result with public URL
    */
-  async uploadImage(file: File, folder: string = "chef-menu"): Promise<UploadImageResult> {
+  async uploadImage(
+    file: File,
+    folder: string = "chef-menu",
+    bucket: string = this.defaultBucket,
+    maxSize: number = this.defaultMaxSize,
+    allowedTypes: string[] = this.allowedTypes
+  ): Promise<UploadImageResult> {
     try {
+   //   console.log(`\n=== ImageService: uploadImage STARTED ===`);
+     // console.log(`File details:`, { name: file.name, size: file.size, type: file.type, folder, bucket });
+
       if (!file) {
+    //    console.log("No file provided");
         return { success: false, error: "No file provided" };
       }
 
+      if (!this.allowedBuckets.includes(bucket)) {
+     //   console.log("Invalid bucket:", bucket);
+        return { success: false, error: "Invalid bucket" };
+      }
+
       // Validate file type
-      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
       if (!allowedTypes.includes(file.type)) {
+      //  console.log("Invalid file type:", file.type);
         return { success: false, error: "Invalid file type. Only JPEG, PNG, WebP, and GIF allowed." };
       }
 
       // Validate file size (max 5MB)
-      const maxSize = 5 * 1024 * 1024; // 5MB
       if (file.size > maxSize) {
-        return { success: false, error: "File size exceeds 5MB limit" };
+      //  console.log("File size exceeds limit:", file.size, "bytes");
+        return { success: false, error: "File size exceeds limit" };
       }
 
-      const supabase = await createClient();
+    //  console.log("File validation passed");
+      const supabase = createAdminClient();
 
       // Generate unique filename
       const timestamp = Date.now();
@@ -42,11 +62,15 @@ export class ImageService {
       const fileName = `${timestamp}-${random}.${fileExtension}`;
       const filePath = `${folder}/${fileName}`;
 
+     // console.log("Generated file path:", filePath);
+
       // Upload to Supabase
+     // console.log("Starting Supabase upload...");
       const { data, error } = await supabase.storage
-        .from(this.bucketName)
+        .from(bucket)
         .upload(filePath, file, {
           cacheControl: "3600",
+          contentType: file.type,
           upsert: false,
         });
 
@@ -55,14 +79,20 @@ export class ImageService {
         return { success: false, error: error.message };
       }
 
+      
+
       // Get public URL
       const { data: publicData } = supabase.storage
-        .from(this.bucketName)
+        .from(bucket)
         .getPublicUrl(filePath);
+
+      // console.log("Public URL generated:", publicData.publicUrl);
+      // console.log("=== ImageService: uploadImage COMPLETED ===\n");
 
       return {
         success: true,
         url: publicData.publicUrl,
+        path: filePath,
       };
     } catch (error) {
       console.error("Image upload error:", error);
@@ -90,20 +120,24 @@ export class ImageService {
    */
   async deleteImage(imageUrl: string): Promise<{ success: boolean; error?: string }> {
     try {
-      const supabase = await createClient();
+      const supabase = createAdminClient();
 
-      // Extract file path from public URL
+      // Extract bucket and file path from public URL
       // Format: https://[project].supabase.co/storage/v1/object/public/[bucket]/[path]
-      const urlParts = imageUrl.split("/");
-      const bucketIndex = urlParts.indexOf(this.bucketName);
-      if (bucketIndex === -1) {
+      const match = imageUrl.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/);
+      if (!match) {
         return { success: false, error: "Invalid image URL" };
       }
 
-      const filePath = urlParts.slice(bucketIndex + 1).join("/");
+      const bucket = match[1];
+      const filePath = match[2];
+
+      if (!this.allowedBuckets.includes(bucket)) {
+        return { success: false, error: "Invalid bucket" };
+      }
 
       const { error } = await supabase.storage
-        .from(this.bucketName)
+        .from(bucket)
         .remove([filePath]);
 
       if (error) {

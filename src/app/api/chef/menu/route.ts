@@ -24,13 +24,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const menuItems = await prisma.menuItem.findMany({
-      where: { chefId: user.id },
+    const menuItems = await prisma.menu_items.findMany({
+      where: { chef_id: user.id },
       include: {
         ingredients: {
           select: { id: true, name: true, quantity: true, unit: true, cost: true },
         },
-        images: {
+        menu_item_images: {
           orderBy: { order: "asc" },
           select: { id: true, imageUrl: true, order: true },
         },
@@ -54,21 +54,26 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
+    console.log("\n=== BACKEND: POST /api/chef/menu STARTED ===");
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
+      console.log("Auth error - User not authenticated");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    console.log("Authenticated user ID:", user.id);
     const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
     if (!dbUser || dbUser.role !== "SELLER") {
+      console.log("User is not a SELLER. Role:", dbUser?.role);
       return NextResponse.json(
         { error: "Only sellers can access chef menu" },
         { status: 403 }
       );
     }
 
+    console.log("User role verified: SELLER");
     const formData = await req.formData();
     const imageFiles = formData.getAll("images") as File[];
     const name = formData.get("name") as string;
@@ -82,7 +87,22 @@ export async function POST(req: NextRequest) {
     const ingredientsJson = formData.get("ingredients") as string;
     const ingredients = ingredientsJson ? JSON.parse(ingredientsJson) : [];
 
+    console.log("FormData received:", {
+      name,
+      description,
+      category,
+      price,
+      prepTime,
+      calories,
+      spiciness,
+      isVegetarian,
+      imageFilesCount: imageFiles.length,
+      ingredientsCount: ingredients.length,
+    });
+    console.log("Ingredients from form:", ingredients);
+
     if (!name || !category || !price) {
+      console.log("Validation failed - missing required fields");
       return NextResponse.json(
         { error: "Name, category, and price are required" },
         { status: 400 }
@@ -90,21 +110,32 @@ export async function POST(req: NextRequest) {
     }
 
     // Upload images to Supabase
+    console.log("Starting image upload...");
     const imageUrls: { url: string; order: number }[] = [];
     for (let i = 0; i < imageFiles.length; i++) {
       const file = imageFiles[i];
-      if (!file || file.size === 0) continue;
+      if (!file || file.size === 0) {
+        console.log(`Skipping image ${i} - empty file`);
+        continue;
+      }
 
+      console.log(`Uploading image ${i}:`, { name: file.name, size: file.size, type: file.type });
       const uploadResult = await imageService.uploadImage(file, "chef-menu");
       if (uploadResult.success && uploadResult.url) {
+        console.log(`Image ${i} uploaded successfully:`, uploadResult.url);
         imageUrls.push({ url: uploadResult.url, order: i });
+      } else {
+        console.error(`Image ${i} upload failed:`, uploadResult.error);
       }
     }
 
+    console.log("Total images uploaded:", imageUrls.length);
+
     // Create menu item
-    const menuItem = await prisma.menuItem.create({
+    console.log("Creating menu item in database...");
+    const menuItem = await prisma.menu_items.create({
       data: {
-        chefId: user.id,
+        chef_id: user.id,
         name,
         description,
         category,
@@ -113,6 +144,7 @@ export async function POST(req: NextRequest) {
         calories,
         spiciness,
         isVegetarian,
+        updatedAt: new Date(),
         ingredients: {
           createMany: {
             data: ingredients.map((ing: any) => ({
@@ -123,7 +155,7 @@ export async function POST(req: NextRequest) {
             })),
           },
         },
-        images: {
+        menu_item_images: {
           createMany: {
             data: imageUrls.map((img) => ({
               imageUrl: img.url,
@@ -136,19 +168,28 @@ export async function POST(req: NextRequest) {
         ingredients: {
           select: { id: true, name: true, quantity: true, unit: true, cost: true },
         },
-        images: {
+        menu_item_images: {
           orderBy: { order: "asc" },
           select: { id: true, imageUrl: true, order: true },
         },
       },
     });
 
+    console.log("Menu item created successfully:", {
+      id: menuItem.id,
+      name: menuItem.name,
+      ingredientsCount: menuItem.ingredients.length,
+      imagesCount: menuItem.menu_item_images.length,
+    });
+    console.log("Full menu item response:", menuItem);
+    console.log("=== BACKEND: POST /api/chef/menu COMPLETED ===\n");
+
     return NextResponse.json(
       { success: true, message: "Menu item created successfully", data: menuItem },
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error creating menu item:", error);
+    console.error("=== BACKEND: POST Error creating menu item ===", error);
     return NextResponse.json(
       { error: "Failed to create menu item" },
       { status: 500 }

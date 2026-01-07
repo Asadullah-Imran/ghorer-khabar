@@ -71,6 +71,21 @@ export default function MenuPage() {
       setSaving(true);
       setError(null);
 
+      console.log("\n=== FRONTEND: handleSave STARTED ===");
+      console.log("Mode:", editingItem?.id ? "EDIT" : "CREATE");
+      console.log("Form Item Data:", {
+        name: formItem.name,
+        category: formItem.category,
+        price: formItem.price,
+        description: formItem.description,
+        prepTime: formItem.prepTime,
+        calories: formItem.calories,
+        spiciness: formItem.spiciness,
+        isVegetarian: formItem.isVegetarian,
+        ingredientsCount: formItem.ingredients?.length || 0,
+        imagesCount: formItem.images?.length || 0,
+      });
+
       const formData = new FormData();
       formData.append("name", formItem.name);
       formData.append("description", formItem.description || "");
@@ -81,44 +96,65 @@ export default function MenuPage() {
       formData.append("spiciness", formItem.spiciness || "Medium");
       formData.append("isVegetarian", (formItem.isVegetarian || false).toString());
       formData.append("ingredients", JSON.stringify(formItem.ingredients || []));
+      console.log("Ingredients being sent:", formItem.ingredients || []);
 
-      // Handle images
+      // Handle images (prefer the File object from the form; fallback to preview blob)
+      let newImagesCount = 0;
       if (formItem.images) {
-        for (const img of formItem.images) {
+        for (const img of formItem.images as any[]) {
           if (img.id === undefined) {
-            // New image file
-            const blob = await fetch(img.imageUrl!).then((res) => res.blob());
-            const file = new File([blob], `image-${Date.now()}.png`, {
-              type: blob.type,
-            });
-            formData.append("images", file);
+            let fileToUpload: File | null = img.file ?? null;
+
+            // Fallback: fetch from preview URL if the File is missing
+            if (!fileToUpload && img.preview) {
+              console.log("Processing new image from preview:", img.preview);
+              const blob = await fetch(img.preview).then((res) => res.blob());
+              fileToUpload = new File([blob], `image-${Date.now()}.png`, {
+                type: blob.type || "image/png",
+              });
+            }
+
+            if (fileToUpload) {
+              formData.append("images", fileToUpload);
+              newImagesCount++;
+            } else {
+              console.warn("Skipping image without file/preview", img);
+            }
           }
         }
       }
+      console.log("Total new images to upload:", newImagesCount);
 
       const url = editingItem?.id ? `/api/chef/menu/${editingItem.id}` : "/api/chef/menu";
       const method = editingItem ? "PUT" : "POST";
+      console.log("API Endpoint:", method, url);
+      console.log("Sending FormData to backend...");
 
       const res = await fetch(url, {
         method,
         body: formData,
       });
 
+      console.log("Response status:", res.status);
       const data = await res.json();
+      console.log("Response data:", data);
 
       if (data.success) {
+        console.log("Menu item saved successfully!", data.data);
         await fetchMenuItems();
         setIsFormOpen(false);
         setEditingItem(undefined);
       } else {
+        console.error("Backend returned error:", data.error);
         setError(data.error || "Failed to save menu item");
       }
     } catch (err) {
+      console.error("Error in handleSave:", err);
       setError("Failed to save menu item");
       console.error(err);
     } finally {
       setSaving(false);
-      console.log("=== FRONTEND: handleSave ended ===");
+      console.log("=== FRONTEND: handleSave ENDED ===");
     }
   };
 

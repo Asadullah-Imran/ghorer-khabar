@@ -27,7 +27,7 @@ export async function GET(
     const { id } = await params;
 
     // Fetch menu item with ingredients and images
-    const menuItem = await prisma.menuItem.findUnique({
+    const menuItem = await prisma.menu_items.findUnique({
       where: { id },
       include: {
         ingredients: {
@@ -39,7 +39,7 @@ export async function GET(
             cost: true,
           },
         },
-        images: {
+        menu_item_images: {
           orderBy: { order: 'asc' },
           select: {
             id: true,
@@ -58,7 +58,7 @@ export async function GET(
     }
 
     // Verify ownership
-    if (menuItem.chefId !== user.id) {
+    if (menuItem.chef_id !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -84,7 +84,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log("\n=== BACKEND: PUT /api/chef/menu/[id] started ===");
+    console.log("\n=== BACKEND: PUT /api/chef/menu/[id] STARTED ===");
     const supabase = await createClient();
 
     // Get authenticated user
@@ -94,11 +94,11 @@ export async function PUT(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.log("BACKEND: Auth error - user not authenticated");
+      console.log("Auth error - user not authenticated");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("BACKEND: Authenticated user ID:", user.id);
+    console.log("Authenticated user ID:", user.id);
 
     // Check if user exists in database and has SELLER role
     const dbUser = await prisma.user.findUnique({
@@ -106,48 +106,56 @@ export async function PUT(
     });
 
     if (!dbUser) {
-      console.log("BACKEND: User not found in database");
+      console.log("User not found in database");
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     if (dbUser.role !== "SELLER") {
-      console.log("BACKEND: User role is", dbUser.role, "- only SELLER can access chef endpoints");
+      console.log("User role is", dbUser.role, "- only SELLER can access chef endpoints");
       return NextResponse.json(
         { error: "Only sellers can access chef menu" },
         { status: 403 }
       );
     }
 
-    console.log("BACKEND: User is SELLER - authorized");
+    console.log("User is SELLER - authorized");
 
     const { id } = await params;
+    console.log("Menu item ID:", id);
 
     // Check if menu item exists and belongs to user
-    const existingItem = await prisma.menuItem.findUnique({
+    const existingItem = await prisma.menu_items.findUnique({
       where: { id },
-      include: { images: true },
+      include: { menu_item_images: true },
     });
 
     if (!existingItem) {
+      console.log("Menu item not found with ID:", id);
       return NextResponse.json(
         { error: "Menu item not found" },
         { status: 404 }
       );
     }
 
-    if (existingItem.chefId !== user.id) {
+    if (existingItem.chef_id !== user.id) {
+      console.log("Menu item does not belong to user");
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Parse form data or JSON
     const contentType = req.headers.get("content-type") || "";
+    console.log("Content-Type:", contentType);
+    
     let updateData: any = {};
     let imageFiles: File[] = [];
     let imagesToDelete: string[] = [];
 
     if (contentType.includes("application/json")) {
+      console.log("Parsing JSON body");
       updateData = await req.json();
+      console.log("Update data from JSON:", updateData);
     } else if (contentType.includes("multipart/form-data")) {
+      console.log("Parsing FormData body");
       const formData = await req.formData();
       imageFiles = formData.getAll("images") as File[];
       imagesToDelete = formData.getAll("deleteImages") as any;
@@ -167,20 +175,26 @@ export async function PUT(
         spiciness: formData.get("spiciness"),
         isVegetarian: formData.get("isVegetarian") === "true",
       };
+      console.log("Update data from FormData:", updateData);
+      console.log("Images to upload:", imageFiles.length);
+      console.log("Images to delete:", imagesToDelete);
     }
 
     // Remove undefined values
     Object.keys(updateData).forEach(
       (key) => updateData[key] === undefined && delete updateData[key]
     );
+    console.log("Final update data (after removing undefined):", updateData);
 
     // Delete old images if requested
     if (imagesToDelete.length > 0) {
+      console.log("Deleting", imagesToDelete.length, "images");
       for (const imageId of imagesToDelete) {
-        const image = existingItem.images.find((img) => img.id === imageId);
+        const image = existingItem.menu_item_images.find((img) => img.id === imageId);
         if (image) {
+          console.log("Deleting image:", imageId, image.imageUrl);
           await imageService.deleteImage(image.imageUrl);
-          await prisma.menuItemImage.delete({
+          await prisma.menu_item_images.delete({
             where: { id: imageId },
           });
         }
@@ -189,23 +203,32 @@ export async function PUT(
 
     // Upload new images if provided
     if (imageFiles.length > 0) {
-      const currentImageCount = await prisma.menuItemImage.count({
-        where: { menuItemId: id },
+      console.log("Uploading", imageFiles.length, "new images");
+      const currentImageCount = await prisma.menu_item_images.count({
+        where: { menu_item_id: id },
       });
+      console.log("Current image count:", currentImageCount);
 
       for (let i = 0; i < imageFiles.length; i++) {
         const file = imageFiles[i];
-        if (!file || file.size === 0) continue;
+        if (!file || file.size === 0) {
+          console.log(`Skipping image ${i} - empty file`);
+          continue;
+        }
 
+        console.log(`Uploading image ${i}:`, { name: file.name, size: file.size });
         const uploadResult = await imageService.uploadImage(file, "chef-menu");
         if (uploadResult.success && uploadResult.url) {
-          await prisma.menuItemImage.create({
+          console.log(`Image ${i} uploaded:`, uploadResult.url);
+          await prisma.menu_item_images.create({
             data: {
-              menuItemId: id,
+              menu_item_id: id,
               imageUrl: uploadResult.url,
               order: currentImageCount + i,
             },
           });
+        } else {
+          console.error(`Image ${i} upload failed:`, uploadResult.error);
         }
       }
     }
@@ -213,15 +236,18 @@ export async function PUT(
     // Handle ingredients if provided
     let ingredientData: any = {};
     if (updateData.ingredients) {
+      console.log("Updating ingredients");
       const ingredients = updateData.ingredients;
       delete updateData.ingredients;
 
       // Delete existing ingredients
-      await prisma.ingredient.deleteMany({
-        where: { menuItemId: id },
+      console.log("Deleting existing ingredients");
+      await prisma.ingredients.deleteMany({
+        where: { menu_item_id: id },
       });
 
       // Create new ingredients
+      console.log("Creating new ingredients:", ingredients);
       ingredientData = {
         ingredients: {
           createMany: {
@@ -237,7 +263,8 @@ export async function PUT(
     }
 
     // Update menu item
-    const updatedItem = await prisma.menuItem.update({
+    console.log("Updating menu item in database");
+    const updatedItem = await prisma.menu_items.update({
       where: { id },
       data: {
         ...updateData,
@@ -253,7 +280,7 @@ export async function PUT(
             cost: true,
           },
         },
-        images: {
+        menu_item_images: {
           orderBy: { order: 'asc' },
           select: {
             id: true,
@@ -264,13 +291,21 @@ export async function PUT(
       },
     });
 
+    console.log("Menu item updated successfully:", {
+      id: updatedItem.id,
+      name: updatedItem.name,
+      ingredientsCount: updatedItem.ingredients.length,
+      imagesCount: updatedItem.menu_item_images.length,
+    });
+    console.log("=== BACKEND: PUT /api/chef/menu/[id] COMPLETED ===\n");
+
     return NextResponse.json({
       success: true,
       message: "Menu item updated successfully",
       data: updatedItem,
     });
   } catch (error) {
-    console.error("Error updating menu item:", error);
+    console.error("=== BACKEND: PUT Error updating menu item ===", error);
     return NextResponse.json(
       { error: "Failed to update menu item" },
       { status: 500 }
@@ -287,7 +322,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log("\n=== BACKEND: DELETE /api/chef/menu/[id] started ===");
+    console.log("\n=== BACKEND: DELETE /api/chef/menu/[id] STARTED ===");
     const supabase = await createClient();
 
     // Get authenticated user
@@ -297,11 +332,11 @@ export async function DELETE(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      console.log("BACKEND: Auth error - user not authenticated");
+      console.log("Auth error - user not authenticated");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("BACKEND: Authenticated user ID:", user.id);
+    console.log("Authenticated user ID:", user.id);
 
     // Check if user exists in database and has SELLER role
     const dbUser = await prisma.user.findUnique({
@@ -309,55 +344,65 @@ export async function DELETE(
     });
 
     if (!dbUser) {
-      console.log("BACKEND: User not found in database");
+      console.log("User not found in database");
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     if (dbUser.role !== "SELLER") {
-      console.log("BACKEND: User role is", dbUser.role, "- only SELLER can access chef endpoints");
+      console.log("User role is", dbUser.role, "- only SELLER can access chef endpoints");
       return NextResponse.json(
         { error: "Only sellers can access chef menu" },
         { status: 403 }
       );
     }
 
-    console.log("BACKEND: User is SELLER - authorized");
+    console.log("User is SELLER - authorized");
 
     const { id } = await params;
+    console.log("Deleting menu item ID:", id);
 
     // Check if menu item exists and belongs to user
-    const menuItem = await prisma.menuItem.findUnique({
+    const menuItem = await prisma.menu_items.findUnique({
       where: { id },
-      include: { images: true },
+      include: { menu_item_images: true },
     });
 
     if (!menuItem) {
+      console.log("Menu item not found with ID:", id);
       return NextResponse.json(
         { error: "Menu item not found" },
         { status: 404 }
       );
     }
 
-    if (menuItem.chefId !== user.id) {
+    if (menuItem.chef_id !== user.id) {
+      console.log("Menu item does not belong to user");
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    console.log("Menu item found. Images to delete:", menuItem.menu_item_images.length);
+
     // Delete all images from Supabase
-    for (const image of menuItem.images) {
+    for (const image of menuItem.menu_item_images) {
+      console.log("Deleting image from Supabase:", image.imageUrl);
       await imageService.deleteImage(image.imageUrl);
     }
 
     // Delete menu item (cascades to ingredients and images)
-    await prisma.menuItem.delete({
+    console.log("Deleting menu item from database");
+    await prisma.menu_items.delete({
       where: { id },
     });
+
+    console.log("Menu item deleted successfully");
+    console.log("=== BACKEND: DELETE /api/chef/menu/[id] COMPLETED ===\n");
 
     return NextResponse.json({
       success: true,
       message: "Menu item deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting menu item:", error);
+    console.error("=== BACKEND: DELETE Error deleting menu item ===", error);
     return NextResponse.json(
       { error: "Failed to delete menu item" },
       { status: 500 }
