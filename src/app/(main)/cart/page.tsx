@@ -1,5 +1,4 @@
 import CartPageContent from "@/components/cart/CartPageContent";
-import { INITIAL_CART_DATA } from "@/lib/dummy-data/cart";
 
 export default function CartPage() {
   return (
@@ -16,7 +15,7 @@ export default function CartPage() {
         </div>
 
         {/* Interactive Content */}
-        <CartPageContent initialData={INITIAL_CART_DATA} />
+        <CartPageContent />
       </div>
     </main>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { useCart } from "@/components/cart/CartProvider";
+import LocationPicker from "@/components/profile/address/LocationPicker";
 import {
   ArrowRight,
   BadgeCheck,
@@ -7,38 +9,115 @@ import {
   Clock,
   Info,
   Loader2,
+  MapPin,
   ShieldCheck,
   Truck,
-  UserCheck,
+  UserCheck
 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 export default function CheckoutPageContent({ userData }: { userData: any }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const kitchenId = searchParams.get("kitchenId");
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { items: allItems, clearCart } = useCart();
+  
+  // Filter items for specific kitchen
+  const items = useMemo(() => {
+      if (!kitchenId) return [];
+      return allItems.filter(item => item.kitchenId === kitchenId);
+  }, [allItems, kitchenId]);
+
+  useEffect(() => {
+      if (!kitchenId || items.length === 0) {
+          // Redirect to cart if no kitchen selected or no items for that kitchen
+          // toast.error("Invalid checkout items");
+          router.push("/cart");
+      }
+  }, [kitchenId, items, router]);
+
+  const [showMap, setShowMap] = useState(false);
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [loadingAddresses, setLoadingAddresses] = useState(true);
+
+  // Fetch addresses on mount
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      try {
+        const res = await fetch("/api/addresses");
+        if (res.ok) {
+          const data = await res.json();
+          setAddresses(data.addresses);
+          // Auto-select default address if exists
+          const defaultAddr = data.addresses.find((a: any) => a.isDefault);
+          if (defaultAddr) {
+             setFormData(prev => ({ ...prev, address: defaultAddr.address }));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch addresses:", error);
+      } finally {
+        setLoadingAddresses(false);
+      }
+    };
+    fetchAddresses();
+  }, []);
+  
+  // Calculate totals
+  const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const delivery = 60; // Fixed for now
+  const total = subtotal + delivery;
 
   // Form State
   const [formData, setFormData] = useState({
     name: userData.fullName,
     phone: userData.phone,
-    address: userData.savedAddress,
+    address: userData.savedAddress || "",
     note: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLocationSelect = (lat: number, lng: number, address?: string) => {
+    if (address) {
+        setFormData(prev => ({ ...prev, address }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      alert(
-        "Order Placed Successfully! (This would redirect to a Success Page)"
-      );
-      setIsSubmitting(false);
-      router.push("/orders/GK-8921"); // Redirect back to feed for now
-    }, 2000);
+    try {
+        const res = await fetch("/api/orders", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                items: items.map(i => ({ id: i.id, quantity: i.quantity })),
+                notes: formData.note,
+                deliveryDetails: {
+                    name: formData.name,
+                    phone: formData.phone,
+                    address: formData.address
+                }
+            })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            throw new Error(data.error || "Failed to place order");
+        }
+
+        clearCart();
+        router.push(`/orders/${data.orderId}`);
+    } catch (error: any) {
+        alert(error.message);
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   return (
@@ -103,22 +182,63 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
               </label>
             </div>
 
-            {/* Address */}
-            <label className="flex flex-col flex-1">
-              <span className="text-gray-900 text-sm font-semibold pb-2">
-                Detailed Address
-              </span>
-              <input
-                required
-                type="text"
-                className="w-full rounded-lg border border-gray-300 bg-white h-12 px-4 text-base focus:border-teal-600 focus:ring-1 focus:ring-teal-600 outline-none transition-all placeholder:text-gray-400"
-                placeholder="House No, Road No, Area..."
-                value={formData.address}
-                onChange={(e) =>
-                  setFormData({ ...formData, address: e.target.value })
-                }
-              />
-            </label>
+            {/* Address Selection */}
+            <div className="flex flex-col gap-3">
+               <span className="text-gray-900 text-sm font-semibold">
+                  Delivery Address
+               </span>
+               
+               {/* Saved Addresses List */}
+                {!loadingAddresses && addresses.length > 0 && (
+                    <div className="grid grid-cols-1 gap-3 mb-2">
+                        {addresses.map((addr) => (
+                            <div 
+                                key={addr.id}
+                                onClick={() => setFormData({ ...formData, address: addr.address })}
+                                className={`p-3 rounded-lg border-2 cursor-pointer flex items-start gap-3 transition-colors ${
+                                    formData.address === addr.address 
+                                    ? "border-teal-600 bg-teal-50/50" 
+                                    : "border-gray-200 hover:border-gray-300"
+                                }`}
+                            >
+                                <div className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                                     formData.address === addr.address ? "border-teal-600" : "border-gray-300"
+                                }`}>
+                                    {formData.address === addr.address && <div className="w-2 h-2 rounded-full bg-teal-600" />}
+                                </div>
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-900">{addr.label}</p>
+                                    <p className="text-xs text-gray-500 line-clamp-2">{addr.address}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+               {/* Manual Input & Map Trigger */}
+               <div className="flex gap-2">
+                 <div className="flex-1">
+                   <input
+                     required
+                     type="text"
+                     className="w-full rounded-lg border border-gray-300 bg-white h-12 px-4 text-base focus:border-teal-600 focus:ring-1 focus:ring-teal-600 outline-none transition-all placeholder:text-gray-400"
+                     placeholder="House No, Road No, Area..."
+                     value={formData.address}
+                     onChange={(e) =>
+                       setFormData({ ...formData, address: e.target.value })
+                     }
+                   />
+                 </div>
+                 <button
+                    type="button"
+                    onClick={() => setShowMap(true)}
+                    className="h-12 w-12 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50 hover:border-teal-600 text-gray-600 hover:text-teal-600 transition-all"
+                    title="Pick from Map"
+                 >
+                    <MapPin size={20} />
+                 </button>
+               </div>
+            </div>
 
             {/* Note */}
             <label className="flex flex-col flex-1">
@@ -165,11 +285,13 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
 
           {/* Items List */}
           <div className="flex flex-col gap-4 mb-6">
-            {userData.cartSummary.items.map((item: any) => (
+            {items.map((item) => (
               <div key={item.id} className="flex gap-3 items-start">
                 <div className="relative w-16 h-16 rounded-lg bg-gray-100 overflow-hidden shrink-0">
                   <Image
-                    src={item.image}
+                    src={
+                      item.image || "/placeholder-dish.jpg"
+                    }
                     alt={item.name}
                     fill
                     className="object-cover"
@@ -187,7 +309,7 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
                   <p className="text-xs text-teal-700 font-medium mb-1">
                     by Chef Rahima
                   </p>
-                  <p className="text-xs text-gray-500">Qty: {item.qty}</p>
+                  <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
                 </div>
               </div>
             ))}
@@ -232,16 +354,16 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
           <div className="border-t border-dashed border-gray-300 pt-4 flex flex-col gap-2">
             <div className="flex justify-between text-sm text-gray-500">
               <span>Subtotal</span>
-              <span>৳{userData.cartSummary.subtotal}</span>
+              <span>৳{subtotal}</span>
             </div>
             <div className="flex justify-between text-sm text-gray-500">
               <span>Delivery Fee</span>
-              <span>৳{userData.cartSummary.delivery}</span>
+              <span>৳{delivery}</span>
             </div>
             <div className="flex justify-between text-base font-bold text-gray-900 pt-2 mt-2 border-t border-gray-100">
               <span>Total Payable</span>
               <span className="text-teal-700 text-xl">
-                ৳{userData.cartSummary.total}
+                ৳{total}
               </span>
             </div>
           </div>
@@ -261,7 +383,7 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
               <>
                 <span>Place Order</span>
                 <span className="bg-black/10 px-2 py-0.5 rounded text-sm">
-                  ৳{userData.cartSummary.total}
+                  ৳{total}
                 </span>
                 <ArrowRight className="group-hover:translate-x-1 transition-transform" />
               </>
@@ -283,6 +405,12 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
           </button>
         </div>
       </div>
+      {showMap && (
+        <LocationPicker
+          onLocationSelect={handleLocationSelect}
+          onClose={() => setShowMap(false)}
+        />
+      )}
     </form>
   );
 }

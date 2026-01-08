@@ -1,8 +1,27 @@
 import CheckoutPageContent from "@/components/checkout/CheckoutPageContent";
-import { CHECKOUT_USER_DATA } from "@/lib/dummy-data/checkout";
+import { getAuthUserId } from "@/lib/auth/getAuthUser";
+import { prisma } from "@/lib/prisma/prisma";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
-export default function CheckoutPage() {
+export default async function CheckoutPage() {
+  const userId = await getAuthUserId();
+  
+  if (!userId) {
+      redirect("/login");
+  }
+
+  const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, phone: true }
+  });
+
+  const userData = {
+      fullName: user?.name || "",
+      phone: user?.phone || "",
+      savedAddress: "" // Address handling is already dynamic in the child component
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* 2. Main Content */}
@@ -27,7 +46,7 @@ export default function CheckoutPage() {
           </div>
 
           {/* Form Component */}
-          <CheckoutPageContent userData={CHECKOUT_USER_DATA} />
+          <CheckoutPageContent userData={userData} />
         </div>
       </main>
     </div>

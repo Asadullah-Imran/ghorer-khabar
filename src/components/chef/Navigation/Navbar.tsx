@@ -78,15 +78,17 @@ export default function ChefNavbar() {
         <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
           {/* Logo */}
           <Link href="/chef/dashboard" className="flex items-center gap-2">
-            <Image
-              src="/ghorer-khabar-logo.png"
-              alt="Ghorer Khabar Logo"
-              width={40}
-              height={40}
-              className="object-contain"
-            />
-            <span className="font-bold text-xl text-brand-teal tracking-tight hidden sm:block">
-              Ghorer<span className="text-primary">Khabar</span>
+            <div className="bg-yellow-400 p-1.5 rounded-lg">
+              <Image
+                src="/ghorer-khabar-logo.png"
+                alt="Ghorer Khabar Logo"
+                width={24}
+                height={24}
+                className="object-contain"
+              />
+            </div>
+            <span className="font-bold text-xl text-teal-900 tracking-tight hidden sm:block">
+              Ghorer<span className="text-yellow-500">Khabar</span>
             </span>
           </Link>
 

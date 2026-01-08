@@ -3,9 +3,9 @@ import DishCard from "@/components/shared/DishCard";
 import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard";
 import {
-    ALL_KITCHENS,
-    ALL_PLANS,
-    CATEGORIES,
+  ALL_KITCHENS,
+  ALL_PLANS,
+  CATEGORIES,
 } from "@/lib/dummy-data/explore";
 import { prisma } from "@/lib/prisma/prisma";
 
@@ -71,6 +71,11 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
         rating: d.rating || 0,
         image: d.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
         kitchen: d.users.kitchens[0]?.name || "Unknown Kitchen",
+        kitchenId: d.users.kitchens[0]?.id || "unknown",
+        kitchenName: d.users.kitchens[0]?.name || "Unknown Kitchen",
+        kitchenLocation: d.users.kitchens[0]?.location || undefined,
+        kitchenRating: Number(d.users.kitchens[0]?.rating) || 0,
+        kitchenReviewCount: d.users.kitchens[0]?.reviewCount || 0,
         deliveryTime: "30-45 min" // Placeholder as it's not in schema currently
     }));
   }

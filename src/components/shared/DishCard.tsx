@@ -10,7 +10,12 @@ interface DishProps {
     price: number;
     rating: number;
     image: string;
-    kitchen: string;
+    kitchen: string; // Display name
+    kitchenId: string; // ID for cart
+    kitchenName: string; // Name for cart (usually same as kitchen)
+    kitchenLocation?: string;
+    kitchenRating?: number;
+    kitchenReviewCount?: number;
     deliveryTime: string;
   };
   featured?: boolean;
@@ -30,6 +35,7 @@ export default function DishCard({ data, featured }: DishProps) {
             src={data.image}
             alt={data.name}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition duration-500"
           />
           <div className="absolute top-2 right-2 z-10">
@@ -68,6 +74,11 @@ export default function DishCard({ data, featured }: DishProps) {
                 name: data.name,
                 price: data.price,
                 image: data.image,
+                kitchenId: data.kitchenId,
+                kitchenName: data.kitchenName,
+                kitchenLocation: data.kitchenLocation,
+                kitchenRating: data.kitchenRating,
+                kitchenReviewCount: data.kitchenReviewCount,
               }}
             />
           </div>
