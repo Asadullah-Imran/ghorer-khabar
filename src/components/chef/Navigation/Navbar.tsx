@@ -21,6 +21,20 @@ export default function ChefNavbar() {
     const fetchKitchen = async () => {
       try {
         const res = await fetch("/api/chef/onboarding");
+        
+        // Check if response is ok before parsing JSON
+        if (!res.ok) {
+          console.error(`Kitchen fetch failed with status ${res.status}`);
+          return;
+        }
+
+        // Check if response has content
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          console.error("Invalid response content type:", contentType);
+          return;
+        }
+
         const data = await res.json();
         if (data.success && data.data?.kitchen) {
           setKitchenName(data.data.kitchen.name || "Chef's Kitchen");
