@@ -1,4 +1,4 @@
-import Navbar from "@/components/navigation/Navbar";
+import Navbar from "@/components/Navigation/Navbar";
 import AuthGuard from "@/components/auth/AuthGuard";
 import type { Metadata } from "next";
 

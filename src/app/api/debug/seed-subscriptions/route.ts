@@ -152,18 +152,19 @@ export async function POST() {
               where: { id: dishId },
             });
 
-            await prisma.plan_schedules.create({
-              data: {
-                plan_id: plan.id,
-                day_of_week: day as any,
-                meal_type: mealType.toUpperCase() as any,
-                time: typedMealSlot.time,
-                dish_id: dishId,
-                dish_name: dish?.name || "Unknown",
-                dish_desc: dish?.description || null,
-                image_url: null,
-              },
-            });
+            // Note: plan_schedules model doesn't exist. Schedule is stored in weekly_schedule JSON field
+            // await prisma.plan_schedules.create({
+            //   data: {
+            //     plan_id: plan.id,
+            //     day_of_week: day as any,
+            //     meal_type: mealType.toUpperCase() as any,
+            //     time: typedMealSlot.time,
+            //     dish_id: dishId,
+            //     dish_name: dish?.name || "Unknown",
+            //     dish_desc: dish?.description || null,
+            //     image_url: null,
+            //   },
+            // });
           }
         }
       }
