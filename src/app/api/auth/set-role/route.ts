@@ -3,6 +3,43 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+/**
+ * @swagger
+ * /api/auth/set-role:
+ *   post:
+ *     summary: Sets the role for the authenticated user
+ *     description: Allows a logged-in user to set their role to 'BUYER' or 'SELLER'. Requires authentication.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: [BUYER, SELLER]
+ *                 example: SELLER
+ *     responses:
+ *       200:
+ *         description: Role updated successfully.
+ *       401:
+ *         description: Unauthorized, user not logged in.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal server error.
+ *
+ * components:
+ *   securitySchemes:
+ *     cookieAuth:
+ *       type: apiKey
+ *       in: cookie
+ *       name: ghorer-khabar-auth
+ */
+
 export async function POST(req: Request) {
   try {
     const { roleName } = await req.json(); // "BUYER" or "SELLER"
