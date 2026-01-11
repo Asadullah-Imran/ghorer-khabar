@@ -3,11 +3,12 @@ import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard"; // 1. Import PlanCard
 import SectionHeader from "@/components/shared/SectionHeader";
 import {
-  FEATURED_PLANS,
+  
   MONTHLY_TOP_KITCHENS,
   RECOMMENDED_DISHES,
   WEEKLY_BEST_DISHES,
 } from "@/lib/dummy-data/feed";
+import { FEATURED_PLANS } from "@/lib/dummy-data/newSubscriptionData";
 
 export default function FeedPage() {
   return (

@@ -1,4 +1,4 @@
-import { Check, Star } from "lucide-react";
+import { CalendarCheck, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -6,18 +6,33 @@ interface PlanProps {
   data: {
     id: string;
     name: string;
-    kitchen: string;
+    // Flexible types to handle different data sources
+    kitchen?: string;
+    chef?: { name: string };
     price: number;
-    type: string;
-    mealsPerMonth: number;
-    rating: number;
+    type?: string;
+    mealsPerDay?: number;
+    mealsPerMonth?: number;
+    rating?: number;
     image: string;
   };
 }
 
 export default function PlanCard({ data }: PlanProps) {
+  // Logic to normalize data
+  const kitchenName = data.kitchen || data.chef?.name || "Ghorer Chef";
+  const badgeText = data.type || (data.mealsPerDay ? "Daily Plan" : "Monthly");
+
+  // Calculate total meals text
+  let mealsText = "Daily Service";
+  if (data.mealsPerMonth) {
+    mealsText = `${data.mealsPerMonth} meals / month`;
+  } else if (data.mealsPerDay) {
+    mealsText = `${data.mealsPerDay * 30} meals / month`;
+  }
+
   return (
-    <Link href={`/feed/plans/${data.id}`} className="block group h-full">
+    <Link href={`/plans/${data.id}`} className="block group h-full">
       <div className="relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all h-full flex flex-col hover:border-teal-200">
         {/* Image Header */}
         <div className="relative h-40 bg-gray-100">
@@ -25,14 +40,16 @@ export default function PlanCard({ data }: PlanProps) {
             src={data.image}
             alt={data.name}
             fill
-            className="object-cover"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
           <div className="absolute top-2 left-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-teal-800 uppercase tracking-wider">
-            {data.type}
+            {badgeText}
           </div>
-          <div className="absolute top-2 right-2 bg-white/90 backdrop-blur px-1.5 py-0.5 rounded flex items-center gap-1 text-xs font-bold text-orange-600">
-            <Star size={10} fill="currentColor" /> {data.rating}
-          </div>
+          {data.rating && (
+            <div className="absolute top-2 right-2 bg-white/90 backdrop-blur px-1.5 py-0.5 rounded flex items-center gap-1 text-xs font-bold text-orange-600">
+              <Star size={10} fill="currentColor" /> {data.rating}
+            </div>
+          )}
         </div>
 
         {/* Content */}
@@ -40,12 +57,12 @@ export default function PlanCard({ data }: PlanProps) {
           <h3 className="font-bold text-gray-900 line-clamp-1 group-hover:text-teal-700 transition-colors">
             {data.name}
           </h3>
-          <p className="text-xs text-gray-500 mb-3">by {data.kitchen}</p>
+          <p className="text-xs text-gray-500 mb-3">by {kitchenName}</p>
 
           <div className="mt-auto">
             <div className="flex items-center gap-2 text-xs text-gray-500 mb-3 bg-gray-50 p-2 rounded-lg">
-              <Check size={12} className="text-teal-600" />
-              <span>{data.mealsPerMonth} meals / month</span>
+              <CalendarCheck size={12} className="text-teal-600" />
+              <span>{mealsText}</span>
             </div>
 
             <div className="flex items-center justify-between">
