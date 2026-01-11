@@ -1,15 +1,15 @@
-import { createSwaggerSpec } from 'next-swagger-doc';
+import { createSwaggerSpec } from "next-swagger-doc";
 
 export const getApiDocs = async () => {
   const spec = createSwaggerSpec({
     definition: {
-      openapi: '3.0.0',
+      openapi: "3.0.0",
       info: {
-        title: 'Ghorer Khabar API',
-        version: '1.0.0',
+        title: "Ghorer Khabar API",
+        version: "1.0.0",
       },
     },
-    apiFolder: 'src/app/api',
+    apiFolder: "src/app/api",
   });
   return spec;
 };
