@@ -1,3 +1,5 @@
+import healthpic from "@/../public/cooking.jpg"; // Adjust path based on your folder structure
+import Image from "next/image";
 import Link from "next/link";
 
 const BuyerSection = () => {
@@ -26,6 +28,7 @@ const BuyerSection = () => {
     <section id="buyer" className="py-20 px-4 md:px-10 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row gap-12 items-center">
+          {/* Left Content */}
           <div className="flex-1 flex flex-col gap-6">
             <div className="inline-flex items-center gap-2 text-brand-teal font-bold uppercase tracking-wider text-sm">
               <span className="w-8 h-[2px] bg-brand-teal"></span>
@@ -78,8 +81,19 @@ const BuyerSection = () => {
             </div>
           </div>
 
+          {/* Right Image Section */}
           <div className="flex-1 w-full relative">
             <div className="relative w-full aspect-square md:aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-brand-teal/10 to-primary/10">
+              {/* --- IMAGE COMPONENT ADDED HERE --- */}
+              <Image
+                src={healthpic}
+                alt="Healthy home-cooked meal preparation"
+                fill
+                className="object-cover"
+                placeholder="blur"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+
               {/* Floating Card */}
               <div className="absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-gray-100">
                 <div className="flex justify-between items-start">
