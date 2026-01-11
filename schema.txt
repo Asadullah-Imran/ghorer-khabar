@@ -1,0 +1,171 @@
+
+// This schema is a proposal based on the analysis of the dummy data.
+// It's intended to be a starting point for the actual Prisma schema.
+
+// User Model
+model User {
+  id              String        @id @default(cuid())
+  name            String
+  email           String        @unique
+  password        String
+  phone           String?
+  role            String        // BUYER or SELLER
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  addresses       Address[]
+  orders          Order[]
+  reviews         Review[]
+  favorites       Favorite[]
+  subscriptions   Subscription[]
+  chefProfile     Chef?
+}
+
+// Address Model
+model Address {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  street      String
+  city        String
+  state       String
+  zip         String
+  country     String
+  isDefault   Boolean  @default(false)
+}
+
+// Chef (Kitchen) Model
+model Chef {
+  id              String        @id @default(cuid())
+  userId          String        @unique
+  user            User          @relation(fields: [userId], references: [id])
+  kitchenName     String
+  description     String
+  logoUrl         String?
+  coverImageUrl   String?
+  rating          Float         @default(0)
+  isOpen          Boolean       @default(true)
+  menuItems       MenuItem[]
+  inventory       InventoryItem[]
+  orders          Order[]
+  reviews         Review[]
+  subscriptionPlans SubscriptionPlan[]
+}
+
+// MenuItem (Dish) Model
+model MenuItem {
+  id            String        @id @default(cuid())
+  chefId        String
+  chef          Chef          @relation(fields: [chefId], references: [id])
+  name          String
+  description   String
+  price         Float
+  imageUrl      String?
+  category      String
+  prepTime      Int // in minutes
+  isAvailable   Boolean       @default(true)
+  ingredients   Ingredient[]
+  reviews       Review[]
+  orderItems    OrderItem[]
+}
+
+// Ingredient Model
+model Ingredient {
+  id        String   @id @default(cuid())
+  name      String
+  quantity  String
+  menuItemId String
+  menuItem  MenuItem @relation(fields: [menuItemId], references: [id])
+}
+
+// InventoryItem Model
+model InventoryItem {
+  id        String   @id @default(cuid())
+  chefId    String
+  chef      Chef     @relation(fields: [chefId], references: [id])
+  name      String
+  quantity  Int
+  unit      String // e.g., kg, lbs, pieces
+  lastUpdated DateTime @updatedAt
+}
+
+// Order Model
+model Order {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  chefId      String
+  chef        Chef        @relation(fields: [chefId], references: [id])
+  status      String      // e.g., PENDING, CONFIRMED, PREPARING, DELIVERED, CANCELED
+  totalPrice  Float
+  createdAt   DateTime    @default(now())
+  deliveryAddress String
+  items       OrderItem[]
+}
+
+// OrderItem Model
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id])
+  menuItemId  String
+  menuItem    MenuItem @relation(fields: [menuItemId], references: [id])
+  quantity    Int
+  price       Float
+}
+
+// Review Model
+model Review {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  chefId      String
+  chef        Chef     @relation(fields: [chefId], references: [id])
+  menuItemId  String?
+  menuItem    MenuItem? @relation(fields: [menuItemId], references: [id])
+  rating      Int
+  comment     String?
+  createdAt   DateTime @default(now())
+}
+
+// SubscriptionPlan Model
+model SubscriptionPlan {
+  id            String   @id @default(cuid())
+  chefId        String
+  chef          Chef     @relation(fields: [chefId], references: [id])
+  name          String
+  description   String
+  pricePerWeek  Float
+  mealsPerWeek  Int
+  subscriptions Subscription[]
+}
+
+// User Subscription Model
+model Subscription {
+  id                String            @id @default(cuid())
+  userId            String
+  user              User              @relation(fields: [userId], references: [id])
+  subscriptionPlanId String
+  subscriptionPlan  SubscriptionPlan  @relation(fields: [subscriptionPlanId], references: [id])
+  startDate         DateTime
+  endDate           DateTime?
+  isActive          Boolean           @default(true)
+}
+
+// Favorite Model
+model Favorite {
+    id        String    @id @default(cuid())
+    userId    String
+    user      User      @relation(fields: [userId], references: [id])
+    menuItemId String
+    menuItem  MenuItem  @relation(fields: [menuItemId], references: [id])
+
+    @@unique([userId, menuItemId])
+}
+
+model EmailLogOTP {
+  id          String   @id @default(cuid())
+  email       String
+  otp         String
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+}
