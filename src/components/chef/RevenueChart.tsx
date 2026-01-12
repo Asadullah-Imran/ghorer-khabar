@@ -125,7 +125,7 @@ export default function RevenueChart({
                   className="flex-1 flex flex-col items-center group"
                 >
                   {/* Bar */}
-                  <div className="w-full relative h-48">
+                  <div className="w-full relative h-48 flex items-end">
                     <div
                       className="w-full bg-gradient-to-t from-teal-600 to-teal-400 rounded-t-lg transition-all hover:from-teal-700 hover:to-teal-500 cursor-pointer shadow-sm"
                       style={{ height: `${heightPercentage}%` }}

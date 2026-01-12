@@ -11,7 +11,8 @@ interface SubscriptionModalProps {
   onSave: (subscription: Partial<SubscriptionPlan>) => void;
 }
 
-
+const DAYS_OF_WEEK = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] as const;
+type DayOfWeek = typeof DAYS_OF_WEEK[number];
 
 export default function SubscriptionModal({
   subscription,
@@ -22,62 +23,77 @@ export default function SubscriptionModal({
   const [formData, setFormData] = useState({
     name: subscription?.name || "",
     description: subscription?.description || "",
-    frequency: subscription?.frequency || "weekly",
     servingsPerMeal: subscription?.servingsPerMeal || 2,
     price: subscription?.price || 3000,
     isActive: subscription?.isActive ?? true,
   });
 
-  const [breakfast, setBreakfast] = useState<string[]>(subscription?.schedule.breakfast.dishIds || []);
-  const [lunch, setLunch] = useState<string[]>(subscription?.schedule.lunch.dishIds || []);
-  const [snacks, setSnacks] = useState<string[]>(subscription?.schedule.snacks.dishIds || []);
-  const [dinner, setDinner] = useState<string[]>(subscription?.schedule.dinner.dishIds || []);
-
-  // Time states
-  const [breakfastTime, setBreakfastTime] = useState(subscription?.schedule.breakfast.time || "08:00");
-  const [lunchTime, setLunchTime] = useState(subscription?.schedule.lunch.time || "12:30");
-  const [snacksTime, setSnacksTime] = useState(subscription?.schedule.snacks.time || "17:00");
-  const [dinnerTime, setDinnerTime] = useState(subscription?.schedule.dinner.time || "21:00");
+  const [selectedDay, setSelectedDay] = useState<DayOfWeek>("Saturday");
+  const [schedule, setSchedule] = useState<SubscriptionPlan["schedule"]>(
+    subscription?.schedule || {
+      Saturday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+      Sunday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+      Monday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+      Tuesday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+      Wednesday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+      Thursday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+      Friday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+    }
+  );
 
   const [selectedDish, setSelectedDish] = useState<string | null>(null);
 
-  // Auto-calculate meals per day based on which slots have dishes
-  const mealsPerDay = (breakfast.length > 0 ? 1 : 0) + (lunch.length > 0 ? 1 : 0) + (snacks.length > 0 ? 1 : 0) + (dinner.length > 0 ? 1 : 0);
-  const totalDishes = mealsPerDay * formData.servingsPerMeal;
+  const currentDaySchedule = schedule[selectedDay];
 
-  const addDishToSlot = (slot: "breakfast" | "lunch" | "snacks" | "dinner", dishId: string) => {
-    switch (slot) {
-      case "breakfast":
-        if (!breakfast.includes(dishId)) setBreakfast([...breakfast, dishId]);
-        break;
-      case "lunch":
-        if (!lunch.includes(dishId)) setLunch([...lunch, dishId]);
-        break;
-      case "snacks":
-        if (!snacks.includes(dishId)) setSnacks([...snacks, dishId]);
-        break;
-      case "dinner":
-        if (!dinner.includes(dishId)) setDinner([...dinner, dishId]);
-        break;
-    }
+  // Auto-calculate meals per day based on which slots have dishes
+  const mealsPerDay = Math.max(
+    ...DAYS_OF_WEEK.map((day) => {
+      const daySchedule = schedule[day];
+      return (daySchedule.breakfast?.dishIds.length ? 1 : 0) +
+             (daySchedule.lunch?.dishIds.length ? 1 : 0) +
+             (daySchedule.snacks?.dishIds.length ? 1 : 0) +
+             (daySchedule.dinner?.dishIds.length ? 1 : 0);
+    })
+  );
+
+  const addDishToSlot = (day: DayOfWeek, slot: "breakfast" | "lunch" | "snacks" | "dinner", dishId: string) => {
+    setSchedule((prev) => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [slot]: {
+          ...prev[day][slot],
+          dishIds: [...(prev[day][slot]?.dishIds || []), dishId],
+        },
+      },
+    }));
     setSelectedDish(null);
   };
 
-  const removeDishFromSlot = (slot: "breakfast" | "lunch" | "snacks" | "dinner", dishId: string) => {
-    switch (slot) {
-      case "breakfast":
-        setBreakfast(breakfast.filter((id) => id !== dishId));
-        break;
-      case "lunch":
-        setLunch(lunch.filter((id) => id !== dishId));
-        break;
-      case "snacks":
-        setSnacks(snacks.filter((id) => id !== dishId));
-        break;
-      case "dinner":
-        setDinner(dinner.filter((id) => id !== dishId));
-        break;
-    }
+  const removeDishFromSlot = (day: DayOfWeek, slot: "breakfast" | "lunch" | "snacks" | "dinner", dishId: string) => {
+    setSchedule((prev) => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [slot]: {
+          ...prev[day][slot],
+          dishIds: (prev[day][slot]?.dishIds || []).filter((id) => id !== dishId),
+        },
+      },
+    }));
+  };
+
+  const updateMealTime = (day: DayOfWeek, slot: "breakfast" | "lunch" | "snacks" | "dinner", time: string) => {
+    setSchedule((prev) => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [slot]: {
+          ...prev[day][slot],
+          time,
+        },
+      },
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -91,16 +107,10 @@ export default function SubscriptionModal({
     const subscriptionData: Partial<SubscriptionPlan> = {
       id: subscription?.id || `sub-${Date.now()}`,
       ...formData,
-      frequency: formData.frequency as "daily" | "weekly" | "monthly" | "custom",
-      mealsPerDay, // Auto-calculated from meal slots
+      mealsPerDay,
       subscriberCount: subscription?.subscriberCount || 0,
       monthlyRevenue: subscription?.monthlyRevenue || 0,
-      schedule: {
-        breakfast: { time: breakfastTime, dishIds: breakfast },
-        lunch: { time: lunchTime, dishIds: lunch },
-        snacks: { time: snacksTime, dishIds: snacks },
-        dinner: { time: dinnerTime, dishIds: dinner },
-      },
+      schedule,
       createdAt: subscription?.createdAt || new Date(),
     };
 
@@ -109,6 +119,14 @@ export default function SubscriptionModal({
 
   const getDishById = (id: string) => menuItems.find((item) => item.id === id);
   const selectedMenuItem = selectedDish ? getDishById(selectedDish) : null;
+
+  const totalDishes = Object.values(schedule).reduce((sum, daySchedule) => {
+    return sum +
+      (daySchedule.breakfast?.dishIds.length || 0) +
+      (daySchedule.lunch?.dishIds.length || 0) +
+      (daySchedule.snacks?.dishIds.length || 0) +
+      (daySchedule.dinner?.dishIds.length || 0);
+  }, 0);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -143,17 +161,13 @@ export default function SubscriptionModal({
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Frequency</label>
-                <select
-                  value={formData.frequency}
-                  onChange={(e) => setFormData({ ...formData, frequency: e.target.value as "daily" | "weekly" | "monthly" | "custom" })}
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Price (৳)</label>
+                <input
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400"
-                >
-                  <option value="daily">Daily</option>
-                  <option value="weekly">Weekly</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="custom">Custom</option>
-                </select>
+                />
               </div>
             </div>
 
@@ -168,7 +182,7 @@ export default function SubscriptionModal({
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Meals/Day</label>
                 <div className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 flex items-center justify-between">
@@ -188,35 +202,44 @@ export default function SubscriptionModal({
                   className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400"
                 />
               </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Price (৳)</label>
-                <input
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400"
-                />
-              </div>
             </div>
 
             {/* Calculation Summary */}
             <div className="flex items-center justify-between p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg">
               <div>
                 <p className="text-sm text-gray-600">Total Dishes Required</p>
-                <p className="text-xs text-gray-500 mt-0.5">{mealsPerDay} meals × {formData.servingsPerMeal} servings</p>
+                <p className="text-xs text-gray-500 mt-0.5">{mealsPerDay} meals × {formData.servingsPerMeal} servings × 7 days</p>
               </div>
               <div className="text-3xl font-bold text-yellow-600">{totalDishes}</div>
             </div>
           </div>
 
-          {/* Meal Scheduler */}
+          {/* Weekly Meal Scheduler */}
           <div className="space-y-4 border-t pt-6">
-            <h3 className="text-lg font-bold text-gray-900">Meal Schedule</h3>
+            <h3 className="text-lg font-bold text-gray-900">Weekly Meal Schedule</h3>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,1fr)_2px_2fr] gap-6">
+            {/* Day Tabs */}
+            <div className="flex gap-2 overflow-x-auto pb-2 border-b border-gray-200">
+              {DAYS_OF_WEEK.map((day) => (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() => setSelectedDay(day)}
+                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition whitespace-nowrap ${
+                    selectedDay === day
+                      ? "bg-yellow-400 text-gray-900"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {day}
+                </button>
+              ))}
+            </div>
+
+            {/* Meal Scheduler for Selected Day */}
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(280px,1fr)_2px_2fr] gap-6 mt-4">
               {/* Available Dishes Column */}
-              <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 h-[600px] flex flex-col">
+              <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 h-[400px] flex flex-col">
                 <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
                   <ChefHat size={16} className="text-yellow-500" />
                   Available Dishes
@@ -245,50 +268,50 @@ export default function SubscriptionModal({
 
               {/* Meal Slots Grid (2x2) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Row 1: Breakfast & Lunch */}
+                {/* Breakfast & Lunch */}
                 <MealSlotMini
                   title="Breakfast"
-                  time={breakfastTime}
-                  onTimeChange={setBreakfastTime}
-                  dishIds={breakfast}
+                  time={currentDaySchedule.breakfast?.time || "08:00"}
+                  onTimeChange={(time) => updateMealTime(selectedDay, "breakfast", time)}
+                  dishIds={currentDaySchedule.breakfast?.dishIds || []}
                   menuItems={menuItems}
                   selectedDish={selectedMenuItem}
-                  onAddDish={() => selectedDish && addDishToSlot("breakfast", selectedDish)}
-                  onRemoveDish={(id) => removeDishFromSlot("breakfast", id)}
+                  onAddDish={() => selectedDish && addDishToSlot(selectedDay, "breakfast", selectedDish)}
+                  onRemoveDish={(id) => removeDishFromSlot(selectedDay, "breakfast", id)}
                 />
 
                 <MealSlotMini
                   title="Lunch"
-                  time={lunchTime}
-                  onTimeChange={setLunchTime}
-                  dishIds={lunch}
+                  time={currentDaySchedule.lunch?.time || "13:00"}
+                  onTimeChange={(time) => updateMealTime(selectedDay, "lunch", time)}
+                  dishIds={currentDaySchedule.lunch?.dishIds || []}
                   menuItems={menuItems}
                   selectedDish={selectedMenuItem}
-                  onAddDish={() => selectedDish && addDishToSlot("lunch", selectedDish)}
-                  onRemoveDish={(id) => removeDishFromSlot("lunch", id)}
+                  onAddDish={() => selectedDish && addDishToSlot(selectedDay, "lunch", selectedDish)}
+                  onRemoveDish={(id) => removeDishFromSlot(selectedDay, "lunch", id)}
                 />
 
-                {/* Row 2: Snacks & Dinner */}
+                {/* Snacks & Dinner */}
                 <MealSlotMini
                   title="Snacks"
-                  time={snacksTime}
-                  onTimeChange={setSnacksTime}
-                  dishIds={snacks}
+                  time={currentDaySchedule.snacks?.time || "17:00"}
+                  onTimeChange={(time) => updateMealTime(selectedDay, "snacks", time)}
+                  dishIds={currentDaySchedule.snacks?.dishIds || []}
                   menuItems={menuItems}
                   selectedDish={selectedMenuItem}
-                  onAddDish={() => selectedDish && addDishToSlot("snacks", selectedDish)}
-                  onRemoveDish={(id) => removeDishFromSlot("snacks", id)}
+                  onAddDish={() => selectedDish && addDishToSlot(selectedDay, "snacks", selectedDish)}
+                  onRemoveDish={(id) => removeDishFromSlot(selectedDay, "snacks", id)}
                 />
 
                 <MealSlotMini
                   title="Dinner"
-                  time={dinnerTime}
-                  onTimeChange={setDinnerTime}
-                  dishIds={dinner}
+                  time={currentDaySchedule.dinner?.time || "21:00"}
+                  onTimeChange={(time) => updateMealTime(selectedDay, "dinner", time)}
+                  dishIds={currentDaySchedule.dinner?.dishIds || []}
                   menuItems={menuItems}
                   selectedDish={selectedMenuItem}
-                  onAddDish={() => selectedDish && addDishToSlot("dinner", selectedDish)}
-                  onRemoveDish={(id) => removeDishFromSlot("dinner", id)}
+                  onAddDish={() => selectedDish && addDishToSlot(selectedDay, "dinner", selectedDish)}
+                  onRemoveDish={(id) => removeDishFromSlot(selectedDay, "dinner", id)}
                 />
               </div>
             </div>

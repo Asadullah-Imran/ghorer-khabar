@@ -59,9 +59,9 @@ export default function ChefDashboard() {
         {/* Left Column: Revenue Chart */}
         <div className="lg:col-span-2">
           <RevenueChart
-            data={CHEF_STATS.weeklyRevenue}
+            data={CHEF_STATS.monthlyRevenue}
             currency="৳"
-            title="Weekly Revenue"
+            title="Monthly Revenue"
           />
         </div>
 

@@ -176,11 +176,14 @@ function SubscriptionCard({
   onDelete,
   onToggleActive,
 }: SubscriptionCardProps) {
-  const totalDishes = 
-    subscription.schedule.breakfast.dishIds.length +
-    subscription.schedule.lunch.dishIds.length +
-    subscription.schedule.snacks.dishIds.length +
-    subscription.schedule.dinner.dishIds.length;
+  const totalDishes = Object.entries(subscription.schedule).reduce((sum, [, daySchedule]) => {
+    if (!daySchedule || typeof daySchedule !== "object") return sum;
+    return sum +
+      (daySchedule.breakfast?.dishIds?.length || 0) +
+      (daySchedule.lunch?.dishIds?.length || 0) +
+      (daySchedule.snacks?.dishIds?.length || 0) +
+      (daySchedule.dinner?.dishIds?.length || 0);
+  }, 0);
 
   return (
     <div className={`bg-white rounded-xl border-2 shadow-sm p-6 ${
@@ -206,8 +209,8 @@ function SubscriptionCard({
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-gray-200">
         <div className="text-center">
-          <p className="text-xs text-gray-600 mb-1">Frequency</p>
-          <p className="font-bold text-gray-900 capitalize">{subscription.frequency}</p>
+          <p className="text-xs text-gray-600 mb-1">Days Active</p>
+          <p className="font-bold text-gray-900">{Object.keys(subscription.schedule).length}</p>
         </div>
         <div className="text-center">
           <p className="text-xs text-gray-600 mb-1">Subscribers</p>
@@ -241,32 +244,25 @@ function SubscriptionCard({
 
       {/* Schedule Preview */}
       <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-        <p className="text-xs font-semibold text-gray-700 mb-2">Meal Schedule:</p>
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          {subscription.schedule.breakfast.dishIds.length > 0 && (
-            <div>
-              <p className="text-gray-600">🌅 Breakfast ({subscription.schedule.breakfast.time})</p>
-              <p className="font-semibold text-gray-900">{subscription.schedule.breakfast.dishIds.length} dishes</p>
-            </div>
-          )}
-          {subscription.schedule.lunch.dishIds.length > 0 && (
-            <div>
-              <p className="text-gray-600">🍱 Lunch ({subscription.schedule.lunch.time})</p>
-              <p className="font-semibold text-gray-900">{subscription.schedule.lunch.dishIds.length} dishes</p>
-            </div>
-          )}
-          {subscription.schedule.snacks.dishIds.length > 0 && (
-            <div>
-              <p className="text-gray-600">☕ Snacks ({subscription.schedule.snacks.time})</p>
-              <p className="font-semibold text-gray-900">{subscription.schedule.snacks.dishIds.length} dishes</p>
-            </div>
-          )}
-          {subscription.schedule.dinner.dishIds.length > 0 && (
-            <div>
-              <p className="text-gray-600">🌙 Dinner ({subscription.schedule.dinner.time})</p>
-              <p className="font-semibold text-gray-900">{subscription.schedule.dinner.dishIds.length} dishes</p>
-            </div>
-          )}
+        <p className="text-xs font-semibold text-gray-700 mb-2">Weekly Schedule:</p>
+        <div className="grid grid-cols-7 gap-1 text-xs">
+          {["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((day) => {
+            const daySchedule = subscription.schedule[day];
+            const mealCount = daySchedule
+              ? [daySchedule.breakfast, daySchedule.lunch, daySchedule.snacks, daySchedule.dinner].filter(m => m).length
+              : 0;
+            return (
+              <div
+                key={day}
+                className={`p-2 rounded text-center font-semibold ${
+                  mealCount > 0 ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"
+                }`}
+              >
+                <p className="text-xs">{day.slice(0, 3)}</p>
+                <p className="text-lg">{mealCount}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 

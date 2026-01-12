@@ -2,7 +2,7 @@ export const CHEF_STATS = {
   revenueToday: "৳ 2,450",
   activeOrders: 8,
   kriScore: "98/100",
-  weeklyRevenue: [
+  monthlyRevenue: [
     { month: "Jan", revenue: 4200 },
     { month: "Feb", revenue: 3800 },
     { month: "Mar", revenue: 5200 },
@@ -234,7 +234,6 @@ export interface SubscriptionPlan {
   id: string;
   name: string;
   description: string;
-  frequency: "daily" | "weekly" | "monthly" | "custom";
   mealsPerDay: number;
   servingsPerMeal: number;
   price: number;
@@ -242,10 +241,12 @@ export interface SubscriptionPlan {
   subscriberCount: number;
   monthlyRevenue: number;
   schedule: {
-    breakfast: { time: string; dishIds: string[] };
-    lunch: { time: string; dishIds: string[] };
-    snacks: { time: string; dishIds: string[] };
-    dinner: { time: string; dishIds: string[] };
+    [day: string]: {
+      breakfast?: { time: string; dishIds: string[] };
+      lunch?: { time: string; dishIds: string[] };
+      snacks?: { time: string; dishIds: string[] };
+      dinner?: { time: string; dishIds: string[] };
+    };
   };
   createdAt: Date;
 }
@@ -546,7 +547,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     id: "sub-1",
     name: "Daily Deluxe Pack",
     description: "Premium home-cooked meals delivered daily",
-    frequency: "daily",
     mealsPerDay: 2,
     servingsPerMeal: 2,
     price: 4500,
@@ -554,10 +554,48 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     subscriberCount: 24,
     monthlyRevenue: 108000,
     schedule: {
-      breakfast: { time: "08:00", dishIds: [] },
-      lunch: { time: "13:00", dishIds: ["1", "5"] },
-      snacks: { time: "17:00", dishIds: [] },
-      dinner: { time: "21:00", dishIds: ["2", "6"] },
+      Saturday: {
+        breakfast: { time: "08:00", dishIds: [] },
+        lunch: { time: "13:00", dishIds: ["1", "5"] },
+        snacks: { time: "17:00", dishIds: [] },
+        dinner: { time: "21:00", dishIds: ["2", "6"] },
+      },
+      Sunday: {
+        breakfast: { time: "08:00", dishIds: [] },
+        lunch: { time: "13:00", dishIds: ["3", "5"] },
+        snacks: { time: "17:00", dishIds: [] },
+        dinner: { time: "21:00", dishIds: ["1", "4"] },
+      },
+      Monday: {
+        breakfast: { time: "08:00", dishIds: [] },
+        lunch: { time: "13:00", dishIds: ["1", "5"] },
+        snacks: { time: "17:00", dishIds: [] },
+        dinner: { time: "21:00", dishIds: ["2", "6"] },
+      },
+      Tuesday: {
+        breakfast: { time: "08:00", dishIds: [] },
+        lunch: { time: "13:00", dishIds: ["3", "5"] },
+        snacks: { time: "17:00", dishIds: [] },
+        dinner: { time: "21:00", dishIds: ["1", "4"] },
+      },
+      Wednesday: {
+        breakfast: { time: "08:00", dishIds: [] },
+        lunch: { time: "13:00", dishIds: ["1", "5"] },
+        snacks: { time: "17:00", dishIds: [] },
+        dinner: { time: "21:00", dishIds: ["2", "6"] },
+      },
+      Thursday: {
+        breakfast: { time: "08:00", dishIds: [] },
+        lunch: { time: "13:00", dishIds: ["3", "5"] },
+        snacks: { time: "17:00", dishIds: [] },
+        dinner: { time: "21:00", dishIds: ["1", "4"] },
+      },
+      Friday: {
+        breakfast: { time: "08:00", dishIds: [] },
+        lunch: { time: "13:00", dishIds: ["1", "5"] },
+        snacks: { time: "17:00", dishIds: [] },
+        dinner: { time: "21:00", dishIds: ["2", "6"] },
+      },
     },
     createdAt: new Date("2025-12-15"),
   },
@@ -565,7 +603,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     id: "sub-2",
     name: "Weekly Family Plan",
     description: "Complete meal solution for families",
-    frequency: "weekly",
     mealsPerDay: 3,
     servingsPerMeal: 4,
     price: 12000,
@@ -573,10 +610,18 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     subscriberCount: 15,
     monthlyRevenue: 180000,
     schedule: {
-      breakfast: { time: "08:30", dishIds: ["5"] },
-      lunch: { time: "13:00", dishIds: ["3", "1"] },
-      snacks: { time: "17:00", dishIds: ["7"] },
-      dinner: { time: "21:00", dishIds: ["2", "4"] },
+      Saturday: {
+        breakfast: { time: "08:30", dishIds: ["5"] },
+        lunch: { time: "13:00", dishIds: ["3", "1"] },
+        snacks: { time: "17:00", dishIds: [] },
+        dinner: { time: "21:00", dishIds: ["2", "4"] },
+      },
+      Sunday: {
+        breakfast: { time: "08:30", dishIds: ["5"] },
+        lunch: { time: "13:00", dishIds: ["3", "1"] },
+        snacks: { time: "17:00", dishIds: [] },
+        dinner: { time: "21:00", dishIds: ["2", "4"] },
+      },
     },
     createdAt: new Date("2025-11-20"),
   },
@@ -584,7 +629,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     id: "sub-3",
     name: "Executive Lunch Box",
     description: "Single meal delivery for working professionals",
-    frequency: "daily",
     mealsPerDay: 1,
     servingsPerMeal: 1,
     price: 2500,
@@ -592,10 +636,21 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     subscriberCount: 42,
     monthlyRevenue: 105000,
     schedule: {
-      breakfast: { time: "08:00", dishIds: [] },
-      lunch: { time: "12:30", dishIds: ["3", "5", "7"] },
-      snacks: { time: "17:00", dishIds: [] },
-      dinner: { time: "21:00", dishIds: [] },
+      Monday: {
+        lunch: { time: "12:30", dishIds: ["3", "5"] },
+      },
+      Tuesday: {
+        lunch: { time: "12:30", dishIds: ["1", "5"] },
+      },
+      Wednesday: {
+        lunch: { time: "12:30", dishIds: ["3", "5"] },
+      },
+      Thursday: {
+        lunch: { time: "12:30", dishIds: ["1", "5"] },
+      },
+      Friday: {
+        lunch: { time: "12:30", dishIds: ["3", "5"] },
+      },
     },
     createdAt: new Date("2025-10-10"),
   },
@@ -603,7 +658,6 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     id: "sub-4",
     name: "Weekend Special",
     description: "Special dishes for weekend meals",
-    frequency: "weekly",
     mealsPerDay: 2,
     servingsPerMeal: 3,
     price: 3500,
@@ -611,10 +665,14 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     subscriberCount: 8,
     monthlyRevenue: 28000,
     schedule: {
-      breakfast: { time: "09:00", dishIds: [] },
-      lunch: { time: "14:00", dishIds: ["3", "4"] },
-      snacks: { time: "17:00", dishIds: [] },
-      dinner: { time: "20:00", dishIds: ["1", "2"] },
+      Saturday: {
+        lunch: { time: "14:00", dishIds: ["3", "4"] },
+        dinner: { time: "20:00", dishIds: ["1", "2"] },
+      },
+      Sunday: {
+        lunch: { time: "14:00", dishIds: ["3", "4"] },
+        dinner: { time: "20:00", dishIds: ["1", "2"] },
+      },
     },
     createdAt: new Date("2025-09-05"),
   },
