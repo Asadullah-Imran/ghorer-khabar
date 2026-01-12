@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  ArrowRightLeft,
-  ChefHat,
-  PauseCircle,
-  User,
-  X,
-} from "lucide-react";
+import { ArrowRightLeft, ChefHat, PauseCircle, User, X } from "lucide-react";
 import { useState } from "react";
 
 // --- 1. Role Switcher Component (Existing) ---

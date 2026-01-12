@@ -1,10 +1,10 @@
-import { WEEKLY_SCHEDULE_DATA } from "@/lib/dummy-data/schedule-data";
-import { SUBSCRIPTION_DETAILS } from "@/lib/dummy-data/subscriptions";
-import ScheduleHeader from "@/components/subscription/schedule/ScheduleHeader";
 import DateSelector from "@/components/subscription/schedule/DateSelector";
 import MealCard from "@/components/subscription/schedule/MealCard";
+import ScheduleHeader from "@/components/subscription/schedule/ScheduleHeader";
 import SubscriptionHero from "@/components/subscription/SubscriptionHero";
 import SubscriptionSettings from "@/components/subscription/SubscriptionSettings";
+import { WEEKLY_SCHEDULE_DATA } from "@/lib/dummy-data/schedule-data";
+import { SUBSCRIPTION_DETAILS } from "@/lib/dummy-data/subscriptions";
 import { ArrowLeft, Zap } from "lucide-react";
 import Link from "next/link";
 
@@ -20,7 +20,6 @@ export default async function SchedulePage({
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
       <div className="max-w-7xl mx-auto px-4 py-8 md:p-8 space-y-8">
-        
         {/* Back Nav */}
         <Link
           href="/profile/my-subscription"
@@ -31,19 +30,20 @@ export default async function SchedulePage({
 
         {/* Subscription Hero - Static Info */}
         <SubscriptionHero sub={sub} />
-        
+
         {/* 1. Header */}
-        <ScheduleHeader planName={data.planName} currentWeek={data.currentWeek} />
+        <ScheduleHeader
+          planName={data.planName}
+          currentWeek={data.currentWeek}
+        />
 
         {/* 2. Date Tabs */}
         <DateSelector dates={data.dates} />
 
         {/* 3. Timeline Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-[100px_1fr] gap-0">
-          
           {/* Vertical Timeline Container */}
           <div className="relative col-span-2">
-            
             {/* The Vertical Line (Desktop only) */}
             <div className="hidden lg:block absolute left-[49px] top-0 bottom-0 w-0.5 bg-teal-100"></div>
 
@@ -51,7 +51,6 @@ export default async function SchedulePage({
             {data.meals.map((meal) => (
               <MealCard key={meal.id} meal={meal} />
             ))}
-
           </div>
         </div>
 
@@ -62,18 +61,21 @@ export default async function SchedulePage({
               <Zap size={24} fill="currentColor" />
             </div>
             <div>
-              <p className="text-sm font-bold text-teal-900 tracking-tight">Modification Window</p>
-              <p className="text-xs text-teal-600">You can skip or modify meals until 6 hours before delivery.</p>
+              <p className="text-sm font-bold text-teal-900 tracking-tight">
+                Modification Window
+              </p>
+              <p className="text-xs text-teal-600">
+                You can skip or modify meals until 6 hours before delivery.
+              </p>
             </div>
           </div>
           <button className="w-full md:w-auto px-6 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-900 hover:bg-gray-50 transition-colors shadow-sm">
-             View Full Month Calendar
+            View Full Month Calendar
           </button>
         </div>
 
         {/* Subscription Settings - Pause/Cancel */}
         <SubscriptionSettings />
-
       </div>
     </main>
   );
