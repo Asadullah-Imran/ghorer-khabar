@@ -53,7 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // First check Supabase session via server (for OAuth users)
         const sessionResponse = await fetch("/api/auth/session");
         if (!mounted) return;
-        
+
         if (sessionResponse.ok) {
           const sessionData = await sessionResponse.json();
           if (sessionData.user && mounted) {
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Check for JWT cookie (for email/password users)
         const jwtResponse = await fetch("/api/auth/me");
         if (!mounted) return;
-        
+
         if (jwtResponse.ok) {
           const data = await jwtResponse.json();
           if (mounted) {
@@ -104,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
-      
+
       console.log("Auth state changed:", event, session?.user?.email);
 
       if (event === "INITIAL_SESSION") {

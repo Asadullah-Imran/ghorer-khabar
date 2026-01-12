@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/lib/image/logo.png";
+import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

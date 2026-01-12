@@ -42,8 +42,10 @@ export async function middleware(request: NextRequest) {
   );
 
   // Refresh session if expired - this will keep the user logged in
-  const { data: { user } } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (user) {
     console.log("Middleware: User session found for", user.email);
   }

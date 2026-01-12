@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
+import { handleOAuthUser } from "@/services/authService";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { handleOAuthUser } from "@/services/authService";
+import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -43,10 +43,10 @@ export async function GET(request: Request) {
 
       // 1. Exchange the temporary code for a Supabase session
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-      console.log("Supabase session exchange result:", { 
-        success: !!data?.session, 
+      console.log("Supabase session exchange result:", {
+        success: !!data?.session,
         error: error?.message,
-        userId: data?.user?.id 
+        userId: data?.user?.id,
       });
 
       if (!error && data?.user) {
@@ -54,8 +54,11 @@ export async function GET(request: Request) {
 
         // Determine role priority: URL param > user_metadata > default to BUYER
         let role: "BUYER" | "SELLER" | "ADMIN" = "BUYER";
-        
-        if (roleParam && ["buyer", "seller", "admin"].includes(roleParam.toLowerCase())) {
+
+        if (
+          roleParam &&
+          ["buyer", "seller", "admin"].includes(roleParam.toLowerCase())
+        ) {
           role = roleParam.toUpperCase() as "BUYER" | "SELLER" | "ADMIN";
           console.log("Using role from URL param:", role);
         } else if (data.user.user_metadata.role) {
@@ -72,8 +75,13 @@ export async function GET(request: Request) {
           role
         );
 
-        console.log("Database Sync Successful for:", data.user.email, "with role:", role);
-        
+        console.log(
+          "Database Sync Successful for:",
+          data.user.email,
+          "with role:",
+          role
+        );
+
         // Redirect with success
         return NextResponse.redirect(`${origin}${next}`);
       } else {
