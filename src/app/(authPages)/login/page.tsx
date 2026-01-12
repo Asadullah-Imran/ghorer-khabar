@@ -3,11 +3,11 @@
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/lib/image/logo.png";
 import { createClient } from "@/lib/supabase/client";
+import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { Loader2 } from "lucide-react";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
