@@ -5,8 +5,20 @@ import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 
+// Extended user type that can handle both Supabase and JWT users
+interface ExtendedUser extends Partial<User> {
+  id: string;
+  email?: string;
+  user_metadata?: {
+    name?: string;
+    full_name?: string;
+    avatar_url?: string;
+    picture?: string;
+  };
+}
+
 interface AuthContextType {
-  user: User | null;
+  user: ExtendedUser | null;
   loading: boolean;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -15,7 +27,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<ExtendedUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const supabase = createClient();
@@ -56,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 name: data.user.name,
                 full_name: data.user.name,
               },
-            } as User);
+            });
           }
         }
       } catch (error) {

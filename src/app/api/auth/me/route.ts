@@ -15,13 +15,13 @@ export async function GET() {
     // Verify JWT token
     const decoded = verifyToken(token);
 
-    if (!decoded || !decoded.userId) {
+    if (!decoded || typeof decoded === 'string' || !decoded.userId) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
     // Get user from database
     const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
+      where: { id: decoded.userId as string },
       select: {
         id: true,
         email: true,
