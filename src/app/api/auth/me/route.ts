@@ -15,7 +15,7 @@ export async function GET() {
     // Verify JWT token
     const decoded = verifyToken(token);
 
-    if (!decoded || typeof decoded === 'string' || !decoded.userId) {
+    if (!decoded || typeof decoded === "string" || !decoded.userId) {
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
