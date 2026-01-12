@@ -3,7 +3,6 @@ import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard"; // 1. Import PlanCard
 import SectionHeader from "@/components/shared/SectionHeader";
 import {
-  
   MONTHLY_TOP_KITCHENS,
   RECOMMENDED_DISHES,
   WEEKLY_BEST_DISHES,

@@ -1,15 +1,36 @@
 import { WEEKLY_SCHEDULE_DATA } from "@/lib/dummy-data/schedule-data";
+import { SUBSCRIPTION_DETAILS } from "@/lib/dummy-data/subscriptions";
 import ScheduleHeader from "@/components/subscription/schedule/ScheduleHeader";
 import DateSelector from "@/components/subscription/schedule/DateSelector";
 import MealCard from "@/components/subscription/schedule/MealCard";
-import { Zap } from "lucide-react";
+import SubscriptionHero from "@/components/subscription/SubscriptionHero";
+import SubscriptionSettings from "@/components/subscription/SubscriptionSettings";
+import { ArrowLeft, Zap } from "lucide-react";
+import Link from "next/link";
 
-export default function SchedulePage() {
+export default async function SchedulePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   const data = WEEKLY_SCHEDULE_DATA;
+  const sub = SUBSCRIPTION_DETAILS; // Fetch based on ID in real app
 
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
-      <div className="max-w-7xl mx-auto px-4 py-8 md:p-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 md:p-8 space-y-8">
+        
+        {/* Back Nav */}
+        <Link
+          href="/profile/my-subscription"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-teal-700 transition-colors"
+        >
+          <ArrowLeft size={16} /> Back to My Subscriptions
+        </Link>
+
+        {/* Subscription Hero - Static Info */}
+        <SubscriptionHero sub={sub} />
         
         {/* 1. Header */}
         <ScheduleHeader planName={data.planName} currentWeek={data.currentWeek} />
@@ -49,6 +70,9 @@ export default function SchedulePage() {
              View Full Month Calendar
           </button>
         </div>
+
+        {/* Subscription Settings - Pause/Cancel */}
+        <SubscriptionSettings />
 
       </div>
     </main>

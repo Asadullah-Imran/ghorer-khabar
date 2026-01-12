@@ -39,7 +39,10 @@ export default function FavoriteTabs() {
         <ChefHat size={16} /> Kitchens
       </button>
 
-      <button onClick={() => setTab("subscriptions")} className={getTabClass("subscriptions")}>
+      <button
+        onClick={() => setTab("subscriptions")}
+        className={getTabClass("subscriptions")}
+      >
         <CalendarCheck size={16} /> Subscriptions
       </button>
     </div>

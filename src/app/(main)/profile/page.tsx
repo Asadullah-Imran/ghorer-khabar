@@ -133,7 +133,7 @@ export default function ProfilePage() {
                   Active Tiffin Plan
                 </h3>
                 <Link
-                  href={`/profile/subscription/${ACTIVE_SUBSCRIPTION.id}`}
+                  href="/profile/my-subscription"
                   className="text-sm font-semibold text-teal-700 hover:underline"
                 >
                   Manage Plan

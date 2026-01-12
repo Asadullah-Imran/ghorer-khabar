@@ -2,11 +2,9 @@
 
 import {
   ArrowRightLeft,
-  Check,
   ChefHat,
   PauseCircle,
   User,
-  UtensilsCrossed,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -56,37 +54,17 @@ export function RoleSwitcher() {
 // --- 2. Subscription Actions (Updated with Modals) ---
 export function SubscriptionActions() {
   const [showSkipModal, setShowSkipModal] = useState(false);
-  const [showMenuModal, setShowMenuModal] = useState(false);
-  const [selectedMenu, setSelectedMenu] = useState("default");
-
-  // Dummy Menu Options for the Modal
-  const menuOptions = [
-    {
-      id: "default",
-      name: "Bhuna Khichuri & Egg Curry",
-      label: "Standard Menu",
-    },
-    { id: "opt2", name: "Plain Rice & Chicken Curry", label: "Alternative 1" },
-    { id: "opt3", name: "Roti & Mixed Vegetables", label: "Light Option" },
-  ];
 
   return (
     <>
-      {/* Action Buttons */}
-      <div className="mt-5 flex gap-3">
+      {/* Action Button */}
+      <div className="mt-5">
         <button
           onClick={() => setShowSkipModal(true)}
-          className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-gray-700 text-sm font-semibold py-2 rounded-lg transition-colors"
+          className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-gray-700 text-sm font-semibold py-2 rounded-lg transition-colors"
         >
           <PauseCircle size={16} />
           Skip Meal
-        </button>
-        <button
-          onClick={() => setShowMenuModal(true)}
-          className="flex-1 flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-teal-50 hover:text-teal-700 hover:border-teal-200 text-gray-700 text-sm font-semibold py-2 rounded-lg transition-colors"
-        >
-          <UtensilsCrossed size={16} />
-          Change Menu
         </button>
       </div>
 
@@ -132,74 +110,6 @@ export function SubscriptionActions() {
                 Yes, Skip
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* --- CHANGE MENU MODAL --- */}
-      {showMenuModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
-            <button
-              onClick={() => setShowMenuModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-            >
-              <X size={20} />
-            </button>
-
-            <h3 className="text-lg font-bold text-gray-900 mb-1">Swap Menu</h3>
-            <p className="text-sm text-gray-500 mb-5">
-              Select a different dish for <strong>Tomorrow</strong>.
-            </p>
-
-            <div className="space-y-3 mb-6">
-              {menuOptions.map((option) => (
-                <label
-                  key={option.id}
-                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                    selectedMenu === option.id
-                      ? "border-teal-600 bg-teal-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="menu"
-                    className="mt-1 text-teal-600 focus:ring-teal-500"
-                    checked={selectedMenu === option.id}
-                    onChange={() => setSelectedMenu(option.id)}
-                  />
-                  <div>
-                    <span
-                      className={`block text-sm font-bold ${
-                        selectedMenu === option.id
-                          ? "text-teal-900"
-                          : "text-gray-700"
-                      }`}
-                    >
-                      {option.name}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {option.label}
-                    </span>
-                  </div>
-                </label>
-              ))}
-            </div>
-
-            <button
-              onClick={() => {
-                alert(
-                  `Menu changed to: ${
-                    menuOptions.find((m) => m.id === selectedMenu)?.name
-                  }`
-                );
-                setShowMenuModal(false);
-              }}
-              className="w-full py-3 rounded-lg bg-teal-700 text-white font-bold hover:bg-teal-800 flex items-center justify-center gap-2"
-            >
-              <Check size={18} /> Confirm Change
-            </button>
           </div>
         </div>
       )}
