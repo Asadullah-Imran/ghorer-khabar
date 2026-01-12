@@ -1,49 +1,70 @@
-import SubscriptionCard from "@/components/subscription/SubscriptionCard";
-import { ALL_SUBSCRIPTIONS } from "@/lib/dummy-data/subscriptions";
-import { CalendarCheck, Package } from "lucide-react";
+import ActiveSubscriptionCard from "@/components/subscription/ActiveSubscriptionCard";
+import DeliveryCalendar from "@/components/subscription/DeliveryCalendar";
+import SubscriptionHistory from "@/components/subscription/SubscriptionHistory";
+import {
+  MY_ACTIVE_SUBSCRIPTIONS,
+  MY_SUBSCRIPTION_HISTORY,
+  UPCOMING_DELIVERIES,
+} from "@/lib/dummy-data/my-subscription-data";
+import { BadgeCheck, PlusCircle } from "lucide-react";
 import Link from "next/link";
 
-export default function AllSubscriptionsPage() {
+export default function MySubscriptionsPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <div className="bg-teal-50 p-3 rounded-xl">
-          <CalendarCheck className="text-teal-700" size={28} />
-        </div>
-        <div>
-          <h1 className="text-2xl font-black text-gray-900">
+    <div className="max-w-[1200px] mx-auto p-6 md:p-10">
+      {/* 1. Page Heading */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-gray-900 text-3xl font-black tracking-tight">
             My Subscriptions
           </h1>
-          <p className="text-sm text-gray-500">
-            Manage your recurring meal plans
+          <p className="text-gray-500 text-base">
+            You have{" "}
+            <span className="text-teal-700 font-bold">
+              {MY_ACTIVE_SUBSCRIPTIONS.length} active plans
+            </span>{" "}
+            for this month.
           </p>
         </div>
+        <Link
+          href="/explore?tab=plans"
+          className="bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-teal-700/20 flex items-center gap-2"
+        >
+          <PlusCircle size={20} />
+          Browse New Plans
+        </Link>
       </div>
 
-      {/* List of Cards */}
-      <div className="grid gap-6">
-        {ALL_SUBSCRIPTIONS.map((sub) => (
-          <SubscriptionCard key={sub.id} sub={sub} />
-        ))}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        {/* Left Section: Active Subscriptions & History */}
+        <div className="xl:col-span-2 flex flex-col gap-10">
+          {/* Active List */}
+          <section>
+            <div className="flex items-center gap-2 mb-6">
+              <BadgeCheck className="text-teal-700" size={24} />
+              <h2 className="text-xl font-bold tracking-tight text-gray-900">
+                Active Subscriptions
+              </h2>
+            </div>
 
-        {/* CTA Card */}
-        <Link
-          href="/explore?tab=dishes&sort=recommended"
-          className="border-2 border-dashed border-gray-200 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:border-teal-300 hover:bg-teal-50/50 transition-colors group"
-        >
-          <div className="bg-gray-50 group-hover:bg-white p-4 rounded-full mb-3 transition-colors">
-            <Package
-              className="text-gray-400 group-hover:text-teal-600"
-              size={32}
-            />
-          </div>
-          <h3 className="font-bold text-gray-900">Subscribe to a new plan</h3>
-          <p className="text-sm text-gray-500 mt-1 max-w-xs">
-            Save up to 20% on daily meals by subscribing to your favorite home
-            chefs.
-          </p>
-        </Link>
+            <div className="flex flex-col gap-6">
+              {MY_ACTIVE_SUBSCRIPTIONS.map((subscription) => (
+                <ActiveSubscriptionCard
+                  key={subscription.id}
+                  subscription={subscription}
+                />
+              ))}
+            </div>
+          </section>
+
+          {/* History Table */}
+          <SubscriptionHistory history={MY_SUBSCRIPTION_HISTORY} />
+        </div>
+
+        {/* Right Section: Delivery Calendar Widget */}
+        <div className="xl:col-span-1">
+          <DeliveryCalendar deliveries={UPCOMING_DELIVERIES} />
+        </div>
       </div>
     </div>
   );
