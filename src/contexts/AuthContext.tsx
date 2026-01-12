@@ -45,21 +45,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    let mounted = true;
+
     // Get initial session
     const initializeAuth = async () => {
       try {
-        // First check Supabase auth (for OAuth users)
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+        // First check Supabase session via server (for OAuth users)
+        const sessionResponse = await fetch("/api/auth/session");
+        if (!mounted) return;
+        
+        if (sessionResponse.ok) {
+          const sessionData = await sessionResponse.json();
+          if (sessionData.user && mounted) {
+            console.log("Found Supabase session:", sessionData.user.email);
+            setUser(sessionData.user);
+            setLoading(false);
+            return;
+          }
+        }
 
-        if (user) {
-          setUser(user);
-        } else {
-          // Check for JWT cookie (for email/password users)
-          const response = await fetch("/api/auth/me");
-          if (response.ok) {
-            const data = await response.json();
+        // Check for JWT cookie (for email/password users)
+        const jwtResponse = await fetch("/api/auth/me");
+        if (!mounted) return;
+        
+        if (jwtResponse.ok) {
+          const data = await jwtResponse.json();
+          if (mounted) {
+            console.log("Found JWT session:", data.user.email);
             // Create a user-like object for consistency
             setUser({
               id: data.user.id,
@@ -69,36 +81,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 full_name: data.user.name,
               },
             });
+            setLoading(false);
+            return;
           }
+        }
+
+        // No session found
+        if (mounted) {
+          console.log("No session found");
+          setLoading(false);
         }
       } catch (error) {
         console.error("Error getting user:", error);
-      } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
-    initializeAuth();
-
-    // Listen for auth changes
+    // Listen for auth changes (this fires immediately with INITIAL_SESSION)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
+      if (!mounted) return;
+      
+      console.log("Auth state changed:", event, session?.user?.email);
 
-      if (event === "SIGNED_IN" && session?.user) {
+      if (event === "INITIAL_SESSION") {
+        // Handle initial session load
+        if (session?.user) {
+          console.log("Initial session user:", session.user.email);
+          setUser(session.user);
+        }
+        // Only set loading to false after we've checked our API endpoints
+        // Don't set it here to avoid race conditions
+      } else if (event === "SIGNED_IN" && session?.user) {
+        console.log("User signed in:", session.user.email);
         setUser(session.user);
         setLoading(false);
       } else if (event === "SIGNED_OUT") {
+        console.log("User signed out");
         setUser(null);
         setLoading(false);
         router.push("/login");
       } else if (event === "TOKEN_REFRESHED") {
+        console.log("Token refreshed:", session?.user?.email);
         setUser(session?.user || null);
       }
     });
 
+    // Initialize auth after setting up listener
+    initializeAuth();
+
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, [supabase, router]);

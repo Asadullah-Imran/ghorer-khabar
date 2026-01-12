@@ -112,10 +112,12 @@ model User {
 │    Location: src/app/(authPages)/register/page.tsx         │
 │    Function: handleGoogleLogin()                            │
 │    Code:                                                    │
+│    const roleQuery = formData.role.toLowerCase();          │
 │    supabase.auth.signInWithOAuth({                         │
 │      provider: 'google',                                   │
-│      redirectTo: '/api/auth/callback'                      │
+│      redirectTo: '/api/auth/callback?role=${roleQuery}'   │
 │    })                                                       │
+│    Note: Role (BUYER/SELLER) passed as query param         │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -128,7 +130,7 @@ model User {
 │ 4. Supabase: Creates/updates Supabase Auth user            │
 │    - Stores user in Supabase Auth system                   │
 │    - Generates session tokens                              │
-│    - Sets HTTP-only cookies                                │
+│    - Sets HTTP-only cookies (30 days)                      │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -137,12 +139,17 @@ model User {
 │    Location: src/app/api/auth/callback/route.ts            │
 │    Process:                                                 │
 │    a) Exchange code for session                            │
-│    b) Extract user data from Google:                       │
+│    b) Extract role from URL query parameter                │
+│    c) Extract user data from Google:                       │
 │       - email                                               │
 │       - full_name                                           │
 │       - avatar_url                                          │
 │       - user ID (providerId)                                │
-│    c) Call handleOAuthUser() function                      │
+│    d) Determine role priority:                             │
+│       1. URL param (?role=seller)                          │
+│       2. user_metadata.role (if exists)                    │
+│       3. Default to BUYER                                  │
+│    e) Call handleOAuthUser() with determined role          │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -156,6 +163,7 @@ model User {
 │      id: Google ID,                                         │
 │      email: user@gmail.com,                                 │
 │      name: "John Doe",                                      │
+│      role: "BUYER" or "SELLER" (from URL param),           │
 │      authProvider: 'GOOGLE',                                │
 │      providerId: Google ID,                                 │
 │      avatar: "https://lh3.googleusercontent.com/...",       │
@@ -571,6 +579,44 @@ export default function AuthGuard({ children }) {
 }
 ```
 
+### Login/Register Page Protection (Reverse Guard)
+
+**Purpose:** Prevent authenticated users from accessing login/register pages
+
+**Location:** `src/app/(authPages)/login/page.tsx` and `register/page.tsx`
+
+```typescript
+export default function LoginPage() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Redirect authenticated users away from login page
+  useEffect(() => {
+    if (!authLoading && user) {
+      const redirect = searchParams.get("redirect") || "/feed";
+      router.push(redirect);
+    }
+  }, [user, authLoading, router, searchParams]);
+
+  // Rest of login page component...
+}
+```
+
+**How it works:**
+
+1. User navigates to `/login` while already authenticated
+2. `useAuth()` hook detects user is logged in
+3. Checks for `redirect` query param (e.g., `/login?redirect=/explore`)
+4. Redirects user to intended page or `/feed` by default
+5. Prevents flash of login form to authenticated users
+
+**Same logic applies to:**
+
+- `/login` → Redirects authenticated users to /feed or redirect URL
+- `/register` → Redirects authenticated users to /feed
+- Prevents confusion and unnecessary re-authentication
+
 ---
 
 ## Data Flow Architecture
@@ -645,31 +691,53 @@ export default function AuthGuard({ children }) {
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ AuthContext Initialization (on app load)                   │
+│ Location: src/contexts/AuthContext.tsx                     │
+│ Race Condition Prevention: Uses mounted flag               │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ Step 1: Check Supabase Auth (for OAuth users)              │
-│ Code: const { data: { user } } = await supabase.auth       │
-│                                    .getUser()               │
-│ If user found: Set user state ✅                            │
+│ Step 1: Set up auth state change listener                  │
+│ Code: supabase.auth.onAuthStateChange((event, session))   │
+│ Events: INITIAL_SESSION, SIGNED_IN, SIGNED_OUT,            │
+│         TOKEN_REFRESHED                                     │
+│ Purpose: Capture auth changes from Supabase                │
 └────────────────────┬────────────────────────────────────────┘
-                     │ No Supabase user
+                     │
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ Step 2: Check JWT Cookie (for email/password users)        │
+│ Step 2: Check Supabase Session via Server (OAuth users)    │
+│ Code: const res = await fetch('/api/auth/session')         │
+│ API: /api/auth/session reads HTTP-only cookies             │
+│ If user found: Set user state ✅, setLoading(false)         │
+│ If no user: Continue to Step 3                             │
+└────────────────────┬────────────────────────────────────────┘
+                     │ No Supabase session
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 3: Check JWT Cookie (email/password users)            │
 │ Code: const res = await fetch('/api/auth/me')              │
-│ API checks: auth_token cookie                              │
+│ API checks: auth_token cookie, verifies JWT                │
 │ If valid JWT: Create user object from DB data ✅            │
+│               setLoading(false)                             │
 └────────────────────┬────────────────────────────────────────┘
                      │ No valid session
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ Step 3: Set user = null                                    │
+│ Step 4: No session found                                   │
+│ Code: setUser(null), setLoading(false)                     │
 │ Result: User not authenticated ❌                           │
 │ AuthGuard will redirect to /login                          │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**Important Implementation Details:**
+
+1. **Mounted Flag**: Prevents state updates after component unmount
+2. **Loading State**: Stays true until all checks complete (prevents flash of login page)
+3. **onAuthStateChange**: Does NOT set loading to false on INITIAL_SESSION (prevents race condition)
+4. **API Endpoints**: Server-side endpoints can read HTTP-only cookies (client cannot)
+5. **Session Priority**: Supabase session checked first, then JWT cookie
 
 ---
 
@@ -819,6 +887,42 @@ SMTP_PASS="your-app-password"
 # App URL
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
+
+### Next.js Configuration for Google Profile Images
+
+**Location:** `next.config.ts`
+
+```typescript
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "i.pravatar.cc",
+      },
+      {
+        protocol: "https",
+        hostname: "ui-avatars.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com", // Google profile images
+      },
+    ],
+  },
+};
+```
+
+**Why needed:**
+
+- Google OAuth returns profile pictures from `lh3.googleusercontent.com`
+- Next.js Image component requires whitelisted external domains
+- Without this, Google profile images will fail to load
+- Also allows other avatar services (ui-avatars.com for fallbacks)
 
 ### Key Dependencies
 
@@ -1017,6 +1121,55 @@ Day 60 (User returns after long break)
 2. Enable "Less secure app access" if using regular password
 3. Check SMTP_USER and SMTP_PASS in .env
 
+### Issue 6: Flash of login page on reload
+
+**Cause**: Race condition in AuthContext initialization  
+**Solution**: Fixed by:
+
+1. Using `mounted` flag to prevent state updates after unmount
+2. Not setting `loading = false` on `INITIAL_SESSION` event
+3. Only setting loading to false after API endpoint checks complete
+4. Shows loading spinner until auth check finishes
+
+### Issue 7: Google profile images not loading
+
+**Cause**: `lh3.googleusercontent.com` not whitelisted in Next.js config  
+**Solution**: Add to `next.config.ts`:
+
+```typescript
+images: {
+  remotePatterns: [
+    {
+      protocol: "https",
+      hostname: "lh3.googleusercontent.com",
+    },
+  ];
+}
+```
+
+### Issue 8: Authenticated users see login page after OAuth
+
+**Cause**: No redirect logic for already-authenticated users on login page  
+**Solution**: Added in `login/page.tsx`:
+
+```typescript
+useEffect(() => {
+  if (!authLoading && user) {
+    const redirect = searchParams.get("redirect") || "/feed";
+    router.push(redirect);
+  }
+}, [user, authLoading, router, searchParams]);
+```
+
+### Issue 9: OAuth users created with wrong role
+
+**Cause**: Role query parameter not being read from callback URL  
+**Solution**: Updated `api/auth/callback/route.ts` to:
+
+1. Extract `role` from URL query params
+2. Priority: URL param → user_metadata.role → default to BUYER
+3. Pass correct role to `handleOAuthUser()`
+
 ---
 
 ## Summary Diagram: Complete System Overview
@@ -1086,10 +1239,14 @@ This authentication system provides:
 - ✅ **Email verification** for manual signups
 - ✅ **30-day persistent sessions** across browser restarts
 - ✅ **Client-side route protection** with AuthGuard
-- ✅ **Automatic session refresh** for OAuth users
-- ✅ **Secure cookie-based sessions** (HTTP-only, Secure)
+- ✅ **Reverse route protection** (login/register pages redirect authenticated users)
+- ✅ **Automatic session refresh** for OAuth users via middleware
+- ✅ **Server-side session API** to read HTTP-only cookies
+- ✅ **Race condition prevention** with mounted flag and proper loading states
+- ✅ **Secure cookie-based sessions** (HTTP-only, Secure, SameSite)
 - ✅ **Single user database** for simplicity
 - ✅ **Hybrid session management** (Supabase + JWT)
+- ✅ **Role-based user creation** (BUYER/SELLER from OAuth registration)
 
 **Security Features:**
 
@@ -1097,20 +1254,33 @@ This authentication system provides:
 - 🔒 HTTP-only cookies (XSS protection)
 - 🔒 SameSite cookies (CSRF protection)
 - 🔒 Secure cookies in production (HTTPS only)
-- 🔒 Email verification required
+- 🔒 Email verification required for password users
 - 🔒 JWT with secret signing
-- 🔒 Token expiration (24 hours for email, 30 days for session)
+- 🔒 Token expiration (24 hours for email verification, 30 days for sessions)
+- 🔒 Middleware session refresh prevents expiration
 
 **User Experience:**
 
-- 👍 One-click Google login
+- 👍 One-click Google login with role selection
 - 👍 Email verification with clear instructions
-- 👍 Persistent sessions (30 days)
-- 👍 Automatic redirect after login
-- 👍 Protected routes with loading states
+- 👍 Persistent sessions (30 days, survives browser restart)
+- 👍 Automatic redirect after login to intended page
+- 👍 Protected routes with loading states (no flash)
 - 👍 Clean error messages
+- 👍 Google profile pictures displayed correctly
+- 👍 Smooth page reloads without authentication flashes
+
+**Recent Fixes (January 2026):**
+
+1. ✅ Added role parameter handling in OAuth callback
+2. ✅ Fixed race condition in AuthContext with mounted flag
+3. ✅ Added reverse guard for login/register pages
+4. ✅ Configured Next.js image domains for Google CDN
+5. ✅ Created /api/auth/session endpoint for server-side cookie reading
+6. ✅ Prevented flash of login page on reload
 
 ---
 
 _Last Updated: January 12, 2026_
-_Version: 1.0_
+_Version: 2.0_
+_Updated with: Role-based OAuth, race condition fixes, and reverse auth guards_

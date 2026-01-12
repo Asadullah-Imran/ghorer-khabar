@@ -2,10 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
+  let supabaseResponse = NextResponse.next({
+    request,
   });
 
   const supabase = createServerClient(
@@ -13,55 +11,44 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
+        getAll() {
+          return request.cookies.getAll();
         },
-        set(name: string, value: string, options: Record<string, unknown>) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            request.cookies.set({
+              name,
+              value,
+              ...options,
+            })
+          );
+          supabaseResponse = NextResponse.next({
+            request,
           });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-            maxAge: 60 * 60 * 24 * 30, // 30 days
-            sameSite: "lax",
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-          });
-        },
-        remove(name: string, options: Record<string, unknown>) {
-          request.cookies.set({
-            name,
-            value: "",
-            ...options,
-          });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
-          response.cookies.set({
-            name,
-            value: "",
-            ...options,
-          });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set({
+              name,
+              value,
+              ...options,
+              maxAge: 60 * 60 * 24 * 30, // 30 days
+              sameSite: "lax" as const,
+              httpOnly: true,
+              secure: process.env.NODE_ENV === "production",
+            })
+          );
         },
       },
     }
   );
 
   // Refresh session if expired - this will keep the user logged in
-  await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (user) {
+    console.log("Middleware: User session found for", user.email);
+  }
 
-  return response;
+  return supabaseResponse;
 }
 
 export const config = {

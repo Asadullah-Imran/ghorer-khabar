@@ -1,18 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import logo from "@/lib/image/logo.png";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+  const { user, loading: authLoading } = useAuth();
+
+  // Redirect authenticated users away from login page
+  useEffect(() => {
+    if (!authLoading && user) {
+      const redirect = searchParams.get("redirect") || "/feed";
+      router.push(redirect);
+    }
+  }, [user, authLoading, router, searchParams]);
 
   /**
    * HANDLE GOOGLE LOGIN
