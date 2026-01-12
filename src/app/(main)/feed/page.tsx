@@ -63,7 +63,7 @@ export default function FeedPage() {
           <SectionHeader
             title="Monthly Meal Plans"
             subtitle="Save time & money with recurring meals"
-            href="/explore?tab=plans"
+            href="/explore?tab=subscriptions"
           />
           <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-4 scrollbar-hide snap-x">
             {FEATURED_PLANS.map((plan) => (

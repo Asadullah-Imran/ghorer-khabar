@@ -18,7 +18,7 @@ interface DishProps {
 
 export default function DishCard({ data, featured }: DishProps) {
   return (
-    <Link href={`/dish/${data.id}`} className="group block h-full">
+    <Link href={`/explore/dish/${data.id}`} className="group block h-full">
       <div
         className={`relative bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-lg transition h-full flex flex-col ${
           featured ? "min-w-[280px]" : "w-full"

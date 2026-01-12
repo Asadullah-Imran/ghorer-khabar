@@ -64,7 +64,7 @@ export default function ActiveSubscriptionCard({ subscription }: { subscription:
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-3 mt-6">
             <Link 
-                href={`/feed/plans/${subscription.planId}`} // Links to details page
+                href={`/explore/subscriptions/${subscription.planId}`} // Links to details page
                 className="bg-teal-700 text-white text-xs font-bold px-5 py-2.5 rounded-lg hover:bg-teal-800 transition-colors"
             >
                 View Schedule

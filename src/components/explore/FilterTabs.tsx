@@ -57,10 +57,10 @@ export default function FilterTabs({ categories }: FilterTabsProps) {
             <ChefHat size={16} /> Kitchens
           </button>
           <button
-            onClick={() => updateParam("tab", "plans")}
-            className={getTabClass("plans")}
+            onClick={() => updateParam("tab", "subscriptions")}
+            className={getTabClass("subscriptions")}
           >
-            <CalendarCheck size={16} /> Plans
+            <CalendarCheck size={16} /> Subscriptions
           </button>
         </div>
 

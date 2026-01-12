@@ -271,7 +271,7 @@ export default function CartPageContent({
 
           {/* Add More Button */}
           <Link
-            href={`/kitchen/${initialData.kitchen.id}`}
+            href={`/explore/kitchen/${initialData.kitchen.id}`}
             className="flex items-center justify-center gap-2 p-4 rounded-xl border-2 border-dashed border-gray-300 text-gray-500 hover:border-teal-600 hover:text-teal-600 transition-all group"
           >
             <PlusCircle className="group-hover:scale-110 transition-transform" />
