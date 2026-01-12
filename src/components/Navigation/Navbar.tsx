@@ -1,6 +1,7 @@
 "use client";
 
 import { useCart } from "@/components/cart/CartProvider";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   ChefHat,
   Home,
@@ -20,11 +21,20 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { totalItems } = useCart();
+  const { user } = useAuth();
 
   const excludedPaths = ["/", "/checkout", "/login", "/register"];
   if (excludedPaths.includes(pathname)) return null;
 
   const cartCount = totalItems;
+
+  // Get user avatar from Google or use default
+  const userAvatar =
+    user?.user_metadata?.avatar_url ||
+    user?.user_metadata?.picture ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      user?.email || "User"
+    )}&background=0D8ABC&color=fff`;
 
   const handleSearch = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
@@ -90,12 +100,14 @@ export default function Navbar() {
             <Link
               href="/profile"
               className="hidden md:block w-9 h-9 bg-gray-200 rounded-full overflow-hidden border-2 border-white shadow-sm"
+              title={user?.email || "Profile"}
             >
               <Image
-                src="https://i.pravatar.cc/150?u=a042581f4e29026704d"
-                alt="Profile"
+                src={userAvatar}
+                alt={user?.user_metadata?.full_name || "Profile"}
                 width={36}
                 height={36}
+                className="object-cover"
               />
             </Link>
 

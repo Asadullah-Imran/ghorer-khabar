@@ -18,12 +18,27 @@ model User {
   id        String   @id
   name      String?
   email     String   @unique
-  password  String?
+  password  String?  // NULL for OAuth users
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   role Role @default(BUYER)
 
+  // Email verification fields (for email/password signup)
+  emailVerified      Boolean   @default(false)
+  verificationToken  String?   @unique
+  verificationExpiry DateTime?
+
+  // OAuth fields
+  authProvider AuthProvider @default(EMAIL)
+  providerId   String?      // Google/OAuth user ID
+  avatar       String?      // Profile picture URL
+
+  // Password reset fields
+  resetToken       String?   @unique
+  resetTokenExpiry DateTime?
+
+  // Relations
   EmailLogOTPs EmailLogOTP[]
 
   @@map("users")
@@ -45,5 +60,10 @@ enum Role {
   BUYER
   SELLER
   ADMIN
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
 }
 

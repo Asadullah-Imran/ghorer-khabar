@@ -1,13 +1,11 @@
-import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { prisma } from '@/lib/prisma/prisma';
+import { NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { handleOAuthUser } from "@/services/authService";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get('code');
-  const roleParam = (searchParams.get('role') || 'BUYER').toUpperCase();
-  const normalizedRole = roleParam === 'SELLER' ? 'SELLER' : 'BUYER';
+  const code = searchParams.get("code");
 
   try {
     if (code) {
@@ -17,9 +15,23 @@ export async function GET(request: Request) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
           cookies: {
-            get(name) { return cookieStore.get(name)?.value },
-            set(name, value, options) { cookieStore.set({ name, value, ...options }) },
-            remove(name, options) { cookieStore.delete({ name, ...options }) },
+            get(name) {
+              return cookieStore.get(name)?.value;
+            },
+            set(name, value, options) {
+              cookieStore.set({
+                name,
+                value,
+                ...options,
+                maxAge: 60 * 60 * 24 * 30, // 30 days
+                sameSite: "lax",
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+              });
+            },
+            remove(name, options) {
+              cookieStore.delete({ name, ...options });
+            },
           },
         }
       );
@@ -27,36 +39,31 @@ export async function GET(request: Request) {
       // 1. Exchange the temporary code for a Supabase session
       const { data, error } = await supabase.auth.exchangeCodeForSession(code);
       //console.log("Supabase session exchange result:", { data, error });
-  
+
       if (!error && data?.user) {
         console.log("User authenticated via Google:", data.user);
 
-        // 2. Sync/Update the user data in Prisma, defaulting to BUYER
-        const syncUser = await prisma.user.upsert({
-          where: { email: data.user.email! },
-          update: { 
-            name: data.user.user_metadata.full_name,
-            role: normalizedRole,
-          },
-          create: {
-            id: data.user.id, // Supabase UUID String
-            email: data.user.email!,
-            name: data.user.user_metadata.full_name,
-            password: "", // Empty for OAuth users
-            role: normalizedRole,
-          },
-        });
+        // Get user role from metadata or default to BUYER
+        const role =
+          (data.user.user_metadata.role as "BUYER" | "SELLER" | "ADMIN") ||
+          "BUYER";
 
-        console.log("Database Sync Successful for:", syncUser.email);
+        // Create or update user in database using the authService
+        await handleOAuthUser(
+          data.user.email!,
+          data.user.user_metadata.full_name,
+          data.user.id, // Google's providerId
+          data.user.user_metadata.avatar_url,
+          role
+        );
+
+        console.log("Database Sync Successful for:", data.user.email);
         return NextResponse.redirect(`${origin}/feed`);
       }
     }
 
- 
-
     // Fallback if no code or error in session exchange
     return NextResponse.redirect(`${origin}/login?error=auth_failed`);
-
   } catch (error) {
     console.error("Auth Callback Error:", error);
     return NextResponse.redirect(`${origin}/login?error=server_error`);
