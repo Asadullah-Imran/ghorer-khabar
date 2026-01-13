@@ -137,7 +137,9 @@ export default function AddressList() {
   };
 
   // Convert Address to AddressFormData for editing
-  const getFormData = (address: Address | null): AddressFormData | undefined => {
+  const getFormData = (
+    address: Address | null
+  ): AddressFormData | undefined => {
     if (!address) return undefined;
     return {
       id: address.id,
