@@ -5,19 +5,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   ChefHat,
   Home,
+  Loader2,
+  LogOut,
   Menu,
   Search,
+  Settings,
   ShoppingBag,
   User,
   X,
-  Settings,
-  LogOut,
-  Loader2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect, useRef, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

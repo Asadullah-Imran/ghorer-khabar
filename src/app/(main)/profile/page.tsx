@@ -1,5 +1,5 @@
-import { SubscriptionActions } from "@/components/profile/ProfileInteractions";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { SubscriptionActions } from "@/components/profile/ProfileInteractions";
 import {
   ACTIVE_SUBSCRIPTION,
   ORDER_HISTORY,
