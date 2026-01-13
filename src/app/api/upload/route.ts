@@ -15,7 +15,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    if (!bucket || !["nid-documents", "kitchen-images"].includes(bucket)) {
+    if (
+      !bucket ||
+      !["nid-documents", "kitchen-images", "avatars"].includes(bucket)
+    ) {
       return NextResponse.json({ error: "Invalid bucket" }, { status: 400 });
     }
 
