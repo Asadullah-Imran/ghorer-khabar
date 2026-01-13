@@ -1,7 +1,4 @@
-import {
-  RoleSwitcher,
-  SubscriptionActions,
-} from "@/components/profile/ProfileInteractions";
+import { SubscriptionActions } from "@/components/profile/ProfileInteractions";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import {
   ACTIVE_SUBSCRIPTION,
@@ -25,17 +22,13 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-        {/* 1. Header & Role Switcher */}
+        {/* 1. Header & Impact Stats */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* User Info Card - Now using auth context */}
           <ProfileHeader />
 
-          {/* Role Switcher & Impact Stats */}
-          <div className="lg:col-span-2 flex flex-col gap-6">
-            {/* The Mode Switcher */}
-            <RoleSwitcher />
-
-            {/* Impact Stats (Replacing Calories) */}
+          {/* Impact Stats */}
+          <div className="lg:col-span-2">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
