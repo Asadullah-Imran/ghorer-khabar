@@ -233,19 +233,18 @@ export default function ChefOnboardingPage() {
               zone={formData.zone}
               latitude={formData.latitude}
               longitude={formData.longitude}
-              onAddressChange={(value) =>
-                setFormData({ ...formData, address: value })
-              }
-              onZoneChange={(value) =>
-                setFormData({ ...formData, zone: value })
-              }
+              onAddressChange={(value) => {
+                setFormData((prev) => ({ ...prev, address: value }));
+              }}
+              onZoneChange={(value) => {
+                setFormData((prev) => ({ ...prev, zone: value }));
+              }}
               onLocationChange={(lat, lng, addr) => {
-                setFormData({
-                  ...formData,
+                setFormData((prev) => ({
+                  ...prev,
                   latitude: lat,
                   longitude: lng,
-                  ...(addr && !formData.address ? { address: addr } : {}),
-                });
+                }));
               }}
               errors={errors}
             />

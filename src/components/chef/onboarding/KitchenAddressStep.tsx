@@ -19,12 +19,42 @@ interface KitchenAddressStepProps {
 function extractZoneFromAddress(fullAddress: string): string {
   // Common Dhaka zones/areas - extend this list as needed
   const zones = [
-    "Uttara", "Banani", "Gulshan", "Dhanmondi", "Mirpur", "Mohammadpur",
-    "Bashundhara", "Badda", "Rampura", "Khilgaon", "Motijheel", "Tejgaon",
-    "Farmgate", "Kawran Bazar", "Panthapath", "Green Road", "Lalmatia",
-    "Mohakhali", "Baridhara", "Nikunja", "Pallabi", "Kafrul", "Cantonment",
-    "Old Dhaka", "Lalbagh", "Kamrangirchar", "Jatrabari", "Sayedabad",
-    "Demra", "Tongi", "Savar", "Keraniganj", "Ashulia"
+    "Uttara",
+    "Banani",
+    "Gulshan",
+    "Dhanmondi",
+    "Mirpur",
+    "Mohammadpur",
+    "Bashundhara",
+    "Badda",
+    "Rampura",
+    "Khilgaon",
+    "Motijheel",
+    "Tejgaon",
+    "Farmgate",
+    "Kawran Bazar",
+    "Panthapath",
+    "Green Road",
+    "Lalmatia",
+    "Mohakhali",
+    "Baridhara",
+    "Nikunja",
+    "Pallabi",
+    "Kafrul",
+    "Cantonment",
+    "Old Dhaka",
+    "Lalbagh",
+    "Kamrangirchar",
+    "Jatrabari",
+    "Sayedabad",
+    "Demra",
+    "Tongi",
+    "Savar",
+    "Keraniganj",
+    "Ashulia",
+    "Kurmitola",
+    "Solmaid",
+    "Zia Colony",
   ];
 
   // Try to find a matching zone in the address
@@ -35,9 +65,18 @@ function extractZoneFromAddress(fullAddress: string): string {
   }
 
   // If no known zone found, try to extract from common patterns
-  const parts = fullAddress.split(",").map(p => p.trim());
-  if (parts.length >= 2) {
-    return parts[parts.length - 2];
+  // Split by comma and look for the area name (usually 2nd or 3rd segment)
+  const parts = fullAddress.split(",").map((p) => p.trim());
+  
+  // Skip numeric values (postal codes) and common words
+  const skipWords = ['dhaka', 'bangladesh', 'division', 'district', 'metropolitan', 'road', 'block'];
+  
+  for (let i = 1; i < Math.min(parts.length - 2, 4); i++) {
+    const part = parts[i];
+    // Check if it's not a number and not a skip word
+    if (!/^\d+$/.test(part) && !skipWords.some(word => part.toLowerCase().includes(word))) {
+      return part;
+    }
   }
 
   return "";
@@ -57,11 +96,11 @@ export default function KitchenAddressStep({
 
   const handleLocationSelect = (lat: number, lng: number, addr?: string) => {
     onLocationChange(lat, lng, addr);
-    
+
     if (addr) {
       // Always auto-fill the address field with fetched address
       onAddressChange(addr);
-      
+
       // Auto-extract and fill zone
       const extractedZone = extractZoneFromAddress(addr);
       if (extractedZone) {
@@ -89,7 +128,7 @@ export default function KitchenAddressStep({
           <p className="text-xs text-gray-500 mb-2">
             📍 Click the map to auto-fill your address and zone
           </p>
-          
+
           <button
             type="button"
             onClick={() => setShowMap(true)}
