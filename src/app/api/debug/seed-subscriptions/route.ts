@@ -146,7 +146,8 @@ export async function POST() {
       // Create schedules
       for (const [day, daySchedule] of Object.entries(planData.schedule)) {
         for (const [mealType, mealSlot] of Object.entries(daySchedule as any)) {
-          for (const dishId of mealSlot.dishIds) {
+          const typedMealSlot = mealSlot as { time: string; dishIds: string[] };
+          for (const dishId of typedMealSlot.dishIds) {
             const dish = await prisma.menu_items.findUnique({
               where: { id: dishId },
             });
@@ -156,7 +157,7 @@ export async function POST() {
                 plan_id: plan.id,
                 day_of_week: day as any,
                 meal_type: mealType.toUpperCase() as any,
-                time: mealSlot.time,
+                time: typedMealSlot.time,
                 dish_id: dishId,
                 dish_name: dish?.name || "Unknown",
                 dish_desc: dish?.description || null,
