@@ -50,7 +50,6 @@ export default function LocationPicker({
     const initMap = async () => {
       try {
         const L = (await import("leaflet")).default;
-        await import("leaflet/dist/leaflet.css");
 
         // Initialize map
         map = L.map("location-map").setView([initialLat, initialLng], 13);

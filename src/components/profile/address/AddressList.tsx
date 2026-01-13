@@ -136,6 +136,20 @@ export default function AddressList() {
     setShowForm(true);
   };
 
+  // Convert Address to AddressFormData for editing
+  const getFormData = (address: Address | null): AddressFormData | undefined => {
+    if (!address) return undefined;
+    return {
+      id: address.id,
+      label: address.label,
+      address: address.address,
+      zone: address.zone || "",
+      latitude: address.latitude,
+      longitude: address.longitude,
+      isDefault: address.isDefault,
+    };
+  };
+
   const handleCloseForm = () => {
     setShowForm(false);
     setEditingAddress(null);
@@ -274,7 +288,7 @@ export default function AddressList() {
         <AddressForm
           onClose={handleCloseForm}
           onSubmit={handleSubmit}
-          initialData={editingAddress || undefined}
+          initialData={getFormData(editingAddress)}
         />
       )}
     </>
