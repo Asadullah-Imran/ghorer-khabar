@@ -1,11 +1,23 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, Settings } from "lucide-react";
+import { Loader2, LogOut, Settings } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 
 export function ProfileHeader() {
   const { user, signOut } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Logout failed:", error);
+      setIsLoggingOut(false);
+    }
+  };
 
   const userAvatar =
     user?.user_metadata?.avatar_url ||
@@ -33,10 +45,16 @@ export function ProfileHeader() {
           <Settings size={16} /> Edit
         </button>
         <button
-          onClick={signOut}
-          className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50 text-sm font-medium"
+          onClick={handleLogout}
+          disabled={isLoggingOut}
+          className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <LogOut size={16} /> Logout
+          {isLoggingOut ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <LogOut size={16} />
+          )}
+          {isLoggingOut ? "Logging out..." : "Logout"}
         </button>
       </div>
     </div>
