@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 /* Tailwind plugin (v4 syntax) */
 /* Forms plugin temporarily disabled until package is installed */
