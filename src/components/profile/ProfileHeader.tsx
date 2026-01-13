@@ -28,15 +28,20 @@ export function ProfileHeader() {
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-[#feb728] opacity-10 rounded-full translate-y-8 -translate-x-4"></div>
         </div>
       </div>
-      
+
       {/* Profile Content */}
       <div className="relative px-6 pb-6">
         {/* Avatar - overlapping the gradient */}
         <div className="flex flex-col items-center -mt-14">
           <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-xl bg-white ring-4 ring-[#feb728]/30">
-            <Image src={userAvatar} alt="Profile" fill className="object-cover" />
+            <Image
+              src={userAvatar}
+              alt="Profile"
+              fill
+              className="object-cover"
+            />
           </div>
-          
+
           {/* User Info */}
           <div className="mt-4 text-center">
             <h1 className="text-2xl font-bold text-gray-900">{userName}</h1>

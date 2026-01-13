@@ -29,21 +29,23 @@ export default function ProfilePage() {
 
           {/* Impact Stats - Enhanced */}
           <div className="lg:col-span-2">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Impact</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Your Impact
+            </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="group bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200">
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-500 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
                     <Users size={22} />
                   </div>
-                  <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-3 py-1 rounded-full">+{USER_PROFILE.stats.chefsSupported}</span>
+                  <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
+                    +{USER_PROFILE.stats.chefsSupported}
+                  </span>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-1">
                   {USER_PROFILE.stats.chefsSupported} Chefs
                 </h3>
-                <p className="text-sm text-gray-500">
-                  Empowered local women
-                </p>
+                <p className="text-sm text-gray-500">Empowered local women</p>
               </div>
 
               <div className="group bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200">
@@ -51,14 +53,14 @@ export default function ProfilePage() {
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
                     <Utensils size={22} />
                   </div>
-                  <span className="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">This month</span>
+                  <span className="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
+                    This month
+                  </span>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-1">
                   {USER_PROFILE.stats.ordersThisMonth} Orders
                 </h3>
-                <p className="text-sm text-gray-500">
-                  Successfully delivered
-                </p>
+                <p className="text-sm text-gray-500">Successfully delivered</p>
               </div>
 
               <div className="group bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-red-200">
@@ -66,14 +68,14 @@ export default function ProfilePage() {
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
                     <Heart size={22} />
                   </div>
-                  <span className="text-xs font-semibold text-red-600 bg-red-50 px-3 py-1 rounded-full">Saved</span>
+                  <span className="text-xs font-semibold text-red-600 bg-red-50 px-3 py-1 rounded-full">
+                    Saved
+                  </span>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-1">
                   {USER_PROFILE.stats.favorites} Dishes
                 </h3>
-                <p className="text-sm text-gray-500">
-                  In your favorites
-                </p>
+                <p className="text-sm text-gray-500">In your favorites</p>
               </div>
             </div>
           </div>
@@ -166,7 +168,9 @@ export default function ProfilePage() {
             {/* Recent Order History */}
             <section>
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-2xl font-bold text-gray-900">Recent Orders</h2>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Recent Orders
+                </h2>
                 <button className="text-sm font-semibold text-teal-700 hover:text-teal-800 transition-colors px-4 py-2 rounded-lg hover:bg-teal-50">
                   View All
                 </button>
@@ -228,7 +232,9 @@ export default function ProfilePage() {
 
           {/* Right: Quick Actions */}
           <div className="xl:col-span-1">
-            <h2 className="text-2xl font-bold text-gray-900 mb-5">Quick Actions</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">
+              Quick Actions
+            </h2>
             <div className="bg-white rounded-2xl border border-gray-200 p-3 shadow-lg space-y-1">
               <Link
                 href="/profile/favorites"
@@ -238,7 +244,10 @@ export default function ProfilePage() {
                   <Heart size={18} />
                 </div>
                 <span className="font-semibold text-sm flex-1">Favorites</span>
-                <ChevronRight size={18} className="text-gray-400 group-hover:text-red-600 transition-colors" />
+                <ChevronRight
+                  size={18}
+                  className="text-gray-400 group-hover:text-red-600 transition-colors"
+                />
               </Link>
 
               <Link
@@ -248,8 +257,13 @@ export default function ProfilePage() {
                 <div className="bg-blue-100 p-2.5 rounded-xl text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-sm">
                   <MapPin size={18} />
                 </div>
-                <span className="font-semibold text-sm flex-1">Saved Addresses</span>
-                <ChevronRight size={18} className="text-gray-400 group-hover:text-blue-600 transition-colors" />
+                <span className="font-semibold text-sm flex-1">
+                  Saved Addresses
+                </span>
+                <ChevronRight
+                  size={18}
+                  className="text-gray-400 group-hover:text-blue-600 transition-colors"
+                />
               </Link>
 
               <Link
@@ -259,8 +273,13 @@ export default function ProfilePage() {
                 <div className="bg-teal-100 p-2.5 rounded-xl text-teal-600 group-hover:bg-teal-500 group-hover:text-white transition-all shadow-sm">
                   <CalendarCheck size={18} />
                 </div>
-                <span className="font-semibold text-sm flex-1">Subscription Plans</span>
-                <ChevronRight size={18} className="text-gray-400 group-hover:text-teal-600 transition-colors" />
+                <span className="font-semibold text-sm flex-1">
+                  Subscription Plans
+                </span>
+                <ChevronRight
+                  size={18}
+                  className="text-gray-400 group-hover:text-teal-600 transition-colors"
+                />
               </Link>
 
               <Link
@@ -270,8 +289,13 @@ export default function ProfilePage() {
                 <div className="bg-gray-100 p-2.5 rounded-xl text-gray-600 group-hover:bg-gray-700 group-hover:text-white transition-all shadow-sm">
                   <Settings size={18} />
                 </div>
-                <span className="font-semibold text-sm flex-1">Account Settings</span>
-                <ChevronRight size={18} className="text-gray-400 group-hover:text-gray-700 transition-colors" />
+                <span className="font-semibold text-sm flex-1">
+                  Account Settings
+                </span>
+                <ChevronRight
+                  size={18}
+                  className="text-gray-400 group-hover:text-gray-700 transition-colors"
+                />
               </Link>
 
               <Link
@@ -281,8 +305,13 @@ export default function ProfilePage() {
                 <div className="bg-yellow-100 p-2.5 rounded-xl text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white transition-all shadow-sm">
                   <Phone size={18} />
                 </div>
-                <span className="font-semibold text-sm flex-1">Help & Support</span>
-                <ChevronRight size={18} className="text-gray-400 group-hover:text-yellow-600 transition-colors" />
+                <span className="font-semibold text-sm flex-1">
+                  Help & Support
+                </span>
+                <ChevronRight
+                  size={18}
+                  className="text-gray-400 group-hover:text-yellow-600 transition-colors"
+                />
               </Link>
             </div>
           </div>
