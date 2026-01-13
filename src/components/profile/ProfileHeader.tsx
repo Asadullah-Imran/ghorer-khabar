@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, Settings, Loader2 } from "lucide-react";
+import { Loader2, LogOut, Settings } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 

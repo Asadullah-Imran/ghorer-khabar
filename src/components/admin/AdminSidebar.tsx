@@ -1,37 +1,57 @@
 "use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from "@/contexts/AuthContext";
 import {
+  BarChart3,
   LayoutDashboard,
-  Users,
+  Loader2,
+  LogOut,
   Package,
   Receipt,
-  ShieldCheck,
-  BarChart3,
   Settings,
-  LogOut,
-  Loader2,
-} from 'lucide-react';
+  ShieldCheck,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 const navItems = [
   {
-    section: 'Main',
+    section: "Main",
     items: [
-      { icon: <LayoutDashboard size={18} />, label: 'Dashboard', href: '/admin/dashboard' },
-      { icon: <Users size={18} />, label: 'Users', href: '/admin/users' },
-      { icon: <Package size={18} />, label: 'Content', href: '/admin/content' },
-      { icon: <Receipt size={18} />, label: 'Transactions', href: '/admin/transactions' },
+      {
+        icon: <LayoutDashboard size={18} />,
+        label: "Dashboard",
+        href: "/admin/dashboard",
+      },
+      { icon: <Users size={18} />, label: "Users", href: "/admin/users" },
+      { icon: <Package size={18} />, label: "Content", href: "/admin/content" },
+      {
+        icon: <Receipt size={18} />,
+        label: "Transactions",
+        href: "/admin/transactions",
+      },
     ],
   },
   {
-    section: 'Platform',
+    section: "Platform",
     items: [
-      { icon: <ShieldCheck size={18} />, label: 'Integrity', href: '/admin/integrity' },
-      { icon: <BarChart3 size={18} />, label: 'Reports', href: '/admin/reports' },
-      { icon: <Settings size={18} />, label: 'Settings', href: '/admin/settings' },
+      {
+        icon: <ShieldCheck size={18} />,
+        label: "Integrity",
+        href: "/admin/integrity",
+      },
+      {
+        icon: <BarChart3 size={18} />,
+        label: "Reports",
+        href: "/admin/reports",
+      },
+      {
+        icon: <Settings size={18} />,
+        label: "Settings",
+        href: "/admin/settings",
+      },
     ],
   },
 ];
@@ -46,7 +66,7 @@ export default function AdminSidebar() {
     try {
       await signOut();
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
       setIsLoggingOut(false);
     }
   };
@@ -77,8 +97,8 @@ export default function AdminSidebar() {
                     href={item.href}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-text-muted hover:bg-surface-dark hover:text-white'
+                        ? "bg-primary/10 text-primary"
+                        : "text-text-muted hover:bg-surface-dark hover:text-white"
                     }`}
                   >
                     {item.icon}
@@ -97,7 +117,11 @@ export default function AdminSidebar() {
           <div className="flex items-center gap-3 mb-3">
             <div className="h-10 w-10 rounded-full bg-border-dark" />
             <div>
-              <p className="text-sm font-bold">{user?.user_metadata?.full_name || user?.user_metadata?.name || 'Admin User'}</p>
+              <p className="text-sm font-bold">
+                {user?.user_metadata?.full_name ||
+                  user?.user_metadata?.name ||
+                  "Admin User"}
+              </p>
               <p className="text-xs text-text-muted">{user?.email}</p>
             </div>
           </div>
@@ -111,7 +135,7 @@ export default function AdminSidebar() {
             ) : (
               <LogOut size={16} />
             )}
-            {isLoggingOut ? 'Logging out...' : 'Logout'}
+            {isLoggingOut ? "Logging out..." : "Logout"}
           </button>
         </div>
       </div>

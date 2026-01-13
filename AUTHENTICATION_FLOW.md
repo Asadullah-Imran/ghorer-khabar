@@ -510,11 +510,13 @@ The logout flow is designed to handle both Google OAuth and Email/Password users
 **Frontend Components with Logout:**
 
 1. **Profile Page** (`src/components/profile/ProfileHeader.tsx`)
+
    - Red "Logout" button with icon
    - Shows loading spinner during logout
    - Button disabled while processing
 
 2. **Chef Navbar** (`src/components/chef/Navigation/Navbar.tsx`)
+
    - Desktop: Dropdown menu with logout option
    - Mobile: Bottom menu with logout button
    - Both show loading state
@@ -532,7 +534,7 @@ const handleLogout = async () => {
   try {
     await signOut();
   } catch (error) {
-    console.error('Logout failed:', error);
+    console.error("Logout failed:", error);
     // Reset loading state if logout fails
     setIsLoggingOut(false);
   }
@@ -551,11 +553,11 @@ const handleLogout = async () => {
 
 **What Gets Cleared:**
 
-| User Type         | Cookies Cleared                          | Local State   |
-|-------------------|------------------------------------------|---------------|
-| **Google OAuth**  | All Supabase auth cookies                | user = null   |
-| **Email/Password**| auth_token JWT cookie                    | user = null   |
-| **Both**          | All authentication cookies removed       | loading reset |
+| User Type          | Cookies Cleared                    | Local State   |
+| ------------------ | ---------------------------------- | ------------- |
+| **Google OAuth**   | All Supabase auth cookies          | user = null   |
+| **Email/Password** | auth_token JWT cookie              | user = null   |
+| **Both**           | All authentication cookies removed | loading reset |
 
 **Post-Logout State:**
 
@@ -571,6 +573,7 @@ const handleLogout = async () => {
 ### Logout Button UI States
 
 **Normal State:**
+
 ```tsx
 <button>
   <LogOut size={16} />
@@ -579,6 +582,7 @@ const handleLogout = async () => {
 ```
 
 **Loading State:**
+
 ```tsx
 <button disabled>
   <Loader2 size={16} className="animate-spin" />

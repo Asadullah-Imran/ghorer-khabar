@@ -142,13 +142,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       console.log("Signing out user:", user?.email);
-      
+
       // Set loading state during logout
       setLoading(true);
 
       // Call logout API - this handles both Supabase and JWT cookie clearing
       const response = await fetch("/api/auth/logout", { method: "POST" });
-      
+
       if (!response.ok) {
         console.error("Logout API failed:", response.status);
       }
@@ -156,10 +156,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Clear local state immediately
       setUser(null);
       setLoading(false);
-      
+
       // Redirect to login page
       router.push("/login");
-      
+
       console.log("User signed out successfully");
     } catch (error) {
       console.error("Error signing out:", error);
