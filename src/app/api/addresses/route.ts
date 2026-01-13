@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Check if this user exists in database, if not check by email (OAuth vs email/password issue)
-    let existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { id: userId },
     });
 
@@ -63,7 +63,10 @@ export async function GET(req: NextRequest) {
 
         if (userByEmail) {
           userId = userByEmail.id;
-          console.log("GET /api/addresses - Found user by email, using database userId:", userId);
+          console.log(
+            "GET /api/addresses - Found user by email, using database userId:",
+            userId
+          );
         }
       }
     }
@@ -77,7 +80,10 @@ export async function GET(req: NextRequest) {
     });
 
     console.log("GET /api/addresses - Found addresses:", addresses.length);
-    console.log("GET /api/addresses - Addresses:", JSON.stringify(addresses, null, 2));
+    console.log(
+      "GET /api/addresses - Addresses:",
+      JSON.stringify(addresses, null, 2)
+    );
 
     return NextResponse.json({ addresses });
   } catch (error) {

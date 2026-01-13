@@ -47,7 +47,7 @@ export async function PATCH(
     }
 
     // Check if user exists in database, if not check by email (OAuth vs email/password issue)
-    let existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { id: userId },
     });
 
@@ -124,7 +124,7 @@ export async function DELETE(
     }
 
     // Check if user exists in database, if not check by email (OAuth vs email/password issue)
-    let existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { id: userId },
     });
 
