@@ -98,3 +98,31 @@ export const chefOnboardingSchema = z.object({
 
 export type ChefOnboardingData = z.infer<typeof chefOnboardingSchema>;
 
+// ============================================================================
+// USER PROFILE VALIDATION SCHEMAS
+// ============================================================================
+
+export const updateProfileSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").optional(),
+  phone: z
+    .string()
+    .regex(
+      /^(\+880|880)?1[3-9]\d{8}$/,
+      "Valid Bangladesh phone number required"
+    )
+    .optional(),
+  avatar: z.string().url("Invalid avatar URL").optional(),
+});
+
+export const updatePasswordSchema = z.object({
+  currentPassword: z.string().min(6, "Password must be at least 6 characters"),
+  newPassword: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+export type UpdateProfileData = z.infer<typeof updateProfileSchema>;
+export type UpdatePasswordData = z.infer<typeof updatePasswordSchema>;
+
