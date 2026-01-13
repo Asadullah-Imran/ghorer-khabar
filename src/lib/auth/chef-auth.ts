@@ -1,11 +1,28 @@
+/**
+ * Chef Authentication & Authorization Utilities
+ *
+ * Provides:
+ * - User extraction from Supabase OAuth and JWT
+ * - Kitchen ownership verification
+ * - Role-based access control
+ * - Both NextRequest (for middleware) and context-based auth
+ */
+
 import { prisma } from "@/lib/prisma/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
+import { NextRequest } from "next/server";
 import { verifyToken } from "./jwt";
 
+// ============================================================================
+// CONTEXT-BASED AUTH (for Server Components & Server Actions)
+// ============================================================================
+
 /**
- * Get authenticated user from either Supabase session or JWT token
- * Returns user object with role or null if not authenticated
+ * Get authenticated user from current context
+ * Tries: 1) Supabase OAuth  2) JWT cookie
+ *
+ * Use in Server Components and Server Actions
  */
 export async function getAuthenticatedUser() {
   // Try Supabase first (for OAuth users)
@@ -15,7 +32,6 @@ export async function getAuthenticatedUser() {
   } = await supabase.auth.getUser();
 
   if (supabaseUser) {
-    // Get full user data from database including role
     const user = await prisma.user.findUnique({
       where: { id: supabaseUser.id },
       select: {
@@ -53,9 +69,70 @@ export async function getAuthenticatedUser() {
   return null;
 }
 
+// ============================================================================
+// REQUEST-BASED AUTH (for Middleware)
+// ============================================================================
+
+/**
+ * Extract user ID from NextRequest
+ * Tries: 1) Supabase OAuth  2) JWT cookie
+ *
+ * Use in middleware where you have access to NextRequest
+ */
+export async function getUserIdFromRequest(
+  req: NextRequest
+): Promise<string | null> {
+  // Try Supabase OAuth
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) return user.id;
+
+  // Try JWT cookie from request
+  const token = req.cookies.get("auth_token")?.value;
+  if (!token) return null;
+
+  try {
+    const decoded = verifyToken(token);
+    if (decoded && typeof decoded !== "string" && decoded.userId) {
+      return decoded.userId as string;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get full user object from NextRequest
+ * Use in middleware for complete user data
+ */
+export async function getUserFromRequest(req: NextRequest) {
+  const userId = await getUserIdFromRequest(req);
+  if (!userId) return null;
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      emailVerified: true,
+    },
+  });
+
+  return user;
+}
+
+// ============================================================================
+// CHEF-SPECIFIC AUTHORIZATION
+// ============================================================================
+
 /**
  * Verify user is authenticated and has SELLER role
- * Throws error with appropriate status code if not authorized
+ * Throws AuthError if not authorized
  */
 export async function requireChefAuth() {
   const user = await getAuthenticatedUser();
@@ -72,12 +149,15 @@ export async function requireChefAuth() {
 }
 
 /**
- * Get chef's kitchen
- * Returns kitchen if user is a seller and has completed onboarding
+ * Get chef's kitchen by user ID
+ * Returns kitchen with gallery or null if not found
  */
-export async function getChefKitchen(userId: string) {
+export async function getChefKitchen(userId: string, kitchenId?: string) {
   const kitchen = await prisma.kitchen.findFirst({
-    where: { sellerId: userId },
+    where: {
+      sellerId: userId,
+      ...(kitchenId && { id: kitchenId }),
+    },
     include: {
       gallery: true,
     },
@@ -88,6 +168,7 @@ export async function getChefKitchen(userId: string) {
 
 /**
  * Verify chef has completed onboarding (has a kitchen)
+ * Throws AuthError if kitchen not found
  */
 export async function requireKitchen(userId: string) {
   const kitchen = await getChefKitchen(userId);
@@ -103,6 +184,27 @@ export async function requireKitchen(userId: string) {
 }
 
 /**
+ * Verify user owns the specified kitchen
+ * Throws AuthError if not found or not owned
+ */
+export async function verifyKitchenOwnership(
+  userId: string,
+  kitchenId: string
+) {
+  const kitchen = await getChefKitchen(userId, kitchenId);
+
+  if (!kitchen) {
+    throw new AuthError("Kitchen not found or access denied", 404);
+  }
+
+  return kitchen;
+}
+
+// ============================================================================
+// ERROR HANDLING
+// ============================================================================
+
+/**
  * Custom error class for auth errors with status codes
  */
 export class AuthError extends Error {
@@ -111,3 +213,14 @@ export class AuthError extends Error {
     this.name = "AuthError";
   }
 }
+
+/**
+ * Legacy error objects for backward compatibility
+ * @deprecated Use AuthError class instead
+ */
+export const authErrors = {
+  UNAUTHORIZED: { message: "Not authenticated", status: 401 },
+  FORBIDDEN: { message: "Not authorized", status: 403 },
+  NOT_SELLER: { message: "Only sellers can access this", status: 403 },
+  KITCHEN_NOT_FOUND: { message: "Kitchen not found", status: 404 },
+};

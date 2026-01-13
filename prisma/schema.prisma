@@ -12,6 +12,7 @@ model User {
   name               String?
   email              String        @unique
   password           String?
+  phone              String?       @unique
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
   role               Role          @default(BUYER)
@@ -23,11 +24,10 @@ model User {
   resetTokenExpiry   DateTime?
   verificationExpiry DateTime?
   verificationToken  String?       @unique
-  phone              String?       @unique
   addresses          Address[]
   EmailLogOTPs       EmailLogOTP[]
-  kitchens           Kitchen[]
   menu_items         menu_items[]
+  kitchens           Kitchen[]
 
   @@map("users")
 }
@@ -104,105 +104,10 @@ model menu_items {
   updatedAt        DateTime
   ingredients      ingredients[]
   menu_item_images menu_item_images[]
-  users            User               @relation(fields: [chef_id], references: [id], onDelete: Cascade)
   plan_schedules   plan_schedules[]
+  users            User               @relation(fields: [chef_id], references: [id], onDelete: Cascade)
 
   @@index([chef_id])
-}
-
-model Kitchen {
-  id                  String               @id @default(cuid())
-  sellerId            String               @map("seller_id")
-  name                String
-  type                String?
-  description         String?
-  location            String?
-  area                String?
-  distance            Float?
-  nidName             String?
-  nidFrontImage       String?
-  nidBackImage        String?
-  onboardingCompleted Boolean              @default(false)
-  isVerified          Boolean              @default(false)
-  isActive            Boolean              @default(true)
-  isOpen              Boolean              @default(true)
-  coverImage          String?
-  profileImage        String?
-  kriScore            Int                  @default(0)
-  rating              Decimal?             @default(0) @db.Decimal(3, 2)
-  reviewCount         Int                  @default(0)
-  totalOrders         Int                  @default(0)
-  totalRevenue        Decimal?             @default(0) @db.Decimal(10, 2)
-  satisfactionRate    Decimal?             @db.Decimal(3, 2)
-  responseTime        Int?
-  deliveryRate        Decimal?             @db.Decimal(3, 2)
-  operatingDays       Json?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-  gallery             KitchenGallery[]
-  seller              User                 @relation(fields: [sellerId], references: [id], onDelete: Cascade)
-  subscription_plans  subscription_plans[]
-
-  @@index([sellerId])
-  @@map("kitchens")
-}
-
-model KitchenGallery {
-  id        String   @id @default(cuid())
-  kitchenId String   @map("kitchen_id")
-  imageUrl  String   @map("image_url")
-  order     Int      @default(0)
-  createdAt DateTime @default(now())
-  kitchen   Kitchen  @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
-
-  @@index([kitchenId])
-  @@map("kitchen_gallery")
-}
-
-model plan_schedules {
-  id                 String             @id
-  plan_id            String
-  day_of_week        DayOfWeek
-  meal_type          MealType
-  time               String
-  dish_id            String?
-  dish_name          String
-  dish_desc          String?
-  image_url          String?
-  created_at         DateTime           @default(now())
-  updated_at         DateTime
-  menu_items         menu_items?        @relation(fields: [dish_id], references: [id])
-  subscription_plans subscription_plans @relation(fields: [plan_id], references: [id], onDelete: Cascade)
-
-  @@unique([plan_id, day_of_week, meal_type, dish_id])
-  @@index([dish_id])
-  @@index([plan_id])
-}
-
-model subscription_plans {
-  id                String           @id
-  kitchen_id        String
-  name              String
-  description       String?
-  price             Float
-  meals_per_day     Int              @default(1)
-  servings_per_meal Int              @default(1)
-  is_active         Boolean          @default(true)
-  subscriber_count  Int              @default(0)
-  monthly_revenue   Float            @default(0)
-  rating            Decimal?         @default(0) @db.Decimal(3, 2)
-  cover_image       String?
-  calories          Int?
-  protein           String?
-  carbs             String?
-  fats              String?
-  chef_quote        String?
-  created_at        DateTime         @default(now())
-  updated_at        DateTime
-  plan_schedules    plan_schedules[]
-  kitchens          Kitchen          @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
-
-  @@index([kitchen_id])
 }
 
 enum Role {
@@ -214,6 +119,67 @@ enum Role {
 enum AuthProvider {
   EMAIL
   GOOGLE
+}
+
+model Kitchen {
+  id                  String           @id @default(cuid())
+  sellerId            String           @map("seller_id")
+  name                String
+  type                String?
+  description         String?          @db.Text
+  location            String?
+  area                String?
+  distance            Float?
+  
+  // NID Verification fields
+  nidName             String?
+  nidFrontImage       String?
+  nidBackImage        String?
+  
+  // Onboarding status
+  onboardingCompleted Boolean          @default(false)
+  isVerified          Boolean          @default(false)
+  isActive            Boolean          @default(true)
+  isOpen              Boolean          @default(true)
+  
+  // Images
+  coverImage          String?
+  profileImage        String?
+  
+  // Metrics
+  kriScore            Int              @default(0)
+  rating              Decimal?         @default(0) @db.Decimal(3,2)
+  reviewCount         Int              @default(0)
+  totalOrders         Int              @default(0)
+  totalRevenue        Decimal?         @default(0) @db.Decimal(10,2)
+  satisfactionRate    Decimal?         @db.Decimal(3,2)
+  responseTime        Int?
+  deliveryRate        Decimal?         @db.Decimal(3,2)
+  operatingDays       Json?
+  
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  
+  // Relations
+  seller              User                @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  gallery             KitchenGallery[]
+  subscription_plans  subscription_plans[]
+  
+  @@index([sellerId])
+  @@map("kitchens")
+}
+
+model KitchenGallery {
+  id         String   @id @default(cuid())
+  kitchenId  String   @map("kitchen_id")
+  imageUrl   String   @map("image_url")
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+  
+  kitchen    Kitchen  @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
+  
+  @@index([kitchenId])
+  @@map("kitchen_gallery")
 }
 
 enum DayOfWeek {
@@ -231,4 +197,58 @@ enum MealType {
   LUNCH
   SNACKS
   DINNER
+}
+
+model subscription_plans {
+  id                String              @id @default(cuid())
+  kitchen_id        String              @map("kitchen_id")
+  name              String
+  description       String?
+  price             Float
+  meals_per_day     Int                 @default(1)
+  servings_per_meal Int                 @default(1)
+  is_active         Boolean             @default(true)
+  subscriber_count  Int                 @default(0)
+  monthly_revenue   Float               @default(0)
+  
+  rating            Decimal?            @default(0) @db.Decimal(3, 2)
+  cover_image       String?             @map("cover_image")
+  calories          Int?
+  protein           String?
+  carbs             String?
+  fats              String?
+  chef_quote        String?             @map("chef_quote")
+  
+  created_at        DateTime            @default(now()) @map("created_at")
+  updated_at        DateTime            @updatedAt @map("updated_at")
+  
+  kitchen           Kitchen             @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
+  plan_schedules    plan_schedules[]
+
+  @@index([kitchen_id])
+  @@map("subscription_plans")
+}
+
+model plan_schedules {
+  id                String              @id @default(cuid())
+  plan_id           String              @map("plan_id")
+  day_of_week       DayOfWeek           @map("day_of_week")
+  meal_type         MealType            @map("meal_type")
+  time              String              @map("time")
+  
+  dish_id           String?             @map("dish_id")
+  dish_name         String              @map("dish_name")
+  dish_desc         String?             @map("dish_desc")
+  image_url         String?             @map("image_url")
+  
+  created_at        DateTime            @default(now()) @map("created_at")
+  updated_at        DateTime            @updatedAt @map("updated_at")
+
+  subscription_plan subscription_plans  @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+  menu_item         menu_items?         @relation(fields: [dish_id], references: [id], onDelete: SetNull)
+
+  @@index([plan_id])
+  @@index([dish_id])
+  @@unique([plan_id, day_of_week, meal_type, dish_id])
+  @@map("plan_schedules")
 }

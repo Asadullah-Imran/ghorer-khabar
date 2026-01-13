@@ -43,12 +43,18 @@ export default function SubscriptionModal({
 
   const [selectedDish, setSelectedDish] = useState<string | null>(null);
 
-  const currentDaySchedule = schedule[selectedDay];
+  const currentDaySchedule = schedule[selectedDay] || {
+    breakfast: { time: "08:00", dishIds: [] },
+    lunch: { time: "13:00", dishIds: [] },
+    snacks: { time: "17:00", dishIds: [] },
+    dinner: { time: "21:00", dishIds: [] },
+  };
 
   // Auto-calculate meals per day based on which slots have dishes
   const mealsPerDay = Math.max(
     ...DAYS_OF_WEEK.map((day) => {
       const daySchedule = schedule[day];
+      if (!daySchedule) return 0;
       return (daySchedule.breakfast?.dishIds.length ? 1 : 0) +
              (daySchedule.lunch?.dishIds.length ? 1 : 0) +
              (daySchedule.snacks?.dishIds.length ? 1 : 0) +
@@ -57,43 +63,73 @@ export default function SubscriptionModal({
   );
 
   const addDishToSlot = (day: DayOfWeek, slot: "breakfast" | "lunch" | "snacks" | "dinner", dishId: string) => {
-    setSchedule((prev) => ({
-      ...prev,
-      [day]: {
-        ...prev[day],
-        [slot]: {
-          ...prev[day][slot],
-          dishIds: [...(prev[day][slot]?.dishIds || []), dishId],
+    setSchedule((prev) => {
+      const existingDay = prev[day] || {
+        breakfast: { time: "08:00", dishIds: [] },
+        lunch: { time: "13:00", dishIds: [] },
+        snacks: { time: "17:00", dishIds: [] },
+        dinner: { time: "21:00", dishIds: [] },
+      };
+      const existingSlot = existingDay[slot] || { time: "12:00", dishIds: [] };
+      
+      return {
+        ...prev,
+        [day]: {
+          ...existingDay,
+          [slot]: {
+            ...existingSlot,
+            dishIds: [...(existingSlot.dishIds || []), dishId],
+          },
         },
-      },
-    }));
+      };
+    });
     setSelectedDish(null);
   };
 
   const removeDishFromSlot = (day: DayOfWeek, slot: "breakfast" | "lunch" | "snacks" | "dinner", dishId: string) => {
-    setSchedule((prev) => ({
-      ...prev,
-      [day]: {
-        ...prev[day],
-        [slot]: {
-          ...prev[day][slot],
-          dishIds: (prev[day][slot]?.dishIds || []).filter((id) => id !== dishId),
+    setSchedule((prev) => {
+      const existingDay = prev[day] || {
+        breakfast: { time: "08:00", dishIds: [] },
+        lunch: { time: "13:00", dishIds: [] },
+        snacks: { time: "17:00", dishIds: [] },
+        dinner: { time: "21:00", dishIds: [] },
+      };
+      const existingSlot = existingDay[slot] || { time: "12:00", dishIds: [] };
+      
+      return {
+        ...prev,
+        [day]: {
+          ...existingDay,
+          [slot]: {
+            ...existingSlot,
+            dishIds: (existingSlot.dishIds || []).filter((id) => id !== dishId),
+          },
         },
-      },
-    }));
+      };
+    });
   };
 
   const updateMealTime = (day: DayOfWeek, slot: "breakfast" | "lunch" | "snacks" | "dinner", time: string) => {
-    setSchedule((prev) => ({
-      ...prev,
-      [day]: {
-        ...prev[day],
-        [slot]: {
-          ...prev[day][slot],
-          time,
+    setSchedule((prev) => {
+      const existingDay = prev[day] || {
+        breakfast: { time: "08:00", dishIds: [] },
+        lunch: { time: "13:00", dishIds: [] },
+        snacks: { time: "17:00", dishIds: [] },
+        dinner: { time: "21:00", dishIds: [] },
+      };
+      const existingSlot = existingDay[slot] || { time: "12:00", dishIds: [] };
+      
+      return {
+        ...prev,
+        [day]: {
+          ...existingDay,
+          [slot]: {
+            ...existingSlot,
+            time,
+          },
         },
-      },
-    }));
+      };
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
