@@ -67,14 +67,25 @@ function extractZoneFromAddress(fullAddress: string): string {
   // If no known zone found, try to extract from common patterns
   // Split by comma and look for the area name (usually 2nd or 3rd segment)
   const parts = fullAddress.split(",").map((p) => p.trim());
-  
+
   // Skip numeric values (postal codes) and common words
-  const skipWords = ['dhaka', 'bangladesh', 'division', 'district', 'metropolitan', 'road', 'block'];
-  
+  const skipWords = [
+    "dhaka",
+    "bangladesh",
+    "division",
+    "district",
+    "metropolitan",
+    "road",
+    "block",
+  ];
+
   for (let i = 1; i < Math.min(parts.length - 2, 4); i++) {
     const part = parts[i];
     // Check if it's not a number and not a skip word
-    if (!/^\d+$/.test(part) && !skipWords.some(word => part.toLowerCase().includes(word))) {
+    if (
+      !/^\d+$/.test(part) &&
+      !skipWords.some((word) => part.toLowerCase().includes(word))
+    ) {
       return part;
     }
   }
