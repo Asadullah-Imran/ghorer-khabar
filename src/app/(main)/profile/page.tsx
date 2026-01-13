@@ -20,85 +20,86 @@ import Link from "next/link";
 
 export default function ProfilePage() {
   return (
-    <main className="min-h-screen bg-gray-50 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-        {/* 1. Header & Impact Stats */}
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        {/* 1. Hero Section with Profile & Stats */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* User Info Card - Now using auth context */}
+          {/* User Info Card */}
           <ProfileHeader />
 
-          {/* Impact Stats */}
+          {/* Impact Stats - Enhanced */}
           <div className="lg:col-span-2">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Your Impact</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
-                  <Users size={20} />
+              <div className="group bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-purple-200">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-500 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+                    <Users size={22} />
+                  </div>
+                  <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-3 py-1 rounded-full">+{USER_PROFILE.stats.chefsSupported}</span>
                 </div>
-                <div>
-                  <p className="text-gray-500 text-xs font-bold uppercase">
-                    Empowered
-                  </p>
-                  <h3 className="text-lg font-bold text-gray-900">
-                    {USER_PROFILE.stats.chefsSupported} Chefs
-                  </h3>
-                  <p className="text-[10px] text-gray-400">
-                    You supported local women
-                  </p>
-                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                  {USER_PROFILE.stats.chefsSupported} Chefs
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Empowered local women
+                </p>
               </div>
 
-              <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-600">
-                  <Utensils size={20} />
+              <div className="group bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-orange-200">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+                    <Utensils size={22} />
+                  </div>
+                  <span className="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full">This month</span>
                 </div>
-                <div>
-                  <p className="text-gray-500 text-xs font-bold uppercase">
-                    Orders
-                  </p>
-                  <h3 className="text-lg font-bold text-gray-900">
-                    {USER_PROFILE.stats.ordersThisMonth}
-                  </h3>
-                  <p className="text-[10px] text-gray-400">This month</p>
-                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                  {USER_PROFILE.stats.ordersThisMonth} Orders
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Successfully delivered
+                </p>
               </div>
 
-              <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-500">
-                  <Heart size={20} />
+              <div className="group bg-white p-6 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-red-200">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
+                    <Heart size={22} />
+                  </div>
+                  <span className="text-xs font-semibold text-red-600 bg-red-50 px-3 py-1 rounded-full">Saved</span>
                 </div>
-                <div>
-                  <p className="text-gray-500 text-xs font-bold uppercase">
-                    Favorites
-                  </p>
-                  <h3 className="text-lg font-bold text-gray-900">
-                    {USER_PROFILE.stats.favorites} Dishes
-                  </h3>
-                  <p className="text-[10px] text-gray-400">Saved for later</p>
-                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                  {USER_PROFILE.stats.favorites} Dishes
+                </h3>
+                <p className="text-sm text-gray-500">
+                  In your favorites
+                </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 2. Layout Grid for Subscription & History */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* Left: Active Subscription */}
+        {/* 2. Main Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Left: Active Subscription & History */}
           <div className="xl:col-span-2 space-y-6">
             <section>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <CalendarCheck size={20} className="text-teal-700" />
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-teal-500 flex items-center justify-center text-white shadow-lg">
+                    <CalendarCheck size={20} />
+                  </div>
                   Active Tiffin Plan
-                </h3>
+                </h2>
                 <Link
                   href="/profile/my-subscription"
-                  className="text-sm font-semibold text-teal-700 hover:underline"
+                  className="text-sm font-semibold text-teal-700 hover:text-teal-800 transition-colors px-4 py-2 rounded-lg hover:bg-teal-50"
                 >
                   Manage Plan
                 </Link>
               </div>
 
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
                 <div className="p-6 flex flex-col md:flex-row gap-6">
                   <div className="relative w-full md:w-1/3 aspect-video md:aspect-auto rounded-lg overflow-hidden bg-gray-100">
                     <Image
@@ -162,17 +163,15 @@ export default function ProfilePage() {
               </div>
             </section>
 
-            {/* Recent Order History Table */}
+            {/* Recent Order History */}
             <section>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900">
-                  Recent Order History
-                </h3>
-                <button className="text-sm font-semibold text-teal-700 hover:underline">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="text-2xl font-bold text-gray-900">Recent Orders</h2>
+                <button className="text-sm font-semibold text-teal-700 hover:text-teal-800 transition-colors px-4 py-2 rounded-lg hover:bg-teal-50">
                   View All
                 </button>
               </div>
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+              <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm text-gray-600">
                     <thead className="bg-gray-50 text-xs uppercase font-semibold text-gray-500">
@@ -227,63 +226,63 @@ export default function ProfilePage() {
             </section>
           </div>
 
-          {/* Right: Settings / Menu */}
-
+          {/* Right: Quick Actions */}
           <div className="xl:col-span-1">
-            <div className="bg-white rounded-xl border border-gray-200 p-2 shadow-sm">
+            <h2 className="text-2xl font-bold text-gray-900 mb-5">Quick Actions</h2>
+            <div className="bg-white rounded-2xl border border-gray-200 p-3 shadow-lg space-y-1">
               <Link
                 href="/profile/favorites"
-                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors text-left group"
+                className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 text-gray-700 transition-all text-left group border border-transparent hover:border-red-200"
               >
-                <div className="bg-gray-100 p-2 rounded-lg text-gray-600 group-hover:bg-red-50 group-hover:text-red-500 transition-colors">
+                <div className="bg-red-100 p-2.5 rounded-xl text-red-600 group-hover:bg-red-500 group-hover:text-white transition-all shadow-sm">
                   <Heart size={18} />
                 </div>
-                <span className="font-medium text-sm">Favorites</span>
-                <ChevronRight size={16} className="ml-auto text-gray-400" />
+                <span className="font-semibold text-sm flex-1">Favorites</span>
+                <ChevronRight size={18} className="text-gray-400 group-hover:text-red-600 transition-colors" />
               </Link>
 
               <Link
                 href="/profile/addresses"
-                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors text-left group"
+                className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 text-gray-700 transition-all text-left group border border-transparent hover:border-blue-200"
               >
-                <div className="bg-gray-100 p-2 rounded-lg text-gray-600 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                <div className="bg-blue-100 p-2.5 rounded-xl text-blue-600 group-hover:bg-blue-500 group-hover:text-white transition-all shadow-sm">
                   <MapPin size={18} />
                 </div>
-                <span className="font-medium text-sm">Saved Addresses</span>
-                <ChevronRight size={16} className="ml-auto text-gray-400" />
+                <span className="font-semibold text-sm flex-1">Saved Addresses</span>
+                <ChevronRight size={18} className="text-gray-400 group-hover:text-blue-600 transition-colors" />
               </Link>
 
               <Link
                 href="/profile/subscription"
-                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors text-left group"
+                className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50 text-gray-700 transition-all text-left group border border-transparent hover:border-teal-200"
               >
-                <div className="bg-gray-100 p-2 rounded-lg text-gray-600 group-hover:bg-teal-50 group-hover:text-teal-600 transition-colors">
+                <div className="bg-teal-100 p-2.5 rounded-xl text-teal-600 group-hover:bg-teal-500 group-hover:text-white transition-all shadow-sm">
                   <CalendarCheck size={18} />
                 </div>
-                <span className="font-medium text-sm">Subscription Plans</span>
-                <ChevronRight size={16} className="ml-auto text-gray-400" />
+                <span className="font-semibold text-sm flex-1">Subscription Plans</span>
+                <ChevronRight size={18} className="text-gray-400 group-hover:text-teal-600 transition-colors" />
               </Link>
 
               <Link
                 href="/profile/settings"
-                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors text-left group"
+                className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-gray-50 hover:to-slate-50 text-gray-700 transition-all text-left group border border-transparent hover:border-gray-300"
               >
-                <div className="bg-gray-100 p-2 rounded-lg text-gray-600 group-hover:bg-gray-200 transition-colors">
+                <div className="bg-gray-100 p-2.5 rounded-xl text-gray-600 group-hover:bg-gray-700 group-hover:text-white transition-all shadow-sm">
                   <Settings size={18} />
                 </div>
-                <span className="font-medium text-sm">Account Settings</span>
-                <ChevronRight size={16} className="ml-auto text-gray-400" />
+                <span className="font-semibold text-sm flex-1">Account Settings</span>
+                <ChevronRight size={18} className="text-gray-400 group-hover:text-gray-700 transition-colors" />
               </Link>
 
               <Link
                 href="/support"
-                className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 text-gray-700 transition-colors text-left group"
+                className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-50 text-gray-700 transition-all text-left group border border-transparent hover:border-yellow-200"
               >
-                <div className="bg-gray-100 p-2 rounded-lg text-gray-600 group-hover:bg-yellow-50 group-hover:text-yellow-600 transition-colors">
+                <div className="bg-yellow-100 p-2.5 rounded-xl text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white transition-all shadow-sm">
                   <Phone size={18} />
                 </div>
-                <span className="font-medium text-sm">Help & Support</span>
-                <ChevronRight size={16} className="ml-auto text-gray-400" />
+                <span className="font-semibold text-sm flex-1">Help & Support</span>
+                <ChevronRight size={18} className="text-gray-400 group-hover:text-yellow-600 transition-colors" />
               </Link>
             </div>
           </div>
