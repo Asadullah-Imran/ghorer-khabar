@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { MenuItem, Ingredient } from "@/lib/dummy-data/chef";
-import { X, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { X, Plus, Trash2, Upload, X as CloseIcon } from "lucide-react";
+import { useState, useRef } from "react";
 
 interface MenuItemFormProps {
   item?: MenuItem;
@@ -11,6 +12,9 @@ interface MenuItemFormProps {
 }
 
 export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [dragActive, setDragActive] = useState(false);
+
   const [formData, setFormData] = useState({
     name: item?.name || "",
     description: item?.description || "",
@@ -25,6 +29,20 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
     image: item?.image || "",
   });
 
+  const [uploadedImages, setUploadedImages] = useState<
+    Array<{ id: string; file: File; preview: string }>
+  >(
+    item?.image
+      ? [
+          {
+            id: "existing",
+            file: new File([], "existing"),
+            preview: item.image,
+          },
+        ]
+      : []
+  );
+
   const [ingredients, setIngredients] = useState<Ingredient[]>(
     item?.ingredients || []
   );
@@ -33,9 +51,14 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Use the first uploaded image as the primary image, or the preview if it exists
+    const primaryImage =
+      uploadedImages.length > 0 ? uploadedImages[0].preview : formData.image;
+
     onSave({
       id: item?.id || Date.now().toString(),
       ...formData,
+      image: primaryImage,
       marketPriceRange: {
         min: formData.marketPriceMin,
         max: formData.marketPriceMax,
@@ -45,6 +68,56 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
         : [],
       ingredients: ingredients,
       isAvailable: true,
+    });
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    const files = e.dataTransfer.files;
+    if (files) {
+      handleFiles(files);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.currentTarget.files;
+    if (files) {
+      handleFiles(files);
+    }
+  };
+
+  const handleFiles = (files: FileList) => {
+    const newImages = Array.from(files)
+      .filter((file) => file.type.startsWith("image/"))
+      .map((file) => ({
+        id: `${Date.now()}-${Math.random()}`,
+        file,
+        preview: URL.createObjectURL(file),
+      }));
+
+    setUploadedImages((prev) => [...prev, ...newImages]);
+  };
+
+  const removeImage = (id: string) => {
+    setUploadedImages((prev) => {
+      const image = prev.find((img) => img.id === id);
+      if (image && image.preview.startsWith("blob:")) {
+        URL.revokeObjectURL(image.preview);
+      }
+      return prev.filter((img) => img.id !== id);
     });
   };
 
@@ -59,7 +132,11 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
     setIngredients(ingredients.filter((_, i) => i !== index));
   };
 
-  const updateIngredient = (index: number, field: keyof Ingredient, value: any) => {
+  const updateIngredient = (
+    index: number,
+    field: keyof Ingredient,
+    value: string | number
+  ) => {
     const updated = [...ingredients];
     updated[index] = { ...updated[index], [field]: value };
     setIngredients(updated);
@@ -315,20 +392,82 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
             />
           </div>
 
-          {/* Image URL */}
+          {/* Image Upload */}
           <div>
             <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Image URL (optional)
+              Dish Images (optional)
             </label>
-            <input
-              type="url"
-              value={formData.image}
-              onChange={(e) =>
-                setFormData({ ...formData, image: e.target.value })
-              }
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-              placeholder="https://..."
-            />
+
+            {/* Drag and Drop Area */}
+            <div
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition ${
+                dragActive
+                  ? "border-teal-500 bg-teal-50"
+                  : "border-gray-300 bg-gray-50 hover:border-teal-400"
+              }`}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+
+              <Upload className="mx-auto mb-2 text-teal-600" size={32} />
+              <p className="text-sm font-semibold text-gray-700 mb-1">
+                Drag and drop images here or click to browse
+              </p>
+              <p className="text-xs text-gray-500">
+                Supported formats: JPG, PNG, GIF, WebP
+              </p>
+            </div>
+
+            {/* Uploaded Images Preview */}
+            {uploadedImages.length > 0 && (
+              <div className="mt-4">
+                <p className="text-xs font-semibold text-gray-600 mb-3">
+                  {uploadedImages.length} image{uploadedImages.length !== 1 ? "s" : ""} selected
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {uploadedImages.map((image, index) => (
+                    <div
+                      key={image.id}
+                      className="relative group rounded-lg overflow-hidden border-2 border-gray-200 aspect-square"
+                    >
+                      <Image
+                        src={image.preview}
+                        alt={`Preview ${index + 1}`}
+                        fill
+                        className="w-full h-full object-cover"
+                      />
+                      {index === 0 && (
+                        <div className="absolute top-2 left-2 bg-teal-600 text-white text-xs font-semibold px-2 py-1 rounded">
+                          Primary
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeImage(image.id)}
+                        className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                        title="Remove image"
+                      >
+                        <CloseIcon size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  The first image will be used as the primary dish image
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Ingredients Section */}
@@ -349,7 +488,7 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
 
             {ingredients.length === 0 ? (
               <p className="text-sm text-gray-500 italic py-2">
-                No ingredients added yet. Click "Add Ingredient" to get started.
+                No ingredients added yet. Click &quot;Add Ingredient&quot; to get started.
               </p>
             ) : (
               <div className="space-y-3 mb-4">
