@@ -5,8 +5,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   ChefHat,
   Home,
+  Loader2,
+  LogOut,
   Menu,
   Search,
+  Settings,
   ShoppingBag,
   User,
   X,
@@ -14,14 +17,48 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
   const { totalItems } = useCart();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    if (isProfileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isProfileMenuOpen]);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    setIsProfileMenuOpen(false);
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Logout failed:", error);
+      setIsLoggingOut(false);
+    }
+  };
 
   const excludedPaths = ["/", "/checkout", "/login", "/register"];
   if (excludedPaths.includes(pathname)) return null;
@@ -50,11 +87,11 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
           {/* Logo */}
           <Link href="/feed" className="flex items-center gap-2">
-            <div className="bg-yellow-400 p-1.5 rounded-lg">
-              <ChefHat size={24} className="text-teal-900" />
+            <div className="bg-primary p-1.5 rounded-lg">
+              <ChefHat size={24} className="text-brand-teal" />
             </div>
-            <span className="font-bold text-xl text-teal-900 tracking-tight hidden sm:block">
-              Ghorer<span className="text-yellow-500">Khabar</span>
+            <span className="font-bold text-xl text-brand-teal tracking-tight hidden sm:block">
+              Ghorer<span className="text-primary">Khabar</span>
             </span>
           </Link>
 
@@ -69,7 +106,7 @@ export default function Navbar() {
                 type="text"
                 placeholder="Search for bhorta, curry, or chefs..."
                 onKeyDown={handleSearch}
-                className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-teal text-sm"
               />
             </div>
           </div>
@@ -78,7 +115,7 @@ export default function Navbar() {
           <div className="flex items-center gap-6">
             <button
               onClick={() => router.push("/chef/dashboard")}
-              className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-teal-700 transition"
+              className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-brand-teal transition"
             >
               <ChefHat size={18} />
               <span>Switch to Chef</span>
@@ -87,7 +124,7 @@ export default function Navbar() {
             {/* Cart Icon */}
             <Link
               href="/cart"
-              className="relative p-2 text-gray-600 hover:text-teal-700 transition"
+              className="relative p-2 text-gray-600 hover:text-brand-teal transition"
             >
               <ShoppingBag size={24} />
               {cartCount > 0 && (
@@ -97,19 +134,69 @@ export default function Navbar() {
               )}
             </Link>
 
-            <Link
-              href="/profile"
-              className="hidden md:block w-9 h-9 bg-gray-200 rounded-full overflow-hidden border-2 border-white shadow-sm"
-              title={user?.email || "Profile"}
-            >
-              <Image
-                src={userAvatar}
-                alt={user?.user_metadata?.full_name || "Profile"}
-                width={36}
-                height={36}
-                className="object-cover"
-              />
-            </Link>
+            {/* Profile Dropdown */}
+            <div className="hidden md:block relative" ref={profileMenuRef}>
+              <button
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                className="w-9 h-9 bg-gray-200 rounded-full overflow-hidden border-2 border-white shadow-sm hover:border-brand-teal transition"
+                title={user?.email || "Profile"}
+              >
+                <Image
+                  src={userAvatar}
+                  alt={user?.user_metadata?.full_name || "Profile"}
+                  width={36}
+                  height={36}
+                  className="object-cover"
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-gray-900">
+                      {user?.user_metadata?.full_name ||
+                        user?.user_metadata?.name ||
+                        "User"}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {user?.email}
+                    </p>
+                  </div>
+
+                  <Link
+                    href="/profile"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                  >
+                    <User size={16} />
+                    View Profile
+                  </Link>
+
+                  <Link
+                    href="/profile/settings"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
+                  >
+                    <Settings size={16} />
+                    Settings
+                  </Link>
+
+                  <button
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition border-t border-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoggingOut ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <LogOut size={16} />
+                    )}
+                    {isLoggingOut ? "Logging out..." : "Logout"}
+                  </button>
+                </div>
+              )}
+            </div>
 
             <button
               className="md:hidden p-2 text-gray-600"
@@ -126,7 +213,7 @@ export default function Navbar() {
         <Link
           href="/feed"
           className={`flex flex-col items-center gap-1 ${
-            pathname === "/feed" ? "text-teal-600" : "text-gray-400"
+            pathname === "/feed" ? "text-brand-teal" : "text-gray-400"
           }`}
         >
           <Home size={22} />
@@ -136,7 +223,7 @@ export default function Navbar() {
         <Link
           href="/explore"
           className={`flex flex-col items-center gap-1 ${
-            pathname === "/explore" ? "text-teal-600" : "text-gray-400"
+            pathname === "/explore" ? "text-brand-teal" : "text-gray-400"
           }`}
         >
           <Search size={22} />
@@ -145,7 +232,7 @@ export default function Navbar() {
 
         <Link
           href="/orders"
-          className="flex flex-col items-center gap-1 text-gray-400 hover:text-teal-600"
+          className="flex flex-col items-center gap-1 text-gray-400 hover:text-brand-teal"
         >
           <ShoppingBag size={22} />
           <span className="text-[10px] font-medium">Orders</span>
@@ -153,7 +240,7 @@ export default function Navbar() {
 
         <Link
           href="/profile"
-          className="flex flex-col items-center gap-1 text-gray-400 hover:text-teal-600"
+          className="flex flex-col items-center gap-1 text-gray-400 hover:text-brand-teal"
         >
           <User size={22} />
           <span className="text-[10px] font-medium">Profile</span>
