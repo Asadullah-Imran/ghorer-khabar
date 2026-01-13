@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -13,34 +7,27 @@ datasource db {
   provider = "postgresql"
 }
 
-
 model User {
-  id        String   @id
-  name      String?
-  email     String   @unique
-  password  String?  // NULL for OAuth users
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  role Role @default(BUYER)
-
-  // Email verification fields (for email/password signup)
-  emailVerified      Boolean   @default(false)
-  verificationToken  String?   @unique
+  id                 String        @id
+  name               String?
+  email              String        @unique
+  password           String?
+  phone              String?       @unique
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  role               Role          @default(BUYER)
+  authProvider       AuthProvider  @default(EMAIL)
+  avatar             String?
+  emailVerified      Boolean       @default(false)
+  providerId         String?
+  resetToken         String?       @unique
+  resetTokenExpiry   DateTime?
   verificationExpiry DateTime?
-
-  // OAuth fields
-  authProvider AuthProvider @default(EMAIL)
-  providerId   String?      // Google/OAuth user ID
-  avatar       String?      // Profile picture URL
-
-  // Password reset fields
-  resetToken       String?   @unique
-  resetTokenExpiry DateTime?
-
-  // Relations
-  EmailLogOTPs EmailLogOTP[]
-  addresses    Address[]
+  verificationToken  String?       @unique
+  addresses          Address[]
+  EmailLogOTPs       EmailLogOTP[]
+  menu_items         menu_items[]
+  kitchens           Kitchen[]
 
   @@map("users")
 }
@@ -48,17 +35,15 @@ model User {
 model Address {
   id        String   @id @default(cuid())
   userId    String   @map("user_id")
-  label     String   // e.g., "Home", "Office", "Parents' House"
-  address   String   // Full address text
-  zone      String?  // e.g., "Uttara", "Bashundhara", "Dhanmondi"
-  latitude  Float?   // Latitude for precise location
-  longitude Float?   // Longitude for precise location
+  label     String
+  address   String
+  zone      String?
+  latitude  Float?
+  longitude Float?
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([latitude, longitude])
@@ -70,11 +55,58 @@ model EmailLogOTP {
   otp       String
   createdAt DateTime @default(now())
   expiresAt DateTime
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("forget_password_otps")
+}
+
+model ingredients {
+  id           String     @id
+  menu_item_id String
+  name         String
+  quantity     Float
+  unit         String
+  cost         Float?
+  createdAt    DateTime   @default(now())
+  menu_items   menu_items @relation(fields: [menu_item_id], references: [id], onDelete: Cascade)
+
+  @@index([menu_item_id])
+}
+
+model menu_item_images {
+  id           String     @id
+  menu_item_id String
+  imageUrl     String
+  order        Int        @default(0)
+  createdAt    DateTime   @default(now())
+  menu_items   menu_items @relation(fields: [menu_item_id], references: [id], onDelete: Cascade)
+
+  @@index([menu_item_id])
+}
+
+model menu_items {
+  id               String             @id
+  chef_id          String
+  name             String
+  description      String?
+  category         String
+  price            Float
+  prepTime         Int?
+  calories         Int?
+  spiciness        String?
+  isVegetarian     Boolean            @default(false)
+  isAvailable      Boolean            @default(true)
+  rating           Float?             @default(0)
+  reviewCount      Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  ingredients      ingredients[]
+  menu_item_images menu_item_images[]
+  users            User               @relation(fields: [chef_id], references: [id], onDelete: Cascade)
+
+  @@index([chef_id])
 }
 
 enum Role {
@@ -88,3 +120,62 @@ enum AuthProvider {
   GOOGLE
 }
 
+model Kitchen {
+  id                  String           @id @default(cuid())
+  sellerId            String           @map("seller_id")
+  name                String
+  type                String?
+  description         String?          @db.Text
+  location            String?
+  area                String?
+  distance            Float?
+  
+  // NID Verification fields
+  nidName             String?
+  nidFrontImage       String?
+  nidBackImage        String?
+  
+  // Onboarding status
+  onboardingCompleted Boolean          @default(false)
+  isVerified          Boolean          @default(false)
+  isActive            Boolean          @default(true)
+  isOpen              Boolean          @default(true)
+  
+  // Images
+  coverImage          String?
+  profileImage        String?
+  
+  // Metrics
+  kriScore            Int              @default(0)
+  rating              Decimal?         @default(0) @db.Decimal(3,2)
+  reviewCount         Int              @default(0)
+  totalOrders         Int              @default(0)
+  totalRevenue        Decimal?         @default(0) @db.Decimal(10,2)
+  satisfactionRate    Decimal?         @db.Decimal(3,2)
+  responseTime        Int?
+  deliveryRate        Decimal?         @db.Decimal(3,2)
+  operatingDays       Json?
+  
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  
+  // Relations
+  seller              User             @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  gallery             KitchenGallery[]
+  
+  @@index([sellerId])
+  @@map("kitchens")
+}
+
+model KitchenGallery {
+  id         String   @id @default(cuid())
+  kitchenId  String   @map("kitchen_id")
+  imageUrl   String   @map("image_url")
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+  
+  kitchen    Kitchen  @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
+  
+  @@index([kitchenId])
+  @@map("kitchen_gallery")
+}

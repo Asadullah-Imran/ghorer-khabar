@@ -17,7 +17,12 @@ export default function RoleSelectionPage() {
 
       if (response.ok) {
         // Redirect based on the chosen path
-        router.push(roleName === "BUYER" ? "/" : "/menu/[slug]");
+        if (roleName === "BUYER") {
+          router.push("/");
+        } else {
+          // SELLER: redirect to chef onboarding
+          router.push("/chef-onboarding");
+        }
       } else {
         const err = await response.json();
         alert(err.error || "Failed to set role");
