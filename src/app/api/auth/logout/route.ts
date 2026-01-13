@@ -1,10 +1,18 @@
+import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 export async function POST() {
   try {
     const cookieStore = await cookies();
+    const supabase = await createClient();
+
+    // Clear JWT cookie (for email/password users)
     cookieStore.delete("auth_token");
+
+    // Sign out from Supabase (for OAuth users)
+    // This will clear all Supabase auth cookies
+    await supabase.auth.signOut();
 
     return NextResponse.json(
       { message: "Logged out successfully" },

@@ -1,8 +1,9 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   LayoutDashboard,
   Users,
@@ -11,6 +12,8 @@ import {
   ShieldCheck,
   BarChart3,
   Settings,
+  LogOut,
+  Loader2,
 } from 'lucide-react';
 
 const navItems = [
@@ -35,6 +38,18 @@ const navItems = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Logout failed:', error);
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <aside className="hidden w-64 flex-col border-r border-border-dark bg-background-dark lg:flex">
@@ -78,12 +93,26 @@ export default function AdminSidebar() {
 
       {/* Admin Profile Card */}
       <div className="p-4 border-t border-border-dark">
-        <div className="bg-surface-dark p-3 rounded-xl flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-border-dark" />
-          <div>
-            <p className="text-sm font-bold">Admin User</p>
-            <p className="text-xs text-text-muted">Super Admin</p>
+        <div className="bg-surface-dark p-3 rounded-xl">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-10 w-10 rounded-full bg-border-dark" />
+            <div>
+              <p className="text-sm font-bold">{user?.user_metadata?.full_name || user?.user_metadata?.name || 'Admin User'}</p>
+              <p className="text-xs text-text-muted">{user?.email}</p>
+            </div>
           </div>
+          <button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoggingOut ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <LogOut size={16} />
+            )}
+            {isLoggingOut ? 'Logging out...' : 'Logout'}
+          </button>
         </div>
       </div>
     </aside>

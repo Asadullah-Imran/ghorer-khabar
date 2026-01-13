@@ -1,9 +1,9 @@
 "use client";
 
-import { ChefHat, LogOut, Menu, X } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { ChefHat, LogOut, Menu, X, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface ChefNavbarProps {
@@ -17,13 +17,17 @@ export default function ChefNavbar({
 }: ChefNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  // const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { signOut } = useAuth();
 
-  const handleLogout = () => {
-    // Placeholder for logout logic
-    console.log("Logged out");
-    // Replace with actual logout API call and redirect
-    // router.push("/");
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Logout failed:", error);
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -86,10 +90,15 @@ export default function ChefNavbar({
                       setIsProfileMenuOpen(false);
                       handleLogout();
                     }}
-                    className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition border-t border-gray-100 flex items-center gap-2"
+                    disabled={isLoggingOut}
+                    className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition border-t border-gray-100 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <LogOut size={16} />
-                    Logout
+                    {isLoggingOut ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <LogOut size={16} />
+                    )}
+                    {isLoggingOut ? "Logging out..." : "Logout"}
                   </button>
                 </div>
               )}
@@ -148,10 +157,15 @@ export default function ChefNavbar({
                 setIsMobileMenuOpen(false);
                 handleLogout();
               }}
-              className="w-full px-4 py-3 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition flex items-center justify-center gap-2"
+              disabled={isLoggingOut}
+              className="w-full px-4 py-3 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <LogOut size={16} />
-              Logout
+              {isLoggingOut ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <LogOut size={16} />
+              )}
+              {isLoggingOut ? "Logging out..." : "Logout"}
             </button>
           </div>
         </div>

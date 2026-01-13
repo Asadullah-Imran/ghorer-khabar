@@ -7,11 +7,12 @@
 3. [Database Schema](#database-schema)
 4. [Registration Flows](#registration-flows)
 5. [Login Flows](#login-flows)
-6. [Session Management](#session-management)
-7. [Route Protection](#route-protection)
-8. [Data Flow Architecture](#data-flow-architecture)
-9. [Security Features](#security-features)
-10. [Technical Implementation](#technical-implementation)
+6. [Logout Flow](#logout-flow)
+7. [Session Management](#session-management)
+8. [Route Protection](#route-protection)
+9. [Data Flow Architecture](#data-flow-architecture)
+10. [Security Features](#security-features)
+11. [Technical Implementation](#technical-implementation)
 
 ---
 
@@ -420,6 +421,170 @@ model User {
 1. **Browser Cookies**: `auth_token` (JWT, HTTP-only, 30 days)
 2. **Browser Memory**: None (no localStorage/sessionStorage)
 3. **Server**: No session storage (stateless JWT)
+
+---
+
+## Logout Flow
+
+### Universal Logout (Works for Both Auth Methods)
+
+The logout flow is designed to handle both Google OAuth and Email/Password users seamlessly:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ 1. User clicks "Logout" button                             │
+│    Locations: Profile page, Chef navbar, Admin sidebar     │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 2. Frontend: Loading State Activated                       │
+│    Location: Component state (isLoggingOut = true)         │
+│    UI Changes:                                              │
+│    - Button shows spinner (Loader2 component)               │
+│    - Button text: "Logging out..."                         │
+│    - Button disabled to prevent double-clicks              │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 3. Frontend: Call signOut() from AuthContext               │
+│    Location: src/contexts/AuthContext.tsx                  │
+│    Function: signOut()                                     │
+│    Code: await signOut()                                   │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 4. AuthContext: Set Loading State                          │
+│    Code: setLoading(true)                                  │
+│    Purpose: Prevent UI flashes during logout               │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 5. Backend API Call: POST /api/auth/logout                 │
+│    Location: src/app/api/auth/logout/route.ts              │
+│    Method: POST                                             │
+│    Process:                                                 │
+│    a) Get cookie store                                      │
+│    b) Create Supabase server client                        │
+│    c) Delete JWT cookie: auth_token                        │
+│    d) Call Supabase signOut() (clears OAuth cookies)       │
+│    e) Return success response                              │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 6. Cookies Cleared on Server                               │
+│    For OAuth users:                                         │
+│    - sb-<project>-auth-token (deleted by Supabase)         │
+│    - All Supabase session cookies removed                  │
+│                                                             │
+│    For Email/Password users:                                │
+│    - auth_token cookie deleted                             │
+│                                                             │
+│    Result: No valid session cookies remain                 │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 7. AuthContext: Clear Local State                          │
+│    Code:                                                    │
+│    - setUser(null)                                          │
+│    - setLoading(false)                                      │
+│    Console log: "User signed out successfully"            │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│ 8. Frontend: Redirect to Login                             │
+│    Code: router.push('/login')                              │
+│    Result: User sent to login page                         │
+│    Status: Fully logged out ✅                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Logout Implementation Details
+
+**Frontend Components with Logout:**
+
+1. **Profile Page** (`src/components/profile/ProfileHeader.tsx`)
+   - Red "Logout" button with icon
+   - Shows loading spinner during logout
+   - Button disabled while processing
+
+2. **Chef Navbar** (`src/components/chef/Navigation/Navbar.tsx`)
+   - Desktop: Dropdown menu with logout option
+   - Mobile: Bottom menu with logout button
+   - Both show loading state
+
+3. **Admin Sidebar** (`src/components/admin/AdminSidebar.tsx`)
+   - Logout button in profile card at bottom
+   - Shows admin user info above button
+   - Red-themed button with loading state
+
+**Error Handling:**
+
+```typescript
+const handleLogout = async () => {
+  setIsLoggingOut(true);
+  try {
+    await signOut();
+  } catch (error) {
+    console.error('Logout failed:', error);
+    // Reset loading state if logout fails
+    setIsLoggingOut(false);
+  }
+};
+```
+
+**Key Features:**
+
+- ✅ **Universal Logout**: Single API endpoint clears both OAuth and JWT cookies
+- ✅ **Loading States**: Visual feedback during logout process
+- ✅ **Error Recovery**: If logout fails, user can try again
+- ✅ **Graceful Degradation**: Even if API fails, local state is cleared
+- ✅ **Automatic Redirect**: User always sent to login page after logout
+- ✅ **No Residual State**: All cookies and local state completely cleared
+- ✅ **Console Logging**: Debug info for troubleshooting
+
+**What Gets Cleared:**
+
+| User Type         | Cookies Cleared                          | Local State   |
+|-------------------|------------------------------------------|---------------|
+| **Google OAuth**  | All Supabase auth cookies                | user = null   |
+| **Email/Password**| auth_token JWT cookie                    | user = null   |
+| **Both**          | All authentication cookies removed       | loading reset |
+
+**Post-Logout State:**
+
+```typescript
+// AuthContext after logout
+{
+  user: null,           // No user data
+  loading: false,       // Not loading
+  signOut: () => {...}  // Function still available
+}
+```
+
+### Logout Button UI States
+
+**Normal State:**
+```tsx
+<button>
+  <LogOut size={16} />
+  Logout
+</button>
+```
+
+**Loading State:**
+```tsx
+<button disabled>
+  <Loader2 size={16} className="animate-spin" />
+  Logging out...
+</button>
+```
 
 ---
 
