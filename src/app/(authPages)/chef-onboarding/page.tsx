@@ -1,5 +1,6 @@
 "use client";
 
+import ChefGuard from "@/components/auth/ChefGuard";
 import ImageUploadStep from "@/components/chef/onboarding/ImageUploadStep";
 import KitchenAddressStep from "@/components/chef/onboarding/KitchenAddressStep";
 import KitchenNameStep from "@/components/chef/onboarding/KitchenNameStep";
@@ -196,8 +197,9 @@ export default function ChefOnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8f6f6] py-8 px-4">
-      <div className="max-w-5xl mx-auto">
+    <ChefGuard>
+      <div className="min-h-screen bg-[#f8f6f6] py-8 px-4">
+        <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-black text-[#1b0e0e] mb-2">
@@ -336,6 +338,7 @@ export default function ChefOnboardingPage() {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </ChefGuard>
   );
 }

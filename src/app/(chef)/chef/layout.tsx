@@ -1,12 +1,9 @@
+"use client";
+
+import ChefGuard from "@/components/auth/ChefGuard";
 import ChefNavbar from "@/components/chef/Navigation/Navbar";
 import ChefSidebar from "@/components/chef/Navigation/Sidebar";
 import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Ghorer Khabar - Chef Dashboard",
-  description:
-    "Manage your home kitchen and connect with health-conscious customers.",
-};
 
 export default function ChefLayout({
   children,
@@ -14,7 +11,7 @@ export default function ChefLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
+    <ChefGuard>
       <ChefNavbar kitchenName="Chef's Kitchen" />
       <div className="flex">
         <ChefSidebar />
@@ -22,6 +19,6 @@ export default function ChefLayout({
           {children}
         </main>
       </div>
-    </>
+    </ChefGuard>
   );
 }

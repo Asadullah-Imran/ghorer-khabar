@@ -27,7 +27,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { totalItems } = useCart();
-  const { user, signOut } = useAuth();
+  const { user, role, signOut } = useAuth();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -113,13 +113,16 @@ export default function Navbar() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-6">
-            <button
-              onClick={() => router.push("/chef/dashboard")}
-              className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-brand-teal transition"
-            >
-              <ChefHat size={18} />
-              <span>Switch to Chef</span>
-            </button>
+            {/* Show Switch to Chef button only for sellers */}
+            {role === "SELLER" && (
+              <button
+                onClick={() => router.push("/chef/dashboard")}
+                className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-brand-teal transition"
+              >
+                <ChefHat size={18} />
+                <span>Switch to Chef</span>
+              </button>
+            )}
 
             {/* Cart Icon */}
             <Link
