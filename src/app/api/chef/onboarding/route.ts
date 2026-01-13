@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma/prisma";
+import { prisma } from "@/lib/prisma/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { chefOnboardingSchema } from "@/lib/validation";
 import { NextRequest, NextResponse } from "next/server";
