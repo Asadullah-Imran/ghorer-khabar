@@ -1,7 +1,7 @@
 /**
  * Geocode an address to get latitude and longitude
  * Uses a free geocoding service (Nominatim - OpenStreetMap)
- * 
+ *
  * Note: For production, consider using Google Maps Geocoding API
  * or other paid services for better accuracy and rate limits
  */

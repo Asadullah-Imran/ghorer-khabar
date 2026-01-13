@@ -1,7 +1,15 @@
 "use client";
 
-import { Briefcase, Home, MapPin, Plus, Trash2, Edit2, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import {
+  Briefcase,
+  Edit2,
+  Home,
+  Loader2,
+  MapPin,
+  Plus,
+  Trash2,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import AddressForm, { AddressFormData } from "./AddressForm";
 
 interface Address {
@@ -30,7 +38,7 @@ export default function AddressList() {
     try {
       setLoading(true);
       const response = await fetch("/api/addresses");
-      
+
       if (!response.ok) {
         throw new Error("Failed to fetch addresses");
       }
@@ -223,11 +231,9 @@ export default function AddressList() {
               <p className="text-sm text-gray-600 mt-2 leading-relaxed">
                 {addr.address}
               </p>
-              
+
               {addr.zone && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Zone: {addr.zone}
-                </p>
+                <p className="text-xs text-gray-500 mt-1">Zone: {addr.zone}</p>
               )}
 
               {addr.latitude && addr.longitude && (
@@ -243,7 +249,9 @@ export default function AddressList() {
           <div className="text-center py-12 text-gray-500">
             <MapPin size={48} className="mx-auto mb-4 opacity-30" />
             <p className="font-semibold">No saved addresses yet</p>
-            <p className="text-sm mt-1">Add your first address to get started</p>
+            <p className="text-sm mt-1">
+              Add your first address to get started
+            </p>
           </div>
         )}
 

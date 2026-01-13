@@ -1,19 +1,19 @@
 import { prisma } from "@/lib/prisma/prisma";
 import { createClient } from "@/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 // Helper to get user ID from token (supports both OAuth and email/password)
-async function getUserIdFromToken(
-  req: NextRequest
-): Promise<string | null> {
+async function getUserIdFromToken(req: NextRequest): Promise<string | null> {
   // First, try Supabase OAuth
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (user) {
     return user.id;
   }
@@ -43,10 +43,7 @@ export async function PATCH(
     const userId = await getUserIdFromToken(req);
 
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
@@ -59,10 +56,7 @@ export async function PATCH(
     });
 
     if (!existingAddress) {
-      return NextResponse.json(
-        { error: "Address not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Address not found" }, { status: 404 });
     }
 
     // If setting as default, unset other defaults
@@ -104,10 +98,7 @@ export async function DELETE(
     const userId = await getUserIdFromToken(req);
 
     if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
@@ -118,10 +109,7 @@ export async function DELETE(
     });
 
     if (!existingAddress) {
-      return NextResponse.json(
-        { error: "Address not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Address not found" }, { status: 404 });
     }
 
     await prisma.address.delete({

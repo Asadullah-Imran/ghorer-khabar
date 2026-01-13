@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { X, Loader2, MapPin } from "lucide-react";
 import { reverseGeocode } from "@/lib/utils/geocoding";
+import { Loader2, MapPin, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface LocationPickerProps {
   onLocationSelect: (lat: number, lng: number, address?: string) => void;
@@ -26,15 +26,17 @@ export default function LocationPicker({
 
   useEffect(() => {
     setMounted(true);
-    
+
     // Dynamically import leaflet to avoid SSR issues
     import("leaflet").then((L) => {
       // Fix default marker icon paths
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
-        iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+        iconRetinaUrl:
+          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
         iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        shadowUrl:
+          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
     });
   }, []);
@@ -55,14 +57,15 @@ export default function LocationPicker({
 
         // Add tile layer
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
           maxZoom: 19,
         }).addTo(map);
 
         // Add click event
         map.on("click", async (e: any) => {
           const { lat, lng } = e.latlng;
-          
+
           // Remove existing marker
           if (marker) {
             map.removeLayer(marker);
@@ -70,7 +73,7 @@ export default function LocationPicker({
 
           // Add new marker
           marker = L.marker([lat, lng]).addTo(map);
-          
+
           setSelectedLat(lat);
           setSelectedLng(lng);
           setLoading(true);
@@ -82,7 +85,6 @@ export default function LocationPicker({
           }
           setLoading(false);
         });
-
       } catch (error) {
         console.error("Map initialization error:", error);
         setMapError("Failed to load map. Please try again.");
@@ -115,8 +117,12 @@ export default function LocationPicker({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Pick Location on Map</h2>
-            <p className="text-sm text-gray-500 mt-1">Click anywhere on the map to select a location</p>
+            <h2 className="text-xl font-bold text-gray-900">
+              Pick Location on Map
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Click anywhere on the map to select a location
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -128,12 +134,12 @@ export default function LocationPicker({
 
         {/* Map Container */}
         <div className="flex-1 relative bg-gray-100">
-          <div 
-            id="location-map" 
+          <div
+            id="location-map"
             className="w-full h-full min-h-[400px]"
             style={{ zIndex: 0 }}
           />
-          
+
           {mapError && (
             <div className="absolute inset-0 flex items-center justify-center bg-white/90">
               <div className="text-center p-6">
@@ -156,7 +162,9 @@ export default function LocationPicker({
                   <MapPin className="text-brand-teal" size={20} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-900 text-sm">Selected Location</h3>
+                  <h3 className="font-bold text-gray-900 text-sm">
+                    Selected Location
+                  </h3>
                   <p className="text-xs text-gray-500 mt-1">
                     {selectedLat.toFixed(6)}, {selectedLng.toFixed(6)}
                   </p>
@@ -166,7 +174,9 @@ export default function LocationPicker({
                       Getting address...
                     </div>
                   ) : address ? (
-                    <p className="text-xs text-gray-600 mt-2 line-clamp-2">{address}</p>
+                    <p className="text-xs text-gray-600 mt-2 line-clamp-2">
+                      {address}
+                    </p>
                   ) : null}
                 </div>
               </div>

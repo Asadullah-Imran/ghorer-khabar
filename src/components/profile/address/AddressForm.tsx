@@ -1,15 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { X, MapPin, Loader2, Search, Map } from "lucide-react";
 import { geocodeAddress } from "@/lib/utils/geocoding";
+import { Loader2, Map, MapPin, Search, X } from "lucide-react";
 import dynamic from "next/dynamic";
+import { useState } from "react";
 
 // Dynamically import LocationPicker to avoid SSR issues with Leaflet
-const LocationPicker = dynamic(
-  () => import("./LocationPicker"),
-  { ssr: false }
-);
+const LocationPicker = dynamic(() => import("./LocationPicker"), {
+  ssr: false,
+});
 
 interface AddressFormProps {
   onClose: () => void;
@@ -100,12 +99,14 @@ export default function AddressForm({
 
     setLoading(true);
     setError("");
-    
+
     try {
       const result = await geocodeAddress(formData.address);
-      
+
       if (!result) {
-        setError("Could not find coordinates for this address. Try being more specific or use Google Maps.");
+        setError(
+          "Could not find coordinates for this address. Try being more specific or use Google Maps."
+        );
         setLoading(false);
         return;
       }
@@ -122,7 +123,11 @@ export default function AddressForm({
     }
   };
 
-  const handleLocationFromMap = (lat: number, lng: number, address?: string) => {
+  const handleLocationFromMap = (
+    lat: number,
+    lng: number,
+    address?: string
+  ) => {
     setFormData({
       ...formData,
       latitude: lat,
@@ -208,7 +213,7 @@ export default function AddressForm({
             <label className="block text-sm font-semibold text-gray-700">
               Location Coordinates
             </label>
-            
+
             <div className="grid grid-cols-3 gap-3">
               <button
                 type="button"
@@ -258,7 +263,9 @@ export default function AddressForm({
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      latitude: e.target.value ? parseFloat(e.target.value) : null,
+                      latitude: e.target.value
+                        ? parseFloat(e.target.value)
+                        : null,
                     })
                   }
                   placeholder="Latitude"
@@ -273,7 +280,9 @@ export default function AddressForm({
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      longitude: e.target.value ? parseFloat(e.target.value) : null,
+                      longitude: e.target.value
+                        ? parseFloat(e.target.value)
+                        : null,
                     })
                   }
                   placeholder="Longitude"
@@ -294,7 +303,10 @@ export default function AddressForm({
               }
               className="w-4 h-4 text-brand-teal border-gray-300 rounded focus:ring-brand-teal"
             />
-            <label htmlFor="isDefault" className="text-sm font-semibold text-gray-700">
+            <label
+              htmlFor="isDefault"
+              className="text-sm font-semibold text-gray-700"
+            >
               Set as default address
             </label>
           </div>

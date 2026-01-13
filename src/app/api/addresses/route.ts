@@ -10,8 +10,10 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 async function getUserIdFromToken(req: NextRequest): Promise<string | null> {
   // First, try Supabase OAuth
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (user) {
     return user.id;
   }
@@ -75,8 +77,10 @@ export async function POST(req: NextRequest) {
 
     if (!existingUser) {
       const supabase = await createClient();
-      const { data: { user: supabaseUser } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user: supabaseUser },
+      } = await supabase.auth.getUser();
+
       if (supabaseUser) {
         // Check if user with this email already exists
         const userByEmail = await prisma.user.findUnique({
@@ -94,7 +98,10 @@ export async function POST(req: NextRequest) {
               data: {
                 id: userId,
                 email: supabaseUser.email!,
-                name: supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || null,
+                name:
+                  supabaseUser.user_metadata?.name ||
+                  supabaseUser.email?.split("@")[0] ||
+                  null,
                 authProvider: "GOOGLE",
                 emailVerified: true,
                 avatar: supabaseUser.user_metadata?.avatar_url || null,
