@@ -16,7 +16,7 @@ interface KitchenProps {
 export default function KitchenCard({ data }: KitchenProps) {
   return (
     <Link
-      href={`/kitchen/${data.id}`}
+      href={`/explore/kitchen/${data.id}`}
       className="block min-w-[200px] md:min-w-[240px]"
     >
       <div className="relative bg-white border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition">

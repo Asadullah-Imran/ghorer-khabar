@@ -66,10 +66,10 @@ export default function SubscriptionCard({ sub }: { sub: any }) {
           </div>
 
           <Link
-            href={`/profile/subscription/${sub.id}`}
+            href={`/profile/my-subscription/${sub.id}/schedule`}
             className="flex items-center gap-1 text-sm font-bold text-teal-700 hover:text-teal-900 hover:underline"
           >
-            Manage Plan <ChevronRight size={16} />
+            View Schedule <ChevronRight size={16} />
           </Link>
         </div>
       </div>

@@ -32,7 +32,10 @@ export default function PlanCard({ data }: PlanProps) {
   }
 
   return (
-    <Link href={`/plans/${data.id}`} className="block group h-full">
+    <Link
+      href={`/explore/subscriptions/${data.id}`}
+      className="block group h-full"
+    >
       <div className="relative bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-all h-full flex flex-col hover:border-teal-200">
         {/* Image Header */}
         <div className="relative h-40 bg-gray-100">

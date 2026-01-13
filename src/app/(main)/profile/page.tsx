@@ -2,6 +2,7 @@ import {
   RoleSwitcher,
   SubscriptionActions,
 } from "@/components/profile/ProfileInteractions";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import {
   ACTIVE_SUBSCRIPTION,
   ORDER_HISTORY,
@@ -11,7 +12,6 @@ import {
   CalendarCheck,
   ChevronRight,
   Heart,
-  LogOut,
   MapPin,
   Phone,
   Settings,
@@ -27,43 +27,8 @@ export default function ProfilePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         {/* 1. Header & Role Switcher */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* User Info Card */}
-          <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex flex-col items-center text-center">
-            <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-gray-100 mb-4">
-              <Image
-                src={USER_PROFILE.avatar}
-                alt="Profile"
-                fill
-                className="object-cover"
-              />
-            </div>
-            <h1 className="text-xl font-bold text-gray-900">
-              {USER_PROFILE.name}
-            </h1>
-            <p className="text-sm text-teal-600 font-medium mb-4">
-              {USER_PROFILE.plan}
-            </p>
-
-            <div className="w-full space-y-3 text-sm text-gray-500 border-t border-gray-100 pt-4">
-              <div className="flex items-center gap-3">
-                <Phone size={16} className="text-gray-400" />
-                <span>{USER_PROFILE.phone}</span>
-              </div>
-              <div className="flex items-center gap-3 text-left">
-                <MapPin size={16} className="text-gray-400 shrink-0" />
-                <span>{USER_PROFILE.address}</span>
-              </div>
-            </div>
-
-            <div className="w-full mt-6 flex gap-2">
-              <button className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-sm font-medium">
-                <Settings size={16} /> Edit
-              </button>
-              <button className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50 text-sm font-medium">
-                <LogOut size={16} /> Logout
-              </button>
-            </div>
-          </div>
+          {/* User Info Card - Now using auth context */}
+          <ProfileHeader />
 
           {/* Role Switcher & Impact Stats */}
           <div className="lg:col-span-2 flex flex-col gap-6">
@@ -133,7 +98,7 @@ export default function ProfilePage() {
                   Active Tiffin Plan
                 </h3>
                 <Link
-                  href={`/profile/subscription/${ACTIVE_SUBSCRIPTION.id}`}
+                  href="/profile/my-subscription"
                   className="text-sm font-semibold text-teal-700 hover:underline"
                 >
                   Manage Plan

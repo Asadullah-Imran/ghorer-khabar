@@ -27,7 +27,7 @@ export default function MySubscriptionsPage() {
           </p>
         </div>
         <Link
-          href="/explore?tab=plans"
+          href="/explore?tab=subscriptions"
           className="bg-teal-700 hover:bg-teal-800 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-teal-700/20 flex items-center gap-2"
         >
           <PlusCircle size={20} />

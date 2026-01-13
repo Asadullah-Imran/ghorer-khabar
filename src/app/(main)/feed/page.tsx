@@ -3,7 +3,6 @@ import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard"; // 1. Import PlanCard
 import SectionHeader from "@/components/shared/SectionHeader";
 import {
-  
   MONTHLY_TOP_KITCHENS,
   RECOMMENDED_DISHES,
   WEEKLY_BEST_DISHES,
@@ -63,7 +62,7 @@ export default function FeedPage() {
           <SectionHeader
             title="Monthly Meal Plans"
             subtitle="Save time & money with recurring meals"
-            href="/explore?tab=plans"
+            href="/explore?tab=subscriptions"
           />
           <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-4 scrollbar-hide snap-x">
             {FEATURED_PLANS.map((plan) => (

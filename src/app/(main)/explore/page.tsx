@@ -52,7 +52,7 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
     if (sort === "price_asc") filteredDishes.sort((a, b) => a.price - b.price);
     if (sort === "price_desc") filteredDishes.sort((a, b) => b.price - a.price);
     if (sort === "rating") filteredDishes.sort((a, b) => b.rating - a.rating);
-  } else if (tab === "plans") {
+  } else if (tab === "subscriptions") {
     if (sort === "price_asc") filteredPlans.sort((a, b) => a.price - b.price);
     if (sort === "price_desc") filteredPlans.sort((a, b) => b.price - a.price);
     if (sort === "rating") filteredPlans.sort((a, b) => b.rating - a.rating);
@@ -106,8 +106,8 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
           </>
         )}
 
-        {/* --- PLANS GRID --- */}
-        {tab === "plans" && (
+        {/* --- SUBSCRIPTIONS GRID --- */}
+        {tab === "subscriptions" && (
           <>
             {filteredPlans.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -116,7 +116,7 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
                 ))}
               </div>
             ) : (
-              <EmptyState type="Plan" />
+              <EmptyState type="Subscription" />
             )}
           </>
         )}

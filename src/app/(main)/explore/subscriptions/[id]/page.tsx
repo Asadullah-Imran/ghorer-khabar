@@ -29,7 +29,10 @@ export default async function PlanDetailsPage({
             Home
           </Link>
           <ChevronRight size={12} />
-          <Link href="/explore?tab=plans" className="hover:text-teal-700">
+          <Link
+            href="/explore?tab=subscriptions"
+            className="hover:text-teal-700"
+          >
             Subscription Plans
           </Link>
           <ChevronRight size={12} />

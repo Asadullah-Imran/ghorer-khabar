@@ -99,14 +99,10 @@ function RegisterContent() {
       const result = await res.json();
 
       if (res.ok) {
-        alert("Verification code sent to your email!");
-        const params = new URLSearchParams({
-          email: formData.email,
-          name: formData.name,
-          password: formData.password,
-          role: formData.role,
-        });
-        router.push(`/verification?${params.toString()}&type=signup`);
+        alert(
+          "Registration successful! Please check your email to verify your account. Check spam folder if you don't see it."
+        );
+        router.push(`/login?registered=true`);
       } else {
         alert(result.error || "Registration failed");
       }

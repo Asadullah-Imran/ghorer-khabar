@@ -72,15 +72,15 @@ export default async function FavoritesPage({ searchParams }: PageProps) {
           </div>
         )}
 
-        {/* --- PLANS TAB (New) --- */}
-        {tab === "plans" && (
+        {/* --- SUBSCRIPTIONS TAB --- */}
+        {tab === "subscriptions" && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {FAVORITE_PLANS.length > 0 ? (
               FAVORITE_PLANS.map((plan) => (
                 <PlanCard key={plan.id} data={plan} />
               ))
             ) : (
-              <EmptyState type="Plan" />
+              <EmptyState type="Subscription" />
             )}
           </div>
         )}

@@ -1,7 +1,7 @@
-import { setAuthCookie } from "@/lib/auth/session";
 import { loginSchema } from "@/lib/validation";
 import { loginUser } from "@/services/auth.service";
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 /**
  * @swagger
@@ -47,12 +47,28 @@ export async function POST(req: Request) {
     // Validate input with Zod
     const data = loginSchema.parse(body);
 
-    // Call login service
+    // Call login service to verify credentials in Prisma database
     const { user, token } = await loginUser(data);
 
-    // FIX: Must await this in Next.js 15/16
-    await setAuthCookie(token);
-    console.log("User logged in:", user);
+    // Check if email is verified
+    if (!user.emailVerified) {
+      return NextResponse.json(
+        { error: "Please verify your email before logging in" },
+        { status: 403 }
+      );
+    }
+
+    // Set JWT cookie for email/password authentication
+    const cookieStore = await cookies();
+    cookieStore.set("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+      path: "/",
+    });
+
+    console.log("User logged in successfully:", user);
 
     return NextResponse.json(
       {
@@ -62,7 +78,7 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error: any) {
-    // If Zod or the Service throws an error, return 401
+    console.error("Login error:", error);
     return NextResponse.json(
       { error: error.message || "Authentication failed" },
       { status: 401 }
