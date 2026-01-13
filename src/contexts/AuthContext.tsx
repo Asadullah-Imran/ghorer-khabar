@@ -5,10 +5,16 @@ import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 
+// Supabase user with role field
+interface SupabaseUserWithRole extends User {
+  role?: string;
+}
+
 // Extended user type that can handle both Supabase and JWT users
 interface ExtendedUser extends Partial<User> {
   id: string;
   email?: string;
+  role?: string;
   user_metadata?: {
     name?: string;
     full_name?: string;
@@ -20,6 +26,7 @@ interface ExtendedUser extends Partial<User> {
 interface AuthContextType {
   user: ExtendedUser | null;
   loading: boolean;
+  role: string | null;
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -29,6 +36,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<string | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -59,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (sessionData.user && mounted) {
             console.log("Found Supabase session:", sessionData.user.email);
             setUser(sessionData.user);
+            setRole(sessionData.user.role || null);
             setLoading(false);
             return;
           }
@@ -76,11 +85,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setUser({
               id: data.user.id,
               email: data.user.email,
+              role: data.user.role,
               user_metadata: {
                 name: data.user.name,
                 full_name: data.user.name,
               },
             });
+            setRole(data.user.role || null);
             setLoading(false);
             return;
           }
@@ -112,21 +123,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           console.log("Initial session user:", session.user.email);
           setUser(session.user);
+          setRole((session.user as SupabaseUserWithRole).role || null);
         }
         // Only set loading to false after we've checked our API endpoints
         // Don't set it here to avoid race conditions
       } else if (event === "SIGNED_IN" && session?.user) {
         console.log("User signed in:", session.user.email);
         setUser(session.user);
+        setRole((session.user as SupabaseUserWithRole).role || null);
         setLoading(false);
       } else if (event === "SIGNED_OUT") {
         console.log("User signed out");
         setUser(null);
+        setRole(null);
         setLoading(false);
         router.push("/login");
       } else if (event === "TOKEN_REFRESHED") {
         console.log("Token refreshed:", session?.user?.email);
         setUser(session?.user || null);
+        setRole(
+          (session?.user as SupabaseUserWithRole | undefined)?.role || null
+        );
       }
     });
 
@@ -155,6 +172,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Clear local state immediately
       setUser(null);
+      setRole(null);
       setLoading(false);
 
       // Redirect to login page
@@ -165,13 +183,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Error signing out:", error);
       // Even if there's an error, clear local state and redirect
       setUser(null);
+      setRole(null);
       setLoading(false);
       router.push("/login");
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signOut, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, role, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

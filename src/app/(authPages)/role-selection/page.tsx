@@ -1,8 +1,7 @@
 "use client";
 
+import { ArrowRight, Info, Store, Utensils } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { Utensils, Store, ArrowRight, Info } from "lucide-react";
 
 export default function RoleSelectionPage() {
   const router = useRouter();
@@ -17,7 +16,12 @@ export default function RoleSelectionPage() {
 
       if (response.ok) {
         // Redirect based on the chosen path
-        router.push(roleName === "BUYER" ? "/" : "/menu/[slug]");
+        if (roleName === "BUYER") {
+          router.push("/");
+        } else {
+          // SELLER: redirect to chef onboarding
+          router.push("/chef-onboarding");
+        }
       } else {
         const err = await response.json();
         alert(err.error || "Failed to set role");
@@ -32,14 +36,17 @@ export default function RoleSelectionPage() {
       <div className="w-full max-w-2xl space-y-8 text-center">
         <div className="space-y-2">
           <h1 className="text-4xl font-black text-[#1b0e0e]">
-            How will you use <span className="text-[#ea2a33]">Ghorer Khabar</span>?
+            How will you use{" "}
+            <span className="text-[#ea2a33]">Ghorer Khabar</span>?
           </h1>
-          <p className="text-[#994d51] text-lg">Pick your path to get started.</p>
+          <p className="text-[#994d51] text-lg">
+            Pick your path to get started.
+          </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Buyer Option */}
-          <div 
+          <div
             onClick={() => selectRole("BUYER")}
             className="group bg-white p-8 rounded-2xl shadow-sm border-2 border-transparent hover:border-[#ea2a33] transition-all cursor-pointer hover:shadow-xl"
           >
@@ -47,14 +54,16 @@ export default function RoleSelectionPage() {
               <Utensils className="text-[#ea2a33] group-hover:text-white" />
             </div>
             <h3 className="text-xl font-bold mb-2">I want to Buy</h3>
-            <p className="text-sm text-gray-500 mb-6">Discover healthy, home-cooked meals from neighbors.</p>
+            <p className="text-sm text-gray-500 mb-6">
+              Discover healthy, home-cooked meals from neighbors.
+            </p>
             <div className="flex items-center justify-center gap-2 font-bold text-[#ea2a33]">
               Select <ArrowRight size={16} />
             </div>
           </div>
 
           {/* Seller Option */}
-          <div 
+          <div
             onClick={() => selectRole("SELLER")}
             className="group bg-white p-8 rounded-2xl shadow-sm border-2 border-transparent hover:border-[#ea2a33] transition-all cursor-pointer hover:shadow-xl"
           >
@@ -62,7 +71,9 @@ export default function RoleSelectionPage() {
               <Store className="text-[#ea2a33] group-hover:text-white" />
             </div>
             <h3 className="text-xl font-bold mb-2">I want to Sell</h3>
-            <p className="text-sm text-gray-500 mb-6">Share your recipes and start earning from home.</p>
+            <p className="text-sm text-gray-500 mb-6">
+              Share your recipes and start earning from home.
+            </p>
             <div className="flex items-center justify-center gap-2 font-bold text-[#ea2a33]">
               Select <ArrowRight size={16} />
             </div>
