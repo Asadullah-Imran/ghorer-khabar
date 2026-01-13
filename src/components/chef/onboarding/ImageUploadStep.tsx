@@ -1,7 +1,13 @@
 "use client";
 
+import {
+  CreditCard,
+  Image as ImageIcon,
+  Loader2,
+  Upload,
+  X,
+} from "lucide-react";
 import { useState } from "react";
-import { Upload, X, Loader2, Image as ImageIcon, CreditCard } from "lucide-react";
 
 interface ImageUploadStepProps {
   nidFrontImage: string | null;
@@ -66,8 +72,12 @@ export default function ImageUploadStep({
         <div className="bg-[#477e77]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
           <ImageIcon className="text-[#477e77]" size={32} />
         </div>
-        <h2 className="text-2xl font-bold text-[#1b0e0e]">Upload Documents & Photos</h2>
-        <p className="text-gray-600">Help us verify your identity and showcase your kitchen</p>
+        <h2 className="text-2xl font-bold text-[#1b0e0e]">
+          Upload Documents & Photos
+        </h2>
+        <p className="text-gray-600">
+          Help us verify your identity and showcase your kitchen
+        </p>
       </div>
 
       {/* NID Upload Section */}
@@ -76,7 +86,7 @@ export default function ImageUploadStep({
           <CreditCard size={20} />
           National ID (NID) Photos
         </h3>
-        
+
         <div className="grid md:grid-cols-2 gap-4">
           {/* NID Front */}
           <div className="space-y-2">
@@ -119,19 +129,28 @@ export default function ImageUploadStep({
                 <div className="h-full flex flex-col items-center justify-center gap-2">
                   {uploadingNidFront ? (
                     <>
-                      <Loader2 className="text-[#477e77] animate-spin" size={32} />
-                      <span className="text-sm text-gray-500">Uploading...</span>
+                      <Loader2
+                        className="text-[#477e77] animate-spin"
+                        size={32}
+                      />
+                      <span className="text-sm text-gray-500">
+                        Uploading...
+                      </span>
                     </>
                   ) : (
                     <>
                       <Upload className="text-gray-400" size={32} />
-                      <span className="text-sm text-gray-500">Click to upload</span>
+                      <span className="text-sm text-gray-500">
+                        Click to upload
+                      </span>
                     </>
                   )}
                 </div>
               </label>
             )}
-            {errors?.nidFront && <p className="text-sm text-red-500">{errors.nidFront}</p>}
+            {errors?.nidFront && (
+              <p className="text-sm text-red-500">{errors.nidFront}</p>
+            )}
           </div>
 
           {/* NID Back */}
@@ -175,19 +194,28 @@ export default function ImageUploadStep({
                 <div className="h-full flex flex-col items-center justify-center gap-2">
                   {uploadingNidBack ? (
                     <>
-                      <Loader2 className="text-[#477e77] animate-spin" size={32} />
-                      <span className="text-sm text-gray-500">Uploading...</span>
+                      <Loader2
+                        className="text-[#477e77] animate-spin"
+                        size={32}
+                      />
+                      <span className="text-sm text-gray-500">
+                        Uploading...
+                      </span>
                     </>
                   ) : (
                     <>
                       <Upload className="text-gray-400" size={32} />
-                      <span className="text-sm text-gray-500">Click to upload</span>
+                      <span className="text-sm text-gray-500">
+                        Click to upload
+                      </span>
                     </>
                   )}
                 </div>
               </label>
             )}
-            {errors?.nidBack && <p className="text-sm text-red-500">{errors.nidBack}</p>}
+            {errors?.nidBack && (
+              <p className="text-sm text-red-500">{errors.nidBack}</p>
+            )}
           </div>
         </div>
       </div>
@@ -238,7 +266,10 @@ export default function ImageUploadStep({
               <div className="h-full flex flex-col items-center justify-center gap-1">
                 {uploadingKitchen ? (
                   <>
-                    <Loader2 className="text-[#477e77] animate-spin" size={24} />
+                    <Loader2
+                      className="text-[#477e77] animate-spin"
+                      size={24}
+                    />
                     <span className="text-xs text-gray-500">Uploading...</span>
                   </>
                 ) : (
@@ -251,12 +282,16 @@ export default function ImageUploadStep({
             </label>
           )}
         </div>
-        {errors?.kitchen && <p className="text-sm text-red-500">{errors.kitchen}</p>}
+        {errors?.kitchen && (
+          <p className="text-sm text-red-500">{errors.kitchen}</p>
+        )}
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-sm text-blue-900 mb-2">📸 Photo Tips:</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
+      <div className="bg-[#feb728]/10 border border-[#feb728]/30 rounded-lg p-4">
+        <h3 className="font-semibold text-sm text-[#1b0e0e] mb-2">
+          📸 Photo Tips:
+        </h3>
+        <ul className="text-sm text-gray-700 space-y-1">
           <li>• Ensure NID photos are clear and readable</li>
           <li>• Show your kitchen setup, cooking area, and equipment</li>
           <li>• Good lighting makes photos more appealing</li>

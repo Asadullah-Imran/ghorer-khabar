@@ -18,10 +18,18 @@ export const chefOnboardingSchema = z.object({
   latitude: z.number(),
   longitude: z.number(),
   nidName: z.string().min(2, "Name on NID is required"),
-  phone: z.string().regex(/^(\+880|880)?1[3-9]\d{8}$/, "Valid Bangladesh phone number required"),
+  phone: z
+    .string()
+    .regex(
+      /^(\+880|880)?1[3-9]\d{8}$/,
+      "Valid Bangladesh phone number required"
+    ),
   nidFrontImage: z.string().url("NID front image is required"),
   nidBackImage: z.string().url("NID back image is required"),
-  kitchenImages: z.array(z.string().url()).min(1, "At least 1 kitchen image required").max(4, "Maximum 4 kitchen images allowed"),
+  kitchenImages: z
+    .array(z.string().url())
+    .min(1, "At least 1 kitchen image required")
+    .max(4, "Maximum 4 kitchen images allowed"),
 });
 
 export type ChefOnboardingData = z.infer<typeof chefOnboardingSchema>;

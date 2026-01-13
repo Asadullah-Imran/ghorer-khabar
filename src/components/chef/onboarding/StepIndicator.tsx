@@ -6,7 +6,11 @@ interface StepIndicatorProps {
   steps: string[];
 }
 
-export default function StepIndicator({ currentStep, totalSteps, steps }: StepIndicatorProps) {
+export default function StepIndicator({
+  currentStep,
+  totalSteps,
+  steps,
+}: StepIndicatorProps) {
   return (
     <div className="w-full max-w-4xl mx-auto mb-8">
       {/* Progress Bar */}
@@ -14,7 +18,9 @@ export default function StepIndicator({ currentStep, totalSteps, steps }: StepIn
         <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200">
           <div
             className="h-full bg-[#477e77] transition-all duration-300"
-            style={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
+            style={{
+              width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%`,
+            }}
           />
         </div>
 
@@ -32,8 +38,16 @@ export default function StepIndicator({ currentStep, totalSteps, steps }: StepIn
                     w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm
                     transition-all duration-300 z-10
                     ${isCompleted ? "bg-[#477e77] text-white" : ""}
-                    ${isCurrent ? "bg-[#477e77] text-white ring-4 ring-[#477e77]/20" : ""}
-                    ${!isCompleted && !isCurrent ? "bg-white border-2 border-gray-300 text-gray-400" : ""}
+                    ${
+                      isCurrent
+                        ? "bg-[#477e77] text-white ring-4 ring-[#477e77]/20"
+                        : ""
+                    }
+                    ${
+                      !isCompleted && !isCurrent
+                        ? "bg-white border-2 border-gray-300 text-gray-400"
+                        : ""
+                    }
                   `}
                 >
                   {isCompleted ? "✓" : stepNumber}

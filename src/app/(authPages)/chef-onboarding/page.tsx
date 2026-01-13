@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
-import StepIndicator from "@/components/chef/onboarding/StepIndicator";
-import KitchenNameStep from "@/components/chef/onboarding/KitchenNameStep";
-import KitchenAddressStep from "@/components/chef/onboarding/KitchenAddressStep";
-import NIDDetailsStep from "@/components/chef/onboarding/NIDDetailsStep";
 import ImageUploadStep from "@/components/chef/onboarding/ImageUploadStep";
-import { chefOnboardingSchema, type ChefOnboardingData } from "@/lib/validation";
+import KitchenAddressStep from "@/components/chef/onboarding/KitchenAddressStep";
+import KitchenNameStep from "@/components/chef/onboarding/KitchenNameStep";
+import NIDDetailsStep from "@/components/chef/onboarding/NIDDetailsStep";
+import StepIndicator from "@/components/chef/onboarding/StepIndicator";
+import { chefOnboardingSchema } from "@/lib/validation";
+import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 
 const STEPS = ["Kitchen Name", "Location", "Personal Info", "Photos"];
@@ -58,11 +58,13 @@ export default function ChefOnboardingPage() {
 
   const validateStep = (step: number): boolean => {
     setErrors({});
-    
+
     switch (step) {
       case 1:
         if (!formData.kitchenName || formData.kitchenName.length < 3) {
-          setErrors({ kitchenName: "Kitchen name must be at least 3 characters" });
+          setErrors({
+            kitchenName: "Kitchen name must be at least 3 characters",
+          });
           return false;
         }
         return true;
@@ -90,7 +92,8 @@ export default function ChefOnboardingPage() {
           detailsErrors.nidName = "Name on NID is required";
         }
         if (!formData.phone.match(/^1[3-9]\d{8}$/)) {
-          detailsErrors.phone = "Valid Bangladesh phone number required (11 digits starting with 1)";
+          detailsErrors.phone =
+            "Valid Bangladesh phone number required (11 digits starting with 1)";
         }
         if (Object.keys(detailsErrors).length > 0) {
           setErrors(detailsErrors);
@@ -183,7 +186,9 @@ export default function ChefOnboardingPage() {
         });
         setErrors(fieldErrors);
       } else {
-        alert(error instanceof Error ? error.message : "Failed to submit onboarding");
+        alert(
+          error instanceof Error ? error.message : "Failed to submit onboarding"
+        );
       }
     } finally {
       setSubmitting(false);
@@ -198,7 +203,9 @@ export default function ChefOnboardingPage() {
           <h1 className="text-3xl font-black text-[#1b0e0e] mb-2">
             Welcome to <span className="text-[#477e77]">Ghorer Khabar</span>
           </h1>
-          <p className="text-gray-600">Let's set up your kitchen in a few simple steps</p>
+          <p className="text-gray-600">
+            Let's set up your kitchen in a few simple steps
+          </p>
         </div>
 
         {/* Step Indicator */}
@@ -213,7 +220,9 @@ export default function ChefOnboardingPage() {
           {currentStep === 1 && (
             <KitchenNameStep
               kitchenName={formData.kitchenName}
-              onChange={(value) => setFormData({ ...formData, kitchenName: value })}
+              onChange={(value) =>
+                setFormData({ ...formData, kitchenName: value })
+              }
               error={errors.kitchenName}
             />
           )}
@@ -224,8 +233,12 @@ export default function ChefOnboardingPage() {
               zone={formData.zone}
               latitude={formData.latitude}
               longitude={formData.longitude}
-              onAddressChange={(value) => setFormData({ ...formData, address: value })}
-              onZoneChange={(value) => setFormData({ ...formData, zone: value })}
+              onAddressChange={(value) =>
+                setFormData({ ...formData, address: value })
+              }
+              onZoneChange={(value) =>
+                setFormData({ ...formData, zone: value })
+              }
               onLocationChange={(lat, lng, addr) => {
                 setFormData({
                   ...formData,
@@ -242,8 +255,12 @@ export default function ChefOnboardingPage() {
             <NIDDetailsStep
               nidName={formData.nidName}
               phone={formData.phone}
-              onNidNameChange={(value) => setFormData({ ...formData, nidName: value })}
-              onPhoneChange={(value) => setFormData({ ...formData, phone: value })}
+              onNidNameChange={(value) =>
+                setFormData({ ...formData, nidName: value })
+              }
+              onPhoneChange={(value) =>
+                setFormData({ ...formData, phone: value })
+              }
               errors={errors}
             />
           )}
@@ -253,8 +270,12 @@ export default function ChefOnboardingPage() {
               nidFrontImage={formData.nidFrontImage}
               nidBackImage={formData.nidBackImage}
               kitchenImages={formData.kitchenImages}
-              onNidFrontUpload={(url) => setFormData({ ...formData, nidFrontImage: url || null })}
-              onNidBackUpload={(url) => setFormData({ ...formData, nidBackImage: url || null })}
+              onNidFrontUpload={(url) =>
+                setFormData({ ...formData, nidFrontImage: url || null })
+              }
+              onNidBackUpload={(url) =>
+                setFormData({ ...formData, nidBackImage: url || null })
+              }
               onKitchenImageUpload={(url) =>
                 setFormData({
                   ...formData,
@@ -264,7 +285,9 @@ export default function ChefOnboardingPage() {
               onKitchenImageRemove={(index) =>
                 setFormData({
                   ...formData,
-                  kitchenImages: formData.kitchenImages.filter((_, i) => i !== index),
+                  kitchenImages: formData.kitchenImages.filter(
+                    (_, i) => i !== index
+                  ),
                 })
               }
               errors={errors}
@@ -297,7 +320,7 @@ export default function ChefOnboardingPage() {
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="flex-1 px-6 py-3 bg-[#477e77] text-white rounded-lg font-semibold hover:bg-[#3d6b65] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              className="flex-1 px-6 py-3 bg-[#feb728] text-[#1b0e0e] rounded-lg font-semibold hover:bg-[#e5a520] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-[#feb728]/20"
             >
               {submitting ? (
                 <>

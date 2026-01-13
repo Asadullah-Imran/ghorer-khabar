@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { chefOnboardingSchema } from "@/lib/validation";
-import prisma from "@/lib/prisma/client";
+import prisma from "@/lib/prisma/prisma";
 import { createClient } from "@/lib/supabase/server";
+import { chefOnboardingSchema } from "@/lib/validation";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
