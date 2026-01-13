@@ -141,7 +141,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else if (event === "TOKEN_REFRESHED") {
         console.log("Token refreshed:", session?.user?.email);
         setUser(session?.user || null);
-        setRole((session?.user as SupabaseUserWithRole | undefined)?.role || null);
+        setRole(
+          (session?.user as SupabaseUserWithRole | undefined)?.role || null
+        );
       }
     });
 

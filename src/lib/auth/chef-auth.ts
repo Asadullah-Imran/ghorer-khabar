@@ -106,10 +106,7 @@ export async function requireKitchen(userId: string) {
  * Custom error class for auth errors with status codes
  */
 export class AuthError extends Error {
-  constructor(
-    message: string,
-    public statusCode: number
-  ) {
+  constructor(message: string, public statusCode: number) {
     super(message);
     this.name = "AuthError";
   }

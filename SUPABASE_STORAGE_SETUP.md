@@ -7,6 +7,7 @@ This error occurs because your Supabase Storage buckets either don't exist or do
 ## Quick Fix - Run This SQL in Supabase
 
 ### Step 1: Go to Supabase Dashboard
+
 1. Open your project at https://supabase.com/dashboard
 2. Click on **SQL Editor** in the left sidebar
 3. Click **New Query**
@@ -117,6 +118,7 @@ USING (
 ### Step 3: Verify Buckets Created
 
 After running the SQL:
+
 1. Go to **Storage** in the Supabase Dashboard
 2. You should see two buckets:
    - `nid-documents` (Private)
@@ -134,6 +136,7 @@ After running the SQL:
 If you prefer using the UI instead of SQL:
 
 ### For `nid-documents` bucket:
+
 1. Go to **Storage** → **New Bucket**
 2. Name: `nid-documents`
 3. Public: **OFF** (private)
@@ -143,10 +146,11 @@ If you prefer using the UI instead of SQL:
 7. Click on the bucket → **Policies** → **New Policy**
 8. Create three policies:
    - **Insert**: Allow authenticated users
-   - **Select**: Allow authenticated users  
+   - **Select**: Allow authenticated users
    - **Delete**: Allow authenticated users
 
 ### For `kitchen-images` bucket:
+
 1. Go to **Storage** → **New Bucket**
 2. Name: `kitchen-images`
 3. Public: **ON** (public)
@@ -162,16 +166,19 @@ If you prefer using the UI instead of SQL:
 ## Common Issues
 
 ### Issue: "Bucket already exists"
+
 - This is fine! The `ON CONFLICT DO NOTHING` will skip creation
 - Just make sure the policies are created
 
 ### Issue: Still getting 403 error
+
 1. Make sure you're logged in (authenticated)
 2. Check your Supabase `.env` variables are correct
 3. Verify the bucket names match exactly: `nid-documents` and `kitchen-images`
 4. Check the Storage policies are enabled in Supabase Dashboard
 
 ### Issue: "Invalid bucket" error
+
 - Make sure the frontend is sending the correct bucket names
 - Check the upload API accepts these bucket names
 

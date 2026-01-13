@@ -1,9 +1,9 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function ChefGuard({ children }: { children: React.ReactNode }) {
   const { user, loading, role } = useAuth();

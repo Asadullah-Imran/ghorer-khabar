@@ -3,7 +3,6 @@
 import ChefGuard from "@/components/auth/ChefGuard";
 import ChefNavbar from "@/components/chef/Navigation/Navbar";
 import ChefSidebar from "@/components/chef/Navigation/Sidebar";
-import type { Metadata } from "next";
 
 export default function ChefLayout({
   children,

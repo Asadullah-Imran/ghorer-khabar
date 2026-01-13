@@ -200,144 +200,144 @@ export default function ChefOnboardingPage() {
     <ChefGuard>
       <div className="min-h-screen bg-[#f8f6f6] py-8 px-4">
         <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-[#1b0e0e] mb-2">
-            Welcome to <span className="text-[#477e77]">Ghorer Khabar</span>
-          </h1>
-          <p className="text-gray-600">
-            Let's set up your kitchen in a few simple steps
-          </p>
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-black text-[#1b0e0e] mb-2">
+              Welcome to <span className="text-[#477e77]">Ghorer Khabar</span>
+            </h1>
+            <p className="text-gray-600">
+              Let's set up your kitchen in a few simple steps
+            </p>
+          </div>
+
+          {/* Step Indicator */}
+          <StepIndicator
+            currentStep={currentStep}
+            totalSteps={STEPS.length}
+            steps={STEPS}
+          />
+
+          {/* Step Content */}
+          <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 mb-6">
+            {currentStep === 1 && (
+              <KitchenNameStep
+                kitchenName={formData.kitchenName}
+                onChange={(value) =>
+                  setFormData({ ...formData, kitchenName: value })
+                }
+                error={errors.kitchenName}
+              />
+            )}
+
+            {currentStep === 2 && (
+              <KitchenAddressStep
+                address={formData.address}
+                zone={formData.zone}
+                latitude={formData.latitude}
+                longitude={formData.longitude}
+                onAddressChange={(value) => {
+                  setFormData((prev) => ({ ...prev, address: value }));
+                }}
+                onZoneChange={(value) => {
+                  setFormData((prev) => ({ ...prev, zone: value }));
+                }}
+                onLocationChange={(lat, lng, addr) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    latitude: lat,
+                    longitude: lng,
+                  }));
+                }}
+                errors={errors}
+              />
+            )}
+
+            {currentStep === 3 && (
+              <NIDDetailsStep
+                nidName={formData.nidName}
+                phone={formData.phone}
+                onNidNameChange={(value) =>
+                  setFormData({ ...formData, nidName: value })
+                }
+                onPhoneChange={(value) =>
+                  setFormData({ ...formData, phone: value })
+                }
+                errors={errors}
+              />
+            )}
+
+            {currentStep === 4 && (
+              <ImageUploadStep
+                nidFrontImage={formData.nidFrontImage}
+                nidBackImage={formData.nidBackImage}
+                kitchenImages={formData.kitchenImages}
+                onNidFrontUpload={(url) =>
+                  setFormData({ ...formData, nidFrontImage: url || null })
+                }
+                onNidBackUpload={(url) =>
+                  setFormData({ ...formData, nidBackImage: url || null })
+                }
+                onKitchenImageUpload={(url) =>
+                  setFormData({
+                    ...formData,
+                    kitchenImages: [...formData.kitchenImages, url],
+                  })
+                }
+                onKitchenImageRemove={(index) =>
+                  setFormData({
+                    ...formData,
+                    kitchenImages: formData.kitchenImages.filter(
+                      (_, i) => i !== index
+                    ),
+                  })
+                }
+                errors={errors}
+              />
+            )}
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="flex gap-4">
+            {currentStep > 1 && (
+              <button
+                onClick={handleBack}
+                disabled={submitting}
+                className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <ArrowLeft size={20} />
+                Back
+              </button>
+            )}
+
+            {currentStep < STEPS.length ? (
+              <button
+                onClick={handleNext}
+                className="flex-1 px-6 py-3 bg-[#477e77] text-white rounded-lg font-semibold hover:bg-[#3d6b65] transition-colors flex items-center justify-center gap-2"
+              >
+                Next
+                <ArrowRight size={20} />
+              </button>
+            ) : (
+              <button
+                onClick={handleSubmit}
+                disabled={submitting}
+                className="flex-1 px-6 py-3 bg-[#feb728] text-[#1b0e0e] rounded-lg font-semibold hover:bg-[#e5a520] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-[#feb728]/20"
+              >
+                {submitting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    Complete Setup
+                    <CheckCircle size={20} />
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
-
-        {/* Step Indicator */}
-        <StepIndicator
-          currentStep={currentStep}
-          totalSteps={STEPS.length}
-          steps={STEPS}
-        />
-
-        {/* Step Content */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 md:p-8 mb-6">
-          {currentStep === 1 && (
-            <KitchenNameStep
-              kitchenName={formData.kitchenName}
-              onChange={(value) =>
-                setFormData({ ...formData, kitchenName: value })
-              }
-              error={errors.kitchenName}
-            />
-          )}
-
-          {currentStep === 2 && (
-            <KitchenAddressStep
-              address={formData.address}
-              zone={formData.zone}
-              latitude={formData.latitude}
-              longitude={formData.longitude}
-              onAddressChange={(value) => {
-                setFormData((prev) => ({ ...prev, address: value }));
-              }}
-              onZoneChange={(value) => {
-                setFormData((prev) => ({ ...prev, zone: value }));
-              }}
-              onLocationChange={(lat, lng, addr) => {
-                setFormData((prev) => ({
-                  ...prev,
-                  latitude: lat,
-                  longitude: lng,
-                }));
-              }}
-              errors={errors}
-            />
-          )}
-
-          {currentStep === 3 && (
-            <NIDDetailsStep
-              nidName={formData.nidName}
-              phone={formData.phone}
-              onNidNameChange={(value) =>
-                setFormData({ ...formData, nidName: value })
-              }
-              onPhoneChange={(value) =>
-                setFormData({ ...formData, phone: value })
-              }
-              errors={errors}
-            />
-          )}
-
-          {currentStep === 4 && (
-            <ImageUploadStep
-              nidFrontImage={formData.nidFrontImage}
-              nidBackImage={formData.nidBackImage}
-              kitchenImages={formData.kitchenImages}
-              onNidFrontUpload={(url) =>
-                setFormData({ ...formData, nidFrontImage: url || null })
-              }
-              onNidBackUpload={(url) =>
-                setFormData({ ...formData, nidBackImage: url || null })
-              }
-              onKitchenImageUpload={(url) =>
-                setFormData({
-                  ...formData,
-                  kitchenImages: [...formData.kitchenImages, url],
-                })
-              }
-              onKitchenImageRemove={(index) =>
-                setFormData({
-                  ...formData,
-                  kitchenImages: formData.kitchenImages.filter(
-                    (_, i) => i !== index
-                  ),
-                })
-              }
-              errors={errors}
-            />
-          )}
-        </div>
-
-        {/* Navigation Buttons */}
-        <div className="flex gap-4">
-          {currentStep > 1 && (
-            <button
-              onClick={handleBack}
-              disabled={submitting}
-              className="flex-1 px-6 py-3 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              <ArrowLeft size={20} />
-              Back
-            </button>
-          )}
-
-          {currentStep < STEPS.length ? (
-            <button
-              onClick={handleNext}
-              className="flex-1 px-6 py-3 bg-[#477e77] text-white rounded-lg font-semibold hover:bg-[#3d6b65] transition-colors flex items-center justify-center gap-2"
-            >
-              Next
-              <ArrowRight size={20} />
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="flex-1 px-6 py-3 bg-[#feb728] text-[#1b0e0e] rounded-lg font-semibold hover:bg-[#e5a520] transition-colors flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-[#feb728]/20"
-            >
-              {submitting ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  Complete Setup
-                  <CheckCircle size={20} />
-                </>
-              )}
-            </button>
-          )}
-        </div>
-      </div>
       </div>
     </ChefGuard>
   );
