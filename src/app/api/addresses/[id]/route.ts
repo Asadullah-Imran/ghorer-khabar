@@ -40,10 +40,32 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await getUserIdFromToken(req);
+    let userId = await getUserIdFromToken(req);
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if user exists in database, if not check by email (OAuth vs email/password issue)
+    let existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!existingUser) {
+      const supabase = await createClient();
+      const {
+        data: { user: supabaseUser },
+      } = await supabase.auth.getUser();
+
+      if (supabaseUser?.email) {
+        const userByEmail = await prisma.user.findUnique({
+          where: { email: supabaseUser.email },
+        });
+
+        if (userByEmail) {
+          userId = userByEmail.id;
+        }
+      }
     }
 
     const { id } = await params;
@@ -95,10 +117,32 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await getUserIdFromToken(req);
+    let userId = await getUserIdFromToken(req);
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if user exists in database, if not check by email (OAuth vs email/password issue)
+    let existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!existingUser) {
+      const supabase = await createClient();
+      const {
+        data: { user: supabaseUser },
+      } = await supabase.auth.getUser();
+
+      if (supabaseUser?.email) {
+        const userByEmail = await prisma.user.findUnique({
+          where: { email: supabaseUser.email },
+        });
+
+        if (userByEmail) {
+          userId = userByEmail.id;
+        }
+      }
     }
 
     const { id } = await params;

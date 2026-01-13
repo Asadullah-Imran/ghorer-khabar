@@ -37,10 +37,35 @@ async function getUserIdFromToken(req: NextRequest): Promise<string | null> {
 // GET /api/addresses - List all addresses for authenticated user
 export async function GET(req: NextRequest) {
   try {
-    const userId = await getUserIdFromToken(req);
+    let userId = await getUserIdFromToken(req);
+    console.log("GET /api/addresses - OAuth/JWT userId:", userId);
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if this user exists in database, if not check by email (OAuth vs email/password issue)
+    let existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!existingUser) {
+      // User doesn't exist with this OAuth ID, check by email
+      const supabase = await createClient();
+      const {
+        data: { user: supabaseUser },
+      } = await supabase.auth.getUser();
+
+      if (supabaseUser?.email) {
+        const userByEmail = await prisma.user.findUnique({
+          where: { email: supabaseUser.email },
+        });
+
+        if (userByEmail) {
+          userId = userByEmail.id;
+          console.log("GET /api/addresses - Found user by email, using database userId:", userId);
+        }
+      }
     }
 
     const addresses = await prisma.address.findMany({
@@ -50,6 +75,9 @@ export async function GET(req: NextRequest) {
         { createdAt: "desc" }, // Then by creation date
       ],
     });
+
+    console.log("GET /api/addresses - Found addresses:", addresses.length);
+    console.log("GET /api/addresses - Addresses:", JSON.stringify(addresses, null, 2));
 
     return NextResponse.json({ addresses });
   } catch (error) {

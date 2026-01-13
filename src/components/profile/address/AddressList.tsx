@@ -44,8 +44,12 @@ export default function AddressList() {
       }
 
       const data = await response.json();
+      console.log("Fetched addresses data:", data);
+      console.log("Addresses array:", data.addresses);
+      console.log("Number of addresses:", data.addresses?.length);
       setAddresses(data.addresses);
     } catch (err: any) {
+      console.error("Error fetching addresses:", err);
       setError(err.message);
     } finally {
       setLoading(false);
