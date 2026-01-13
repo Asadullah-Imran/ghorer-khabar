@@ -15,6 +15,34 @@ interface KitchenAddressStepProps {
   errors?: { address?: string; zone?: string; location?: string };
 }
 
+// Helper function to extract zone from full address
+function extractZoneFromAddress(fullAddress: string): string {
+  // Common Dhaka zones/areas - extend this list as needed
+  const zones = [
+    "Uttara", "Banani", "Gulshan", "Dhanmondi", "Mirpur", "Mohammadpur",
+    "Bashundhara", "Badda", "Rampura", "Khilgaon", "Motijheel", "Tejgaon",
+    "Farmgate", "Kawran Bazar", "Panthapath", "Green Road", "Lalmatia",
+    "Mohakhali", "Baridhara", "Nikunja", "Pallabi", "Kafrul", "Cantonment",
+    "Old Dhaka", "Lalbagh", "Kamrangirchar", "Jatrabari", "Sayedabad",
+    "Demra", "Tongi", "Savar", "Keraniganj", "Ashulia"
+  ];
+
+  // Try to find a matching zone in the address
+  for (const zone of zones) {
+    if (fullAddress.toLowerCase().includes(zone.toLowerCase())) {
+      return zone;
+    }
+  }
+
+  // If no known zone found, try to extract from common patterns
+  const parts = fullAddress.split(",").map(p => p.trim());
+  if (parts.length >= 2) {
+    return parts[parts.length - 2];
+  }
+
+  return "";
+}
+
 export default function KitchenAddressStep({
   address,
   zone,
@@ -27,6 +55,21 @@ export default function KitchenAddressStep({
 }: KitchenAddressStepProps) {
   const [showMap, setShowMap] = useState(false);
 
+  const handleLocationSelect = (lat: number, lng: number, addr?: string) => {
+    onLocationChange(lat, lng, addr);
+    
+    if (addr) {
+      // Always auto-fill the address field with fetched address
+      onAddressChange(addr);
+      
+      // Auto-extract and fill zone
+      const extractedZone = extractZoneFromAddress(addr);
+      if (extractedZone) {
+        onZoneChange(extractedZone);
+      }
+    }
+  };
+
   return (
     <div className="w-full max-w-2xl mx-auto space-y-6">
       <div className="text-center space-y-2">
@@ -38,6 +81,55 @@ export default function KitchenAddressStep({
       </div>
 
       <div className="space-y-4">
+        {/* Map Selection - Show First */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Pin Location on Map <span className="text-red-500">*</span>
+          </label>
+          <p className="text-xs text-gray-500 mb-2">
+            📍 Click the map to auto-fill your address and zone
+          </p>
+          
+          <button
+            type="button"
+            onClick={() => setShowMap(true)}
+            className="w-full px-4 py-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-[#477e77] transition-colors flex items-center justify-center gap-2 group"
+          >
+            <MapPin
+              className="text-gray-400 group-hover:text-[#477e77]"
+              size={20}
+            />
+            <span className="text-gray-600 group-hover:text-[#477e77] font-medium">
+              {latitude && longitude
+                ? "Update Location"
+                : "Select Location on Map"}
+            </span>
+          </button>
+
+          {latitude && longitude && (
+            <div className="bg-[#feb728]/10 border border-[#feb728]/30 rounded-lg p-3 flex items-start gap-2">
+              <MapPin className="text-[#feb728] flex-shrink-0" size={16} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[#1b0e0e]">
+                  📍 Location Selected
+                </p>
+                <p className="text-xs text-gray-600 mt-1">
+                  {latitude.toFixed(6)}, {longitude.toFixed(6)}
+                </p>
+                {address && (
+                  <p className="text-xs text-gray-700 mt-1 line-clamp-2">
+                    {address}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {errors?.location && (
+            <p className="text-sm text-red-500">{errors.location}</p>
+          )}
+        </div>
+
         {/* Address Field */}
         <div className="space-y-2">
           <label
@@ -46,11 +138,14 @@ export default function KitchenAddressStep({
           >
             Full Address <span className="text-red-500">*</span>
           </label>
+          <p className="text-xs text-gray-500 mb-1">
+            Auto-filled from map or edit manually
+          </p>
           <textarea
             id="address"
             value={address}
             onChange={(e) => onAddressChange(e.target.value)}
-            placeholder="Enter your complete address (House/Flat, Road, Area)"
+            placeholder="Select location on map to auto-fill, or enter manually"
             rows={3}
             className={`
               w-full px-4 py-3 rounded-lg border-2 transition-colors resize-none
@@ -75,6 +170,9 @@ export default function KitchenAddressStep({
           >
             Zone/Area <span className="text-red-500">*</span>
           </label>
+          <p className="text-xs text-gray-500 mb-1">
+            Auto-extracted from address or enter manually
+          </p>
           <input
             type="text"
             id="zone"
@@ -95,47 +193,6 @@ export default function KitchenAddressStep({
             <p className="text-sm text-red-500">{errors.zone}</p>
           )}
         </div>
-
-        {/* Map Selection */}
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700">
-            Pin Location on Map <span className="text-red-500">*</span>
-          </label>
-
-          <button
-            type="button"
-            onClick={() => setShowMap(true)}
-            className="w-full px-4 py-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-[#477e77] transition-colors flex items-center justify-center gap-2 group"
-          >
-            <MapPin
-              className="text-gray-400 group-hover:text-[#477e77]"
-              size={20}
-            />
-            <span className="text-gray-600 group-hover:text-[#477e77] font-medium">
-              {latitude && longitude
-                ? "Update Location"
-                : "Select Location on Map"}
-            </span>
-          </button>
-
-          {latitude && longitude && (
-            <div className="bg-[#feb728]/10 border border-[#feb728]/30 rounded-lg p-3 flex items-start gap-2">
-              <MapPin className="text-[#feb728]" size={16} />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-[#1b0e0e]">
-                  Location Selected
-                </p>
-                <p className="text-xs text-gray-600 mt-1">
-                  {latitude.toFixed(6)}, {longitude.toFixed(6)}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {errors?.location && (
-            <p className="text-sm text-red-500">{errors.location}</p>
-          )}
-        </div>
       </div>
 
       <div className="bg-[#feb728]/10 border border-[#feb728]/30 rounded-lg p-4">
@@ -152,12 +209,7 @@ export default function KitchenAddressStep({
       {/* Location Picker Modal */}
       {showMap && (
         <LocationPicker
-          onLocationSelect={(lat, lng, addr) => {
-            onLocationChange(lat, lng, addr);
-            if (addr && !address) {
-              onAddressChange(addr);
-            }
-          }}
+          onLocationSelect={handleLocationSelect}
           onClose={() => setShowMap(false)}
           initialLat={latitude || 23.8103}
           initialLng={longitude || 90.4125}
