@@ -88,14 +88,14 @@ export default function ProfilePage() {
             <section>
               <div className="flex items-center justify-between mb-5">
                 <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-teal-500 flex items-center justify-center text-white shadow-lg">
+                  <div className="w-10 h-10 rounded-xl bg-brand-teal flex items-center justify-center text-white shadow-lg">
                     <CalendarCheck size={20} />
                   </div>
                   Active Tiffin Plan
                 </h2>
                 <Link
                   href="/profile/my-subscription"
-                  className="text-sm font-semibold text-teal-700 hover:text-teal-800 transition-colors px-4 py-2 rounded-lg hover:bg-teal-50"
+                  className="text-sm font-semibold text-brand-teal hover:text-brand-teal/80 transition-colors px-4 py-2 rounded-lg hover:bg-brand-teal/5"
                 >
                   Manage Plan
                 </Link>
@@ -110,7 +110,7 @@ export default function ProfilePage() {
                       fill
                       className="object-cover"
                     />
-                    <div className="absolute top-2 left-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-teal-800 uppercase tracking-wider">
+                    <div className="absolute top-2 left-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-brand-teal uppercase tracking-wider">
                       Lunch
                     </div>
                   </div>
@@ -124,7 +124,7 @@ export default function ProfilePage() {
                           </h4>
                           <p className="text-sm text-gray-500 mt-1">
                             Provided by{" "}
-                            <span className="text-teal-700 font-medium">
+                            <span className="text-brand-teal font-medium">
                               {ACTIVE_SUBSCRIPTION.provider}
                             </span>
                           </p>
@@ -171,7 +171,7 @@ export default function ProfilePage() {
                 <h2 className="text-2xl font-bold text-gray-900">
                   Recent Orders
                 </h2>
-                <button className="text-sm font-semibold text-teal-700 hover:text-teal-800 transition-colors px-4 py-2 rounded-lg hover:bg-teal-50">
+                <button className="text-sm font-semibold text-brand-teal hover:text-brand-teal/80 transition-colors px-4 py-2 rounded-lg hover:bg-brand-teal/5">
                   View All
                 </button>
               </div>
@@ -217,7 +217,7 @@ export default function ProfilePage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <button className="text-teal-700 hover:text-teal-900 font-medium text-xs uppercase flex items-center gap-1 ml-auto">
+                            <button className="text-brand-teal hover:text-brand-teal/80 font-medium text-xs uppercase flex items-center gap-1 ml-auto">
                               Details <ChevronRight size={14} />
                             </button>
                           </td>
@@ -268,9 +268,9 @@ export default function ProfilePage() {
 
               <Link
                 href="/profile/subscription"
-                className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50 text-gray-700 transition-all text-left group border border-transparent hover:border-teal-200"
+                className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-brand-teal/10 hover:to-brand-teal/5 text-gray-700 transition-all text-left group border border-transparent hover:border-brand-teal/30"
               >
-                <div className="bg-teal-100 p-2.5 rounded-xl text-teal-600 group-hover:bg-teal-500 group-hover:text-white transition-all shadow-sm">
+                <div className="bg-brand-teal/10 p-2.5 rounded-xl text-brand-teal group-hover:bg-brand-teal group-hover:text-white transition-all shadow-sm">
                   <CalendarCheck size={18} />
                 </div>
                 <span className="font-semibold text-sm flex-1">
@@ -278,7 +278,7 @@ export default function ProfilePage() {
                 </span>
                 <ChevronRight
                   size={18}
-                  className="text-gray-400 group-hover:text-teal-600 transition-colors"
+                  className="text-gray-400 group-hover:text-brand-teal transition-colors"
                 />
               </Link>
 
@@ -300,9 +300,9 @@ export default function ProfilePage() {
 
               <Link
                 href="/support"
-                className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-yellow-50 hover:to-amber-50 text-gray-700 transition-all text-left group border border-transparent hover:border-yellow-200"
+                className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-primary/10 hover:to-primary/5 text-gray-700 transition-all text-left group border border-transparent hover:border-primary/30"
               >
-                <div className="bg-yellow-100 p-2.5 rounded-xl text-yellow-600 group-hover:bg-yellow-500 group-hover:text-white transition-all shadow-sm">
+                <div className="bg-primary/10 p-2.5 rounded-xl text-primary group-hover:bg-primary group-hover:text-white transition-all shadow-sm">
                   <Phone size={18} />
                 </div>
                 <span className="font-semibold text-sm flex-1">
@@ -310,7 +310,7 @@ export default function ProfilePage() {
                 </span>
                 <ChevronRight
                   size={18}
-                  className="text-gray-400 group-hover:text-yellow-600 transition-colors"
+                  className="text-gray-400 group-hover:text-primary transition-colors"
                 />
               </Link>
             </div>

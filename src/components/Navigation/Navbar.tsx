@@ -87,11 +87,11 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
           {/* Logo */}
           <Link href="/feed" className="flex items-center gap-2">
-            <div className="bg-yellow-400 p-1.5 rounded-lg">
-              <ChefHat size={24} className="text-teal-900" />
+            <div className="bg-primary p-1.5 rounded-lg">
+              <ChefHat size={24} className="text-brand-teal" />
             </div>
-            <span className="font-bold text-xl text-teal-900 tracking-tight hidden sm:block">
-              Ghorer<span className="text-yellow-500">Khabar</span>
+            <span className="font-bold text-xl text-brand-teal tracking-tight hidden sm:block">
+              Ghorer<span className="text-primary">Khabar</span>
             </span>
           </Link>
 
@@ -106,7 +106,7 @@ export default function Navbar() {
                 type="text"
                 placeholder="Search for bhorta, curry, or chefs..."
                 onKeyDown={handleSearch}
-                className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-teal text-sm"
               />
             </div>
           </div>
@@ -115,7 +115,7 @@ export default function Navbar() {
           <div className="flex items-center gap-6">
             <button
               onClick={() => router.push("/chef/dashboard")}
-              className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-teal-700 transition"
+              className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-brand-teal transition"
             >
               <ChefHat size={18} />
               <span>Switch to Chef</span>
@@ -124,7 +124,7 @@ export default function Navbar() {
             {/* Cart Icon */}
             <Link
               href="/cart"
-              className="relative p-2 text-gray-600 hover:text-teal-700 transition"
+              className="relative p-2 text-gray-600 hover:text-brand-teal transition"
             >
               <ShoppingBag size={24} />
               {cartCount > 0 && (
@@ -138,7 +138,7 @@ export default function Navbar() {
             <div className="hidden md:block relative" ref={profileMenuRef}>
               <button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="w-9 h-9 bg-gray-200 rounded-full overflow-hidden border-2 border-white shadow-sm hover:border-teal-500 transition"
+                className="w-9 h-9 bg-gray-200 rounded-full overflow-hidden border-2 border-white shadow-sm hover:border-brand-teal transition"
                 title={user?.email || "Profile"}
               >
                 <Image
@@ -213,7 +213,7 @@ export default function Navbar() {
         <Link
           href="/feed"
           className={`flex flex-col items-center gap-1 ${
-            pathname === "/feed" ? "text-teal-600" : "text-gray-400"
+            pathname === "/feed" ? "text-brand-teal" : "text-gray-400"
           }`}
         >
           <Home size={22} />
@@ -223,7 +223,7 @@ export default function Navbar() {
         <Link
           href="/explore"
           className={`flex flex-col items-center gap-1 ${
-            pathname === "/explore" ? "text-teal-600" : "text-gray-400"
+            pathname === "/explore" ? "text-brand-teal" : "text-gray-400"
           }`}
         >
           <Search size={22} />
@@ -232,7 +232,7 @@ export default function Navbar() {
 
         <Link
           href="/orders"
-          className="flex flex-col items-center gap-1 text-gray-400 hover:text-teal-600"
+          className="flex flex-col items-center gap-1 text-gray-400 hover:text-brand-teal"
         >
           <ShoppingBag size={22} />
           <span className="text-[10px] font-medium">Orders</span>
@@ -240,7 +240,7 @@ export default function Navbar() {
 
         <Link
           href="/profile"
-          className="flex flex-col items-center gap-1 text-gray-400 hover:text-teal-600"
+          className="flex flex-col items-center gap-1 text-gray-400 hover:text-brand-teal"
         >
           <User size={22} />
           <span className="text-[10px] font-medium">Profile</span>
