@@ -60,9 +60,7 @@ export default function SettingsForm() {
         name: user.user_metadata?.name || user.user_metadata?.full_name || "",
         phone: "", // Will be loaded from API
         avatar:
-          user.user_metadata?.avatar_url ||
-          user.user_metadata?.picture ||
-          "",
+          user.user_metadata?.avatar_url || user.user_metadata?.picture || "",
       });
 
       // Fetch full profile from API to get phone number

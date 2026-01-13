@@ -135,7 +135,10 @@ export async function PUT(req: NextRequest) {
         password: newPassword,
       });
     } catch (supabaseError) {
-      console.warn("Could not update Supabase password (user may be using JWT auth):", supabaseError);
+      console.warn(
+        "Could not update Supabase password (user may be using JWT auth):",
+        supabaseError
+      );
       // Continue anyway as we've updated the database
     }
 

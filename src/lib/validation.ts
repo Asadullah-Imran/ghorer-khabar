@@ -25,15 +25,16 @@ export const dayOfWeekSchema = z.enum([
   "FRIDAY",
 ]);
 
-export const mealTypeSchema = z.enum(["BREAKFAST", "LUNCH", "SNACKS", "DINNER"]);
+export const mealTypeSchema = z.enum([
+  "BREAKFAST",
+  "LUNCH",
+  "SNACKS",
+  "DINNER",
+]);
 
 export const mealSlotSchema = z.object({
-  time: z
-    .string()
-    .regex(/^\d{2}:\d{2}$/, "Time must be in HH:mm format"),
-  dishIds: z
-    .array(z.string().min(1))
-    .default([]),
+  time: z.string().regex(/^\d{2}:\d{2}$/, "Time must be in HH:mm format"),
+  dishIds: z.array(z.string().min(1)).default([]),
 });
 
 export const dayScheduleSchema = z.object({
@@ -74,7 +75,6 @@ export const toggleSubscriptionStatusSchema = z.object({
   isActive: z.boolean(),
 });
 
-
 export const chefOnboardingSchema = z.object({
   kitchenName: z.string().min(3, "Kitchen name must be at least 3 characters"),
   address: z.string().min(10, "Please provide a detailed address"),
@@ -114,15 +114,20 @@ export const updateProfileSchema = z.object({
   avatar: z.string().url("Invalid avatar URL").optional(),
 });
 
-export const updatePasswordSchema = z.object({
-  currentPassword: z.string().min(6, "Password must be at least 6 characters"),
-  newPassword: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+export const updatePasswordSchema = z
+  .object({
+    currentPassword: z
+      .string()
+      .min(6, "Password must be at least 6 characters"),
+    newPassword: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z
+      .string()
+      .min(6, "Password must be at least 6 characters"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 export type UpdateProfileData = z.infer<typeof updateProfileSchema>;
 export type UpdatePasswordData = z.infer<typeof updatePasswordSchema>;
-

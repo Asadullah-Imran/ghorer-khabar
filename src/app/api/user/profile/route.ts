@@ -138,7 +138,11 @@ export async function PUT(req: NextRequest) {
 
     // Also update Supabase user metadata for name and avatar
     if (name !== undefined || avatar !== undefined) {
-      const metadataUpdate: { name?: string; full_name?: string; avatar_url?: string } = {};
+      const metadataUpdate: {
+        name?: string;
+        full_name?: string;
+        avatar_url?: string;
+      } = {};
       if (name !== undefined) {
         metadataUpdate.name = name;
         metadataUpdate.full_name = name;
@@ -167,7 +171,9 @@ export async function PUT(req: NextRequest) {
         });
       } catch (supabaseError) {
         // Silently fail - user might be using JWT auth
-        console.log("Could not update Supabase metadata (user may be using JWT auth)");
+        console.log(
+          "Could not update Supabase metadata (user may be using JWT auth)"
+        );
       }
     }
 
@@ -177,9 +183,14 @@ export async function PUT(req: NextRequest) {
     });
   } catch (error) {
     console.error("Error updating user profile:", error);
-    
+
     // Handle unique constraint violations
-    if (typeof error === 'object' && error !== null && 'code' in error && error.code === "P2002") {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === "P2002"
+    ) {
       return NextResponse.json(
         { error: "Phone number already in use" },
         { status: 400 }
