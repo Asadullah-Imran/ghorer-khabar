@@ -2,11 +2,7 @@ import { prisma } from "@/lib/prisma/prisma";
 import { hashPassword, comparePassword } from "@/lib/auth/hash";
 import { signToken } from "@/lib/auth/jwt";
 
-
-export async function loginUser(data: {
-  email: string;
-  password: string;
-}) {
+export async function loginUser(data: { email: string; password: string }) {
   try {
     // 1. Find the user by email
     const user = await prisma.user.findUnique({
@@ -39,17 +35,15 @@ export async function loginUser(data: {
         id: user.id,
         email: user.email,
         name: user.name,
+        emailVerified: user.emailVerified,
       },
       token,
     };
   } catch (error: any) {
     console.error("Login Service Error:", error);
     throw error;
-  }
-  finally {
+  } finally {
     // Any cleanup tasks can be performed here
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   }
 }
-
-
