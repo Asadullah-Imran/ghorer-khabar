@@ -30,10 +30,12 @@ interface PasswordData {
 }
 
 export default function SettingsForm() {
-  const { user, refreshUser } = useAuth();
-  const [activeTab, setActiveTab] = useState<"general" | "security">("general");
+  const { user, refreshUser, signOut } = useAuth();
+  const [activeTab, setActiveTab] = useState<"general" | "security" | "danger">("general");
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [message, setMessage] = useState<{
     type: "success" | "error";
     text: string;
@@ -81,6 +83,10 @@ export default function SettingsForm() {
           avatar: data.user.avatar || "",
           authProvider: data.user.authProvider || "EMAIL",
         });
+      } else if (response.status === 404) {
+        console.error("User profile not found. Logging out.");
+        // If profile is missing even after self-healing, force logout
+        await signOut();
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -157,10 +163,18 @@ export default function SettingsForm() {
     setMessage(null);
 
     try {
+      // Sanitize payload: convert empty strings to undefined for optional fields
+      // and remove extraneous fields like authProvider
+      const payload = {
+        name: formData.name,
+        phone: formData.phone === "" ? undefined : formData.phone,
+        avatar: formData.avatar === "" ? undefined : formData.avatar,
+      };
+
       const response = await fetch("/api/user/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -239,6 +253,41 @@ export default function SettingsForm() {
 
   const dismissMessage = () => setMessage(null);
 
+  const handleAccountDelete = async () => {
+    if (deleteConfirmText !== "DELETE") {
+      setMessage({
+        type: "error",
+        text: "Please type DELETE to confirm",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/user/account", {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete account");
+      }
+
+      // Clear local storage and redirect to home
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = "/";
+    } catch (error: any) {
+      console.error("Error deleting account:", error);
+      setMessage({
+        type: "error",
+        text: error.message || "Failed to delete account. Please try again.",
+      });
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       {/* Hidden file input for avatar upload */}
@@ -316,6 +365,16 @@ export default function SettingsForm() {
             <Lock size={18} /> Security
           </button>
         )}
+        <button
+          onClick={() => setActiveTab("danger")}
+          className={`flex-1 py-4 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors ${
+            activeTab === "danger"
+              ? "border-red-600 text-red-800 bg-red-50/50"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+          }`}
+        >
+          <AlertCircle size={18} /> Danger Zone
+        </button>
       </div>
 
       {/* 2. Content */}
@@ -511,6 +570,67 @@ export default function SettingsForm() {
               </button>
             </div>
           </form>
+        )}
+
+        {/* --- DANGER ZONE TAB --- */}
+        {activeTab === "danger" && (
+          <div className="space-y-6 max-w-2xl">
+            <div className="bg-red-50 border border-red-100 rounded-lg p-6">
+              <h3 className="text-lg font-bold text-red-900 mb-2">
+                Delete Account
+              </h3>
+              <p className="text-sm text-red-700 mb-4">
+                Once you delete your account, there is no going back. Please be
+                certain.
+              </p>
+
+              {!showDeleteConfirm ? (
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors"
+                >
+                  Delete Account
+                </button>
+              ) : (
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-1">
+                      To confirm, type "DELETE" below
+                    </label>
+                    <input
+                      type="text"
+                      value={deleteConfirmText}
+                      onChange={(e) => setDeleteConfirmText(e.target.value)}
+                      className="w-full px-4 py-2 rounded-lg border border-red-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+                      placeholder="DELETE"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handleAccountDelete}
+                      disabled={deleteConfirmText !== "DELETE" || isSaving}
+                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {isSaving && (
+                        <Loader2 className="animate-spin" size={16} />
+                      )}
+                      Confirm Delete
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowDeleteConfirm(false);
+                        setDeleteConfirmText("");
+                      }}
+                      disabled={isSaving}
+                      className="px-4 py-2 text-gray-600 font-bold text-sm hover:text-gray-800"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </div>
