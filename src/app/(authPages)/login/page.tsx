@@ -1,13 +1,12 @@
 "use client";
 
-import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/lib/image/logo.png";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 
 function LoginForm() {
   const [email, setEmail] = useState("");
@@ -16,15 +15,9 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
-  const { user, loading: authLoading } = useAuth();
+  // const { user, loading: authLoading } = useAuth(); // Removed as handled by middleware
 
-  // Redirect authenticated users away from login page
-  useEffect(() => {
-    if (!authLoading && user) {
-      const redirect = searchParams.get("redirect") || "/feed";
-      router.push(redirect);
-    }
-  }, [user, authLoading, router, searchParams]);
+  // Redirect logic moved to middleware for better performance
 
   /**
    * HANDLE GOOGLE LOGIN

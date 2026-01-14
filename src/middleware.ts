@@ -50,6 +50,29 @@ export async function middleware(request: NextRequest) {
     console.log("Middleware: User session found for", user.email);
   }
 
+  // Check for custom JWT cookie
+  const authToken = request.cookies.get("auth_token")?.value;
+
+  // Protect Auth Routes (Login/Register)
+  // If user is already logged in (Supabase OR JWT), redirect to /feed
+  if (
+    user || // Supabase User
+    authToken // Email/Password User
+  ) {
+    const { pathname } = request.nextUrl;
+    if (pathname === "/login" || pathname === "/register") {
+      const redirectUrl = request.nextUrl.searchParams.get("redirect") || "/feed";
+      const url = request.nextUrl.clone();
+      url.pathname = redirectUrl;
+      url.search = ""; // Clear query params for clean redirect logic
+      
+      // If redirect url is relative (e.g. /feed), ensure it's handled correctly
+      // But typically clone() keeps origin.
+      // Reset logic:
+      return NextResponse.redirect(new URL(redirectUrl, request.url));
+    }
+  }
+
   return supabaseResponse;
 }
 
