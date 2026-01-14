@@ -58,18 +58,23 @@ function LoginForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        credentials: "include", // Ensure cookies are sent/received
       });
 
       if (res.ok) {
-        console.log("Login successful");
+        console.log("Login successful - response OK");
+        const data = await res.json();
+        console.log("Login response data:", data);
 
-        // Wait a bit for the Supabase session to be established
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        // Refresh the page to let AuthContext pick up the new session
+        // Wait a bit longer for cookie to be properly set
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        
+        // Force a hard reload to ensure cookie is picked up
+        console.log("Redirecting to /feed...");
         window.location.href = "/feed";
       } else {
         const error = await res.json();
+        console.error("Login failed:", error);
         alert(error.error || "Invalid credentials");
       }
     } catch (error) {

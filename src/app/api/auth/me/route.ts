@@ -8,6 +8,11 @@ export async function GET() {
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
 
+    console.log("GET /api/auth/me - Cookie present:", !!token);
+    if (token) {
+      console.log("Token starts with:", token.substring(0, 20) + "...");
+    }
+
     if (!token) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }

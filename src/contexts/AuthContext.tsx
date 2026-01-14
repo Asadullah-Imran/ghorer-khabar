@@ -59,7 +59,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initializeAuth = async () => {
       try {
         // First check Supabase session via server (for OAuth users)
-        const sessionResponse = await fetch("/api/auth/session");
+        const sessionResponse = await fetch("/api/auth/session", {
+          credentials: "include",
+        });
         if (!mounted) return;
 
         if (sessionResponse.ok) {
@@ -74,7 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Check for JWT cookie (for email/password users)
-        const jwtResponse = await fetch("/api/auth/me");
+        const jwtResponse = await fetch("/api/auth/me", {
+          credentials: "include",
+        });
         if (!mounted) return;
 
         if (jwtResponse.ok) {
@@ -164,7 +168,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
 
       // Call logout API - this handles both Supabase and JWT cookie clearing
-      const response = await fetch("/api/auth/logout", { method: "POST" });
+      const response = await fetch("/api/auth/logout", { 
+        method: "POST",
+        credentials: "include",
+      });
 
       if (!response.ok) {
         console.error("Logout API failed:", response.status);
@@ -175,17 +182,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setRole(null);
       setLoading(false);
 
-      // Redirect to login page
-      router.push("/login");
+      // Clear all localStorage (Supabase stores session here)
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
+        console.log("Cleared localStorage and sessionStorage");
+      }
 
-      console.log("User signed out successfully");
+      console.log("User signed out successfully - redirecting to login");
+
+      // Use window.location for a hard refresh to clear all state
+      window.location.href = "/login";
     } catch (error) {
       console.error("Error signing out:", error);
       // Even if there's an error, clear local state and redirect
       setUser(null);
       setRole(null);
       setLoading(false);
-      router.push("/login");
+      
+      if (typeof window !== 'undefined') {
+        localStorage.clear();
+        sessionStorage.clear();
+      }
+      
+      window.location.href = "/login";
     }
   };
 

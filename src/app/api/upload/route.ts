@@ -1,11 +1,29 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { verifyToken } from "@/lib/auth/jwt";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
 
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate user with JWT token
+    const cookieStore = await cookies();
+    const token = cookieStore.get("auth_token")?.value;
+
+    if (!token) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const decoded = verifyToken(token);
+
+    if (!decoded || typeof decoded === "string" || !decoded.userId) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    }
+
+    const userId = decoded.userId as string;
+
     const formData = await request.formData();
     const file = formData.get("file") as File;
     const bucket = formData.get("bucket") as string;
@@ -33,17 +51,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create unique filename
+    // Create unique filename with user ID path
     const fileExt = file.name.split(".").pop();
-    const fileName = `${Date.now()}-${Math.random()
+    const fileName = `${userId}/${Date.now()}-${Math.random()
       .toString(36)
       .substring(7)}.${fileExt}`;
 
-    // Upload to Supabase Storage
-    const supabase = await createClient();
+    // Upload to Supabase Storage using admin client to bypass RLS
+    const supabase = createAdminClient();
+    
+    // Convert File to ArrayBuffer for upload
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
     const { data, error } = await supabase.storage
       .from(bucket)
-      .upload(fileName, file, {
+      .upload(fileName, buffer, {
+        contentType: file.type,
         cacheControl: "3600",
         upsert: false,
       });
