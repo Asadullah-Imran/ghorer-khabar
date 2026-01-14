@@ -1,5 +1,4 @@
 import SettingsForm from "@/components/profile/settings/SettingsForm";
-import { USER_SETTINGS } from "@/lib/dummy-data/settings";
 import { ArrowLeft, Settings } from "lucide-react";
 import Link from "next/link";
 
@@ -30,7 +29,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Interactive Form */}
-      <SettingsForm initialData={USER_SETTINGS} />
+      <SettingsForm />
     </div>
   );
 }
