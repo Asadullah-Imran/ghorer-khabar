@@ -68,7 +68,7 @@ function LoginForm() {
 
         // Wait a bit longer for cookie to be properly set
         await new Promise((resolve) => setTimeout(resolve, 300));
-        
+
         // Force a hard reload to ensure cookie is picked up
         console.log("Redirecting to /feed...");
         window.location.href = "/feed";

@@ -26,20 +26,25 @@ export async function POST() {
     // Sign out from Supabase (for OAuth users)
     // This will clear all Supabase auth cookies
     const { error } = await supabase.auth.signOut();
-    
+
     if (error) {
       console.error("Supabase signOut error:", error);
     }
 
     // Manually clear all Supabase cookies
     const allCookies = cookieStore.getAll();
-    console.log("All cookies before cleanup:", allCookies.map(c => c.name));
-    
+    console.log(
+      "All cookies before cleanup:",
+      allCookies.map((c) => c.name)
+    );
+
     // Clear Supabase-specific cookies
-    allCookies.forEach(cookie => {
-      if (cookie.name.includes('supabase') || 
-          cookie.name.includes('sb-') || 
-          cookie.name.includes('auth')) {
+    allCookies.forEach((cookie) => {
+      if (
+        cookie.name.includes("supabase") ||
+        cookie.name.includes("sb-") ||
+        cookie.name.includes("auth")
+      ) {
         console.log("Deleting cookie:", cookie.name);
         cookieStore.delete(cookie.name);
         // Also set with maxAge 0 to ensure deletion

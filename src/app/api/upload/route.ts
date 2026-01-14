@@ -1,7 +1,7 @@
-import { createAdminClient } from "@/lib/supabase/admin";
-import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/auth/jwt";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
@@ -59,11 +59,11 @@ export async function POST(request: NextRequest) {
 
     // Upload to Supabase Storage using admin client to bypass RLS
     const supabase = createAdminClient();
-    
+
     // Convert File to ArrayBuffer for upload
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    
+
     const { data, error } = await supabase.storage
       .from(bucket)
       .upload(fileName, buffer, {

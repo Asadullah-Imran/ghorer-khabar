@@ -1,7 +1,7 @@
 import { loginSchema } from "@/lib/validation";
 import { loginUser } from "@/services/auth.service";
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 /**
  * @swagger

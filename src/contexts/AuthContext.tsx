@@ -168,7 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true);
 
       // Call logout API - this handles both Supabase and JWT cookie clearing
-      const response = await fetch("/api/auth/logout", { 
+      const response = await fetch("/api/auth/logout", {
         method: "POST",
         credentials: "include",
       });
@@ -183,7 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
 
       // Clear all localStorage (Supabase stores session here)
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         localStorage.clear();
         sessionStorage.clear();
         console.log("Cleared localStorage and sessionStorage");
@@ -199,12 +199,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null);
       setRole(null);
       setLoading(false);
-      
-      if (typeof window !== 'undefined') {
+
+      if (typeof window !== "undefined") {
         localStorage.clear();
         sessionStorage.clear();
       }
-      
+
       window.location.href = "/login";
     }
   };
