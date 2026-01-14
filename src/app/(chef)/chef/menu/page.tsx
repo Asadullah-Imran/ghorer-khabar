@@ -4,43 +4,158 @@ import MenuItemCard from "@/components/chef/Menu/MenuItemCard";
 import MenuItemForm from "@/components/chef/Menu/MenuItemForm";
 import DeleteConfirmDialog from "@/components/chef/Menu/DeleteConfirmDialog";
 import MenuInsightsModal from "@/components/chef/Menu/MenuInsightsModal";
-import { MenuItem, MENU_ITEMS, MENU_ITEM_REVIEWS } from "@/lib/dummy-data/chef";
-import { Filter, Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { Filter, Plus, Search, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+
+interface MenuItem {
+  id?: string;
+  name: string;
+  description?: string;
+  category: string;
+  price: number;
+  prepTime?: number;
+  calories?: number;
+  spiciness?: string;
+  isVegetarian?: boolean;
+  isAvailable?: boolean;
+  images?: Array<{ id?: string; imageUrl?: string; order?: number }>;
+  ingredients?: Array<{ id?: string; name: string; quantity: number; unit: string; cost?: number }>;
+}
 
 export default function MenuPage() {
-  const [menuItems, setMenuItems] = useState<MenuItem[]>(MENU_ITEMS);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
   const [insightsItemId, setInsightsItemId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch menu items on mount
+  useEffect(() => {
+    fetchMenuItems();
+  }, []);
+
+  const fetchMenuItems = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch("/api/chef/menu");
+      const data = await res.json();
+
+      if (data.success) {
+        setMenuItems(data.data || []);
+      } else {
+        setError(data.error || "Failed to fetch menu items");
+      }
+    } catch (err) {
+      setError("Failed to fetch menu items");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Filter menu items
   const filteredItems = menuItems.filter((item) => {
-    const matchesSearch = item.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      categoryFilter === "All" || item.category === categoryFilter;
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = categoryFilter === "All" || item.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
-  const handleSave = (data: Partial<MenuItem>) => {
-    if (editingItem) {
-      // Update existing item
-      setMenuItems(
-        menuItems.map((item) =>
-          item.id === editingItem.id ? { ...item, ...data } : item
-        )
-      );
-    } else {
-      // Add new item
-      setMenuItems([...menuItems, data as MenuItem]);
+  const handleSave = async (formItem: MenuItem) => {
+    try {
+      setSaving(true);
+      setError(null);
+
+      console.log("\n=== FRONTEND: handleSave STARTED ===");
+      console.log("Mode:", editingItem?.id ? "EDIT" : "CREATE");
+      console.log("Form Item Data:", {
+        name: formItem.name,
+        category: formItem.category,
+        price: formItem.price,
+        description: formItem.description,
+        prepTime: formItem.prepTime,
+        calories: formItem.calories,
+        spiciness: formItem.spiciness,
+        isVegetarian: formItem.isVegetarian,
+        ingredientsCount: formItem.ingredients?.length || 0,
+        imagesCount: formItem.images?.length || 0,
+      });
+
+      const formData = new FormData();
+      formData.append("name", formItem.name);
+      formData.append("description", formItem.description || "");
+      formData.append("category", formItem.category);
+      formData.append("price", formItem.price.toString());
+      formData.append("prepTime", (formItem.prepTime || 0).toString());
+      formData.append("calories", (formItem.calories || 0).toString());
+      formData.append("spiciness", formItem.spiciness || "Medium");
+      formData.append("isVegetarian", (formItem.isVegetarian || false).toString());
+      formData.append("ingredients", JSON.stringify(formItem.ingredients || []));
+      console.log("Ingredients being sent:", formItem.ingredients || []);
+
+      // Handle images (prefer the File object from the form; fallback to preview blob)
+      let newImagesCount = 0;
+      if (formItem.images) {
+        for (const img of formItem.images as any[]) {
+          if (img.id === undefined) {
+            let fileToUpload: File | null = img.file ?? null;
+
+            // Fallback: fetch from preview URL if the File is missing
+            if (!fileToUpload && img.preview) {
+              console.log("Processing new image from preview:", img.preview);
+              const blob = await fetch(img.preview).then((res) => res.blob());
+              fileToUpload = new File([blob], `image-${Date.now()}.png`, {
+                type: blob.type || "image/png",
+              });
+            }
+
+            if (fileToUpload) {
+              formData.append("images", fileToUpload);
+              newImagesCount++;
+            } else {
+              console.warn("Skipping image without file/preview", img);
+            }
+          }
+        }
+      }
+      console.log("Total new images to upload:", newImagesCount);
+
+      const url = editingItem?.id ? `/api/chef/menu/${editingItem.id}` : "/api/chef/menu";
+      const method = editingItem ? "PUT" : "POST";
+      console.log("API Endpoint:", method, url);
+      console.log("Sending FormData to backend...");
+
+      const res = await fetch(url, {
+        method,
+        body: formData,
+      });
+
+      console.log("Response status:", res.status);
+      const data = await res.json();
+      console.log("Response data:", data);
+
+      if (data.success) {
+        console.log("Menu item saved successfully!", data.data);
+        await fetchMenuItems();
+        setIsFormOpen(false);
+        setEditingItem(undefined);
+      } else {
+        console.error("Backend returned error:", data.error);
+        setError(data.error || "Failed to save menu item");
+      }
+    } catch (err) {
+      console.error("Error in handleSave:", err);
+      setError("Failed to save menu item");
+      console.error(err);
+    } finally {
+      setSaving(false);
+      console.log("=== FRONTEND: handleSave ENDED ===");
     }
-    setIsFormOpen(false);
-    setEditingItem(undefined);
   };
 
   const handleEdit = (item: MenuItem) => {
@@ -52,22 +167,65 @@ export default function MenuPage() {
     setItemToDelete(item);
   };
 
-  const confirmDelete = () => {
-    if (itemToDelete) {
-      setMenuItems(menuItems.filter((item) => item.id !== itemToDelete.id));
-      setItemToDelete(null);
+  const confirmDelete = async () => {
+    if (!itemToDelete?.id) return;
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      const res = await fetch(`/api/chef/menu/${itemToDelete.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        await fetchMenuItems();
+        setItemToDelete(null);
+      } else {
+        setError(data.error || "Failed to delete menu item");
+      }
+    } catch (err) {
+      setError("Failed to delete menu item");
+      console.error(err);
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleToggleAvailability = (id: string) => {
-    setMenuItems(
-      menuItems.map((item) =>
-        item.id === id ? { ...item, isAvailable: !item.isAvailable } : item
-      )
-    );
+  const handleToggleAvailability = async (id: string) => {
+    const item = menuItems.find((i) => i.id === id);
+    if (!item) return;
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      const res = await fetch(`/api/chef/menu/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isAvailable: !item.isAvailable,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        await fetchMenuItems();
+      } else {
+        setError(data.error || "Failed to update availability");
+      }
+    } catch (err) {
+      setError("Failed to update availability");
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const categories = ["All", "Rice", "Beef", "Chicken", "Fish", "Vegetarian"];
+  const categories = ["All", "Rice", "Beef", "Chicken", "Fish", "Vegetarian", "Seafood"];
 
   return (
     <div className="p-6 space-y-8">
@@ -147,10 +305,11 @@ export default function MenuPage() {
           <p className="text-sm text-blue-600 mb-1">Avg Price</p>
           <p className="text-2xl font-bold text-blue-700">
             ৳
-            {Math.round(
-              menuItems.reduce((sum, i) => sum + i.currentPrice, 0) /
-                menuItems.length
-            )}
+            {menuItems.length > 0
+              ? Math.round(
+                  menuItems.reduce((sum, i) => sum + i.price, 0) / menuItems.length
+                )
+              : 0}
           </p>
         </div>
       </div>
@@ -164,8 +323,8 @@ export default function MenuPage() {
               item={item}
               onEdit={() => handleEdit(item)}
               onDelete={() => handleDelete(item)}
-              onToggleAvailability={() => handleToggleAvailability(item.id)}
-              onViewInsights={() => setInsightsItemId(item.id)}
+              onToggleAvailability={() => item.id && handleToggleAvailability(item.id)}
+              onViewInsights={() => item.id && setInsightsItemId(item.id)}
             />
           ))}
         </div>
@@ -190,8 +349,28 @@ export default function MenuPage() {
             setEditingItem(undefined);
           }}
           onSave={handleSave}
+          uploading={saving}
+          isLoading={saving}
         />
       )}
+
+      {/* Error Alert */}
+      {error && (
+        <div className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      {/* Loading State */}
+      {loading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg flex flex-col items-center gap-3">
+            <Loader2 className="animate-spin text-teal-600" size={32} />
+            <p className="font-semibold text-gray-900">Loading menu...</p>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Dialog */}
       {itemToDelete && (
         <DeleteConfirmDialog
@@ -205,7 +384,7 @@ export default function MenuPage() {
       {insightsItemId && (
         <MenuInsightsModal
           menuItem={menuItems.find((item) => item.id === insightsItemId)!}
-          reviews={MENU_ITEM_REVIEWS[insightsItemId] || []}
+          reviews={[]}
           isOpen={!!insightsItemId}
           onClose={() => setInsightsItemId(null)}
         />

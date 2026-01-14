@@ -11,11 +11,13 @@ import { useRouter } from "next/navigation";
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const router = useRouter();
 
   const handleSendResetCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMsg("");
 
     try {
       const res = await fetch("/api/auth/forgot-password", {
@@ -27,14 +29,14 @@ export default function ForgotPassword() {
       const data = await res.json();
 
       if (res.ok) {
-         alert("Verification code sent to your email!");
         // Redirect to verification page with email in query
         router.push(`/verification?email=${encodeURIComponent(email)}&type=recovery`);
       } else {
-        alert(data.error || "Failed to send reset code");
+        setErrorMsg(data.error || "Failed to send reset code");
       }
     } catch (error) {
       console.error("Failed to send code", error);
+      setErrorMsg("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -80,10 +82,14 @@ export default function ForgotPassword() {
                   required
                   placeholder="name@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrorMsg("");
+                  }}
                   className="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#306B62] outline-none transition-all"
                 />
               </div>
+              {errorMsg && <p className="text-red-500 text-xs mt-2 ml-1 font-medium">{errorMsg}</p>}
             </div>
             
             <button 

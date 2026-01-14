@@ -1,8 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { MenuItem, MenuItemReview } from "@/lib/dummy-data/chef";
-import { X, Star, MoreVertical, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { X, Star, AlertTriangle, CheckCircle2, MoreVertical } from "lucide-react";
+
+interface MenuItem {
+  id?: string;
+  name: string;
+  description?: string;
+  category: string;
+  price: number;
+  prepTime?: number;
+  calories?: number;
+  spiciness?: string;
+  isVegetarian?: boolean;
+  isAvailable?: boolean;
+  images?: Array<{ id?: string; imageUrl?: string; order?: number }>;
+  ingredients?: Array<{ id?: string; name: string; quantity: number; unit: string; cost?: number }>;
+  rating?: number;
+  reviewCount?: number;
+}
+
+interface MenuItemReview {
+  id: string;
+  rating: number;
+  comment: string;
+  customerName: string;
+  date: string;
+  isAppealedByChef?: boolean;
+  appealReason?: string;
+}
 
 interface MenuInsightsModalProps {
   menuItem: MenuItem;
@@ -19,7 +45,7 @@ export default function MenuInsightsModal({
 }: MenuInsightsModalProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [appealedReviews, setAppealedReviews] = useState<Set<string>>(
-    new Set(reviews.filter((r) => r.isAppealedByChef).map((r) => r.id))
+    new Set(reviews.filter((r) => (r as any).isAppealedByChef).map((r) => r.id))
   );
   const [appealModalId, setAppealModalId] = useState<string | null>(null);
   const [appealText, setAppealText] = useState("");
@@ -29,7 +55,7 @@ export default function MenuInsightsModal({
   const avgRating =
     reviews.length > 0
       ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
-      : 0;
+      : menuItem.rating || 0;
 
   const ratingDistribution = {
     5: reviews.filter((r) => r.rating === 5).length,
@@ -142,7 +168,7 @@ export default function MenuInsightsModal({
                         </div>
                       </div>
                       <p className="text-xs text-gray-500">
-                        {review.date.toLocaleDateString()}
+                        {new Date(review.date).toLocaleDateString()}
                       </p>
                     </div>
 
@@ -168,7 +194,7 @@ export default function MenuInsightsModal({
                           ) : (
                             <button
                               onClick={() => {
-                                handleAppealClick(review.id, review.appealReason || "");
+                                handleAppealClick(review.id, "");
                                 setOpenMenuId(null);
                               }}
                               className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 font-semibold"
@@ -183,7 +209,7 @@ export default function MenuInsightsModal({
                   </div>
 
                   {/* Review Text */}
-                  <p className="text-sm text-gray-700 mb-2">{review.text}</p>
+                  <p className="text-sm text-gray-700 mb-2">{review.comment}</p>
 
                   {/* Appeal Status Badge */}
                   {appealedReviews.has(review.id) && (

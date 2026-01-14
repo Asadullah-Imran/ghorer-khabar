@@ -1,11 +1,5 @@
-import { prisma } from "@/lib/prisma/prisma";
-import { createClient } from "@supabase/supabase-js";
+import { initiatePasswordReset } from "@/services/authService";
 import { NextResponse } from "next/server";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 /**
  * @swagger
@@ -36,24 +30,35 @@ export async function POST(req: Request) {
   try {
     const { email } = await req.json();
 
-    // 1. Check if user exists in Prisma
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    // Validate email
+    if (!email) {
+      return NextResponse.json(
+        { error: "Email is required" },
+        { status: 400 }
+      );
     }
-    // 2. Request Supabase to send a Recovery OTP
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: false,
-      },
-    });
 
-    if (error)
+    // Initiate password reset - sends OTP
+    const result = await initiatePasswordReset(email);
+
+    return NextResponse.json(result, { status: 200 });
+  } catch (error: any) {
+    console.error("Forgot password error:", error);
+
+    // Handle specific error messages
+    if (error.message === "User not found with this email") {
+      return NextResponse.json({ error: error.message }, { status: 404 });
+    }
+
+    if (
+      error.message?.includes("Password reset is only available for email")
+    ) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
 
-    return NextResponse.json({ message: "Reset code sent" });
-  } catch (err) {
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to send reset code" },
+      { status: 500 }
+    );
   }
 }

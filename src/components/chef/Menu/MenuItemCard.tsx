@@ -1,9 +1,37 @@
 "use client";
 
-import { MenuItem } from "@/lib/dummy-data/chef";
 import { Clock, Edit, Flame, Leaf, Trash2, ChefHat, BarChart3 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+
+interface MenuImage {
+  id?: string;
+  imageUrl?: string;
+  order?: number;
+}
+
+interface Ingredient {
+  id?: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  cost?: number;
+}
+
+interface MenuItem {
+  id?: string;
+  name: string;
+  description?: string;
+  category: string;
+  price: number;
+  prepTime?: number;
+  calories?: number;
+  spiciness?: string;
+  isVegetarian?: boolean;
+  isAvailable?: boolean;
+  images?: MenuImage[];
+  ingredients?: Ingredient[];
+}
 
 interface MenuItemCardProps {
   item: MenuItem;
@@ -21,12 +49,17 @@ export default function MenuItemCard({
   onViewInsights,
 }: MenuItemCardProps) {
   const [showIngredients, setShowIngredients] = useState(false);
-  const totalIngredientCost = item.ingredients.reduce((sum, ing) => sum + (ing.cost || 0), 0);
-  const profitMargin = item.currentPrice - totalIngredientCost;
+  const totalIngredientCost = (item.ingredients || []).reduce((sum, ing) => sum + (ing.cost || 0), 0);
+  const profitMargin = item.price - totalIngredientCost;
   const profitMarginPercent =
     totalIngredientCost > 0
-      ? Math.round((profitMargin / item.currentPrice) * 100)
+      ? Math.round((profitMargin / item.price) * 100)
       : 0;
+
+  // Get primary image (first in order)
+  const primaryImage = (item.images || [])
+    .sort((a, b) => (a.order || 0) - (b.order || 0))[0]?.imageUrl;
+
   return (
     <div
       className={`bg-white border-2 rounded-xl shadow-sm hover:shadow-md transition ${
@@ -37,9 +70,9 @@ export default function MenuItemCard({
     >
       {/* Image */}
       <div className="relative h-48 w-full bg-gray-100 rounded-t-xl overflow-hidden">
-        {item.image ? (
+        {primaryImage ? (
           <Image
-            src={item.image}
+            src={primaryImage}
             alt={item.name}
             fill
             className="object-cover"
@@ -83,14 +116,18 @@ export default function MenuItemCard({
 
         {/* Attributes */}
         <div className="flex flex-wrap gap-2 mb-3">
-          <div className="flex items-center gap-1 text-xs text-gray-600">
-            <Clock size={14} />
-            <span>{item.prepTime} min</span>
-          </div>
-          <div className="flex items-center gap-1 text-xs text-orange-600">
-            <Flame size={14} />
-            <span>{item.spiciness}</span>
-          </div>
+          {item.prepTime && (
+            <div className="flex items-center gap-1 text-xs text-gray-600">
+              <Clock size={14} />
+              <span>{item.prepTime} min</span>
+            </div>
+          )}
+          {item.spiciness && (
+            <div className="flex items-center gap-1 text-xs text-orange-600">
+              <Flame size={14} />
+              <span>{item.spiciness}</span>
+            </div>
+          )}
           {item.isVegetarian && (
             <div className="flex items-center gap-1 text-xs text-green-600">
               <Leaf size={14} />
@@ -98,14 +135,6 @@ export default function MenuItemCard({
             </div>
           )}
         </div>
-
-        {/* Allergens */}
-        {item.allergens && item.allergens.length > 0 && (
-          <div className="mb-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-            <span className="font-semibold">Allergens:</span>{" "}
-            {item.allergens.join(", ")}
-          </div>
-        )}
 
         {/* Ingredients Section */}
         {item.ingredients && item.ingredients.length > 0 && (
@@ -135,15 +164,9 @@ export default function MenuItemCard({
         <div className="mb-4 pb-4 border-b border-gray-100">
           <div className="flex items-center justify-between mb-2">
             <div>
-              <p className="text-xs text-gray-500">Current Price</p>
+              <p className="text-xs text-gray-500">Price</p>
               <p className="text-2xl font-bold text-teal-700">
-                ৳{item.currentPrice}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-500">Market Range</p>
-              <p className="text-sm font-semibold text-gray-700">
-                ৳{item.marketPriceRange.min} - ৳{item.marketPriceRange.max}
+                ৳{item.price}
               </p>
             </div>
           </div>
@@ -152,7 +175,7 @@ export default function MenuItemCard({
           {totalIngredientCost > 0 && (
             <div className="pt-2 grid grid-cols-2 gap-2 text-xs">
               <div className="bg-orange-50 p-2 rounded border border-orange-100">
-                <p className="text-gray-600">Ingredient Cost</p>
+                <p className="text-gray-600">Cost</p>
                 <p className="font-bold text-orange-600">৳{totalIngredientCost.toFixed(0)}</p>
               </div>
               <div className={`${profitMargin >= 0 ? "bg-green-50 border-green-100" : "bg-red-50 border-red-100"} p-2 rounded border`}>
