@@ -3,16 +3,19 @@ import DishCard from "@/components/shared/DishCard";
 import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard";
 import {
-  ALL_DISHES,
-  ALL_KITCHENS,
-  ALL_PLANS,
-  CATEGORIES,
+    ALL_KITCHENS,
+    ALL_PLANS,
+    CATEGORIES,
 } from "@/lib/dummy-data/explore";
+import { prisma } from "@/lib/prisma/prisma";
 
 // Define the type for URL search params
 interface SearchParamsProps {
   searchParams: { [key: string]: string | string[] | undefined };
 }
+
+
+// ... existing imports ...
 
 export default async function ExplorePage({ searchParams }: SearchParamsProps) {
   const params = await searchParams;
@@ -22,14 +25,57 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
   const sort = (params.sort as string) || "recommended";
   const query = (params.q as string) || "";
 
-  // --- FILTERING LOGIC (Server Side) ---
+  // --- SERVER SIDE FETCHING ---
+  
+  // 1. Dishes Fetching (Active only if tab is 'dishes')
+  let dishes: any[] = [];
+  if (tab === "dishes") {
+    const where: any = {
+      isAvailable: true,
+      // Search logic
+      OR: query ? [
+        { name: { contains: query, mode: "insensitive" } },
+        { users: { kitchens: { some: { name: { contains: query, mode: "insensitive" } } } } }
+      ] : undefined,
+    };
 
-  // 1. Filter by Tab & Text Search
-  let filteredDishes = ALL_DISHES.filter(
-    (d) =>
-      d.name.toLowerCase().includes(query.toLowerCase()) ||
-      d.kitchen.toLowerCase().includes(query.toLowerCase())
-  );
+    // Category logic
+    if (category !== "All") {
+      where.category = category;
+    }
+
+    // Sorting logic
+    const orderBy: any = {};
+    if (sort === "price_asc") orderBy.price = "asc";
+    else if (sort === "price_desc") orderBy.price = "desc";
+    else if (sort === "rating") orderBy.rating = "desc";
+    else orderBy.createdAt = "desc"; // Default sort
+
+    const dbDishes = await prisma.menu_items.findMany({
+      where,
+      orderBy,
+      include: {
+        menu_item_images: true,
+        users: {
+          include: {
+            kitchens: true,
+          }
+        }
+      }
+    });
+
+    dishes = dbDishes.map(d => ({
+        id: d.id,
+        name: d.name,
+        price: d.price,
+        rating: d.rating || 0,
+        image: d.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
+        kitchen: d.users.kitchens[0]?.name || "Unknown Kitchen",
+        deliveryTime: "30-45 min" // Placeholder as it's not in schema currently
+    }));
+  }
+
+  // --- LEGACY FILTERING LOGIC (For other tabs still using dummy data) ---
 
   const filteredKitchens = ALL_KITCHENS.filter((k) =>
     k.name.toLowerCase().includes(query.toLowerCase())
@@ -42,23 +88,14 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
       p.kitchen.toLowerCase().includes(query.toLowerCase())
   );
 
-  // 2. Filter by Category (Dishes only)
-  if (tab === "dishes" && category !== "All") {
-    filteredDishes = filteredDishes.filter((d) => d.category === category);
-  }
-
-  // 3. Sorting Logic
-  if (tab === "dishes") {
-    if (sort === "price_asc") filteredDishes.sort((a, b) => a.price - b.price);
-    if (sort === "price_desc") filteredDishes.sort((a, b) => b.price - a.price);
-    if (sort === "rating") filteredDishes.sort((a, b) => b.rating - a.rating);
-  } else if (tab === "subscriptions") {
-    if (sort === "price_asc") filteredPlans.sort((a, b) => a.price - b.price);
-    if (sort === "price_desc") filteredPlans.sort((a, b) => b.price - a.price);
-    if (sort === "rating") filteredPlans.sort((a, b) => b.rating - a.rating);
+  // Subscriptions logic (Sorting)
+  if (tab === "subscriptions") {
+     if (sort === "price_asc") filteredPlans.sort((a, b) => a.price - b.price);
+     if (sort === "price_desc") filteredPlans.sort((a, b) => b.price - a.price);
+     if (sort === "rating") filteredPlans.sort((a, b) => b.rating - a.rating);
   } else {
-    // Kitchen sorting
-    if (sort === "rating") filteredKitchens.sort((a, b) => b.rating - a.rating);
+     // Kitchen sorting
+     if (sort === "rating") filteredKitchens.sort((a, b) => b.rating - a.rating);
   }
 
   return (
@@ -79,9 +116,9 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
         {/* --- DISHES GRID --- */}
         {tab === "dishes" && (
           <>
-            {filteredDishes.length > 0 ? (
+            {dishes.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {filteredDishes.map((dish) => (
+                {dishes.map((dish) => (
                   <DishCard key={dish.id} data={dish} />
                 ))}
               </div>

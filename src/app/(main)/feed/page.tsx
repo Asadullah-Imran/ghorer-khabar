@@ -3,13 +3,35 @@ import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard"; // 1. Import PlanCard
 import SectionHeader from "@/components/shared/SectionHeader";
 import {
-  MONTHLY_TOP_KITCHENS,
-  RECOMMENDED_DISHES,
-  WEEKLY_BEST_DISHES,
+    MONTHLY_TOP_KITCHENS
 } from "@/lib/dummy-data/feed";
 import { FEATURED_PLANS } from "@/lib/dummy-data/newSubscriptionData";
+import { prisma } from "@/lib/prisma/prisma";
 
-export default function FeedPage() {
+export default async function FeedPage() {
+  const menuItems = await prisma.menu_items.findMany({
+    include: {
+      menu_item_images: true,
+      users: {
+        include: {
+          kitchens: true,
+        },
+      },
+      // Check if ratings/reviews are on menu_items directly based on schema
+    },
+    take: 10, // Limit for now
+  });
+
+  const dishes = menuItems.map((item) => ({
+    id: item.id,
+    name: item.name,
+    price: item.price,
+    rating: item.rating || 0,
+    image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg", // Fallback image
+    kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
+    deliveryTime: "30-45 min", // hardcoded for now as it's not on menu_item directly, maybe calc from kitchen?
+  }));
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* 1. Welcome Section */}
@@ -33,7 +55,8 @@ export default function FeedPage() {
             href="/explore?tab=dishes&sort=weekly_best"
           />
           <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-4 scrollbar-hide snap-x">
-            {WEEKLY_BEST_DISHES.map((dish) => (
+             {/* Using fetched dishes for now as 'Weekly Best' */}
+            {dishes.map((dish) => (
               <div key={dish.id} className="snap-center">
                 <DishCard data={dish} featured={true} />
               </div>
@@ -81,12 +104,8 @@ export default function FeedPage() {
             href="/explore?tab=dishes&filter=recommended"
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {RECOMMENDED_DISHES.map((dish) => (
+            {dishes.map((dish) => (
               <DishCard key={dish.id} data={dish} />
-            ))}
-            {/* Duplicate for demo grid */}
-            {RECOMMENDED_DISHES.map((dish) => (
-              <DishCard key={`dup-${dish.id}`} data={dish} />
             ))}
           </div>
           <div className="mt-8 text-center">
