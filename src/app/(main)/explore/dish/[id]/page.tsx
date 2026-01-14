@@ -1,14 +1,14 @@
 import DishActions from "@/components/dish/DishActions";
 import DishGallery from "@/components/dish/DishGallery";
 import IngredientTransparency from "@/components/dish/IngredientTransparency";
-import { getDishById } from "@/lib/dummy-data/dish";
+import { prisma } from "@/lib/prisma/prisma";
 import {
-  AlertTriangle,
-  ChevronRight,
-  Clock,
-  Flame,
-  ShieldCheck,
-  Star,
+    AlertTriangle,
+    ChevronRight,
+    Clock,
+    Flame,
+    ShieldCheck,
+    Star,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,9 +22,47 @@ export default async function SingleDishPage({ params }: PageProps) {
   const { id } = await params;
 
   // Fetch data
-  const dish = await getDishById(id);
+  const dishData = await prisma.menu_items.findUnique({
+    where: { id },
+    include: {
+      menu_item_images: true,
+      ingredients: true,
+      users: {
+        include: {
+          kitchens: true,
+        },
+      },
+    },
+  });
 
-  if (!dish) return <div>Dish not found</div>;
+  if (!dishData) return <div>Dish not found</div>;
+
+  // Map database data to UI format
+  const dish = {
+    id: dishData.id,
+    name: dishData.name,
+    description: dishData.description,
+    price: dishData.price,
+    rating: dishData.rating || 0,
+    reviewsCount: dishData.reviewCount || 0,
+    prepTime: dishData.prepTime ? `${dishData.prepTime} min` : "N/A",
+    calories: dishData.calories ? `${dishData.calories} kcal` : "N/A",
+    images: dishData.menu_item_images.map((img) => img.imageUrl),
+    chef: {
+        name: dishData.users.kitchens[0]?.name || dishData.users.name || "Unknown Chef",
+        image: dishData.users.kitchens[0]?.profileImage || dishData.users.avatar || "https://ui-avatars.com/api/?name=Chef",
+        location: dishData.users.kitchens[0]?.location || "Dhaka",
+        kri: dishData.users.kitchens[0]?.kriScore || 85,
+        badge: "Verified Chef"
+    },
+    ingredients: dishData.ingredients.map(ing => ({
+        name: ing.name,
+        icon: "wheat", // Default icon
+        detail: `${ing.quantity} ${ing.unit}` // Showing quantity as detail
+    })),
+    // No reviews table yet, providing empty array
+    reviews: [] as any[]
+  };
 
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
@@ -67,34 +105,38 @@ export default async function SingleDishPage({ params }: PageProps) {
               </div>
 
               <div className="space-y-6">
-                {dish.reviews.map((review) => (
-                  <div
-                    key={review.id}
-                    className="border-b border-gray-50 pb-6 last:border-0 last:pb-0"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex items-center gap-3">
-                        <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-                          <Image
-                            src={review.avatar}
-                            alt={review.user}
-                            fill
-                            className="object-cover"
-                          />
+                {dish.reviews.length > 0 ? (
+                    dish.reviews.map((review) => (
+                    <div
+                        key={review.id}
+                        className="border-b border-gray-50 pb-6 last:border-0 last:pb-0"
+                    >
+                        <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-3">
+                            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200">
+                            <Image
+                                src={review.avatar}
+                                alt={review.user}
+                                fill
+                                className="object-cover"
+                            />
+                            </div>
+                            <span className="text-sm font-semibold text-gray-900">
+                            {review.user}
+                            </span>
                         </div>
-                        <span className="text-sm font-semibold text-gray-900">
-                          {review.user}
+                        <span className="text-xs text-gray-400">
+                            {review.date}
                         </span>
-                      </div>
-                      <span className="text-xs text-gray-400">
-                        {review.date}
-                      </span>
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                        "{review.text}"
+                        </p>
                     </div>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      "{review.text}"
-                    </p>
-                  </div>
-                ))}
+                    ))
+                ) : (
+                    <p className="text-gray-500 text-sm italic">No reviews yet.</p>
+                )}
               </div>
             </div>
           </div>
