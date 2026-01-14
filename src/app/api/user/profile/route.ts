@@ -49,18 +49,29 @@ export async function GET() {
       // Self-healing: Check if this is a Supabase user and sync to Prisma
       try {
         const supabase = await createClient();
-        const { data: { user: supabaseUser }, error } = await supabase.auth.getUser();
+        const {
+          data: { user: supabaseUser },
+          error,
+        } = await supabase.auth.getUser();
 
         if (supabaseUser && supabaseUser.id === userId) {
-          console.log("Self-healing: Recreating missing Prisma user for", userId);
-          
+          console.log(
+            "Self-healing: Recreating missing Prisma user for",
+            userId
+          );
+
           const newUser = await prisma.user.create({
             data: {
               id: userId,
               email: supabaseUser.email!,
-              name: supabaseUser.user_metadata.full_name || supabaseUser.user_metadata.name || "",
-              avatar: supabaseUser.user_metadata.avatar_url || supabaseUser.user_metadata.picture,
-              authProvider: "GOOGLE", // Assuming Supabase users are mostly OAuth. 
+              name:
+                supabaseUser.user_metadata.full_name ||
+                supabaseUser.user_metadata.name ||
+                "",
+              avatar:
+                supabaseUser.user_metadata.avatar_url ||
+                supabaseUser.user_metadata.picture,
+              authProvider: "GOOGLE", // Assuming Supabase users are mostly OAuth.
               // Note: If using email/password via Supabase, this might be inaccurate but safer than crashing.
               role: (supabaseUser.user_metadata.role as any) || "BUYER",
               emailVerified: true,
@@ -77,7 +88,7 @@ export async function GET() {
               createdAt: true,
             },
           });
-          
+
           return NextResponse.json({ user: newUser });
         }
       } catch (syncError) {
@@ -185,39 +196,10 @@ export async function PUT(req: NextRequest) {
       throw e;
     }
 
-    // Also update Supabase user metadata for name and avatar
-    if (name !== undefined || avatar !== undefined) {
-      const metadataUpdate: {
-        name?: string;
-        full_name?: string;
-        avatar_url?: string;
-      } = {};
-      if (name !== undefined) {
-        metadataUpdate.name = name;
-        metadataUpdate.full_name = name;
-      }
-      if (avatar !== undefined) {
-        metadataUpdate.avatar_url = avatar;
-      }
-
-      // Try to update Supabase metadata (only works for Supabase-authenticated users)
-      try {
-        const supabase = await createClient();
-        
-        await supabase.auth.updateUser({
-          data: metadataUpdate,
-        });
-
-        await supabase.auth.updateUser({
-          data: metadataUpdate,
-        });
-      } catch (supabaseError) {
-        // Silently fail - user might be using JWT auth
-        console.log(
-          "Could not update Supabase metadata (user may be using JWT auth)"
-        );
-      }
-    }
+    // Note: We don't update Supabase user metadata here because:
+    // 1. It can trigger auth state changes that cause unwanted logouts
+    // 2. All user data is already stored in Prisma database
+    // 3. The profile is fetched from the database, not from Supabase metadata
 
     return NextResponse.json({
       success: true,

@@ -31,7 +31,9 @@ interface PasswordData {
 
 export default function SettingsForm() {
   const { user, refreshUser, signOut } = useAuth();
-  const [activeTab, setActiveTab] = useState<"general" | "security" | "danger">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "security" | "danger">(
+    "general"
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -84,9 +86,12 @@ export default function SettingsForm() {
           authProvider: data.user.authProvider || "EMAIL",
         });
       } else if (response.status === 404) {
-        console.error("User profile not found. Logging out.");
-        // If profile is missing even after self-healing, force logout
-        await signOut();
+        console.error("User profile not found.");
+        // Don't automatically logout - this could be a temporary issue
+        setMessage({
+          type: "error",
+          text: "Could not load profile data. Please refresh the page.",
+        });
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
