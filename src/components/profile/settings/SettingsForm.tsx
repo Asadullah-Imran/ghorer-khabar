@@ -20,6 +20,7 @@ interface UserProfile {
   name: string;
   phone: string;
   avatar: string;
+  authProvider?: string;
 }
 
 interface PasswordData {
@@ -44,6 +45,7 @@ export default function SettingsForm() {
     name: "",
     phone: "",
     avatar: "",
+    authProvider: "EMAIL",
   });
 
   // Password form data
@@ -77,6 +79,7 @@ export default function SettingsForm() {
           name: data.user.name || "",
           phone: data.user.phone || "",
           avatar: data.user.avatar || "",
+          authProvider: data.user.authProvider || "EMAIL",
         });
       }
     } catch (error) {
@@ -300,16 +303,19 @@ export default function SettingsForm() {
         >
           <User size={18} /> General
         </button>
-        <button
-          onClick={() => setActiveTab("security")}
-          className={`flex-1 py-4 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors ${
-            activeTab === "security"
-              ? "border-teal-600 text-teal-800 bg-teal-50/50"
-              : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-          }`}
-        >
-          <Lock size={18} /> Security
-        </button>
+        {/* Only show Security tab for EMAIL users */}
+        {formData.authProvider === "EMAIL" && (
+          <button
+            onClick={() => setActiveTab("security")}
+            className={`flex-1 py-4 text-sm font-bold flex items-center justify-center gap-2 border-b-2 transition-colors ${
+              activeTab === "security"
+                ? "border-teal-600 text-teal-800 bg-teal-50/50"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+            }`}
+          >
+            <Lock size={18} /> Security
+          </button>
+        )}
       </div>
 
       {/* 2. Content */}

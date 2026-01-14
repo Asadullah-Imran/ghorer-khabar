@@ -41,6 +41,7 @@ export async function GET() {
         avatar: true,
         role: true,
         emailVerified: true,
+        authProvider: true,
         createdAt: true,
       },
     });
