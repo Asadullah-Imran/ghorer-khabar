@@ -61,7 +61,7 @@ export async function middleware(request: NextRequest) {
   ) {
     const { pathname } = request.nextUrl;
     if (pathname === "/login" || pathname === "/register") {
-      const redirectUrl = request.nextUrl.searchParams.get("redirect") || "/feed";
+      const redirectUrl = request.nextUrl.searchParams.get("redirect") || "/auth/redirect";
       const url = request.nextUrl.clone();
       url.pathname = redirectUrl;
       url.search = ""; // Clear query params for clean redirect logic

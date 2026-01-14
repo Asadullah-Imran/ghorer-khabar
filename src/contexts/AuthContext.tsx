@@ -20,6 +20,16 @@ interface ExtendedUser extends Partial<User> {
     full_name?: string;
     avatar_url?: string;
     picture?: string;
+    kitchen?: {
+      id: string;
+      onboardingCompleted: boolean;
+      isVerified: boolean;
+    };
+  };
+  kitchen?: {
+    id: string;
+    onboardingCompleted: boolean;
+    isVerified: boolean;
   };
 }
 
@@ -48,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { user } = await response.json();
         if (user) {
           setUser(user);
-          setRole(user.role || null);
+          if (user.role) setRole(user.role);
         }
       } else {
         // Fallback to Supabase client if API fails
@@ -105,7 +115,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               user_metadata: {
                 name: data.user.name,
                 full_name: data.user.name,
+                kitchen: data.user.kitchen,
               },
+              kitchen: data.user.kitchen,
             });
             setRole(data.user.role || null);
             setLoading(false);

@@ -33,6 +33,14 @@ export async function GET() {
         name: true,
         role: true,
         emailVerified: true,
+        kitchens: {
+          select: {
+            id: true,
+            onboardingCompleted: true,
+            isVerified: true,
+          },
+          take: 1,
+        },
       },
     });
 
@@ -40,7 +48,19 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ user }, { status: 200 });
+    // Format user object to match expected structure
+    const userWithKitchen = {
+      ...user,
+      kitchen: user.kitchens[0]
+        ? {
+            id: user.kitchens[0].id,
+            onboardingCompleted: user.kitchens[0].onboardingCompleted,
+            isVerified: user.kitchens[0].isVerified,
+          }
+        : undefined,
+    };
+
+    return NextResponse.json({ user: userWithKitchen }, { status: 200 });
   } catch (error) {
     console.error("Get current user error:", error);
     return NextResponse.json(

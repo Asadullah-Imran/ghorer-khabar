@@ -1,6 +1,6 @@
-import { prisma } from "@/lib/prisma/prisma";
-import { hashPassword, comparePassword } from "@/lib/auth/hash";
+import { comparePassword } from "@/lib/auth/hash";
 import { signToken } from "@/lib/auth/jwt";
+import { prisma } from "@/lib/prisma/prisma";
 
 export async function loginUser(data: { email: string; password: string }) {
   try {
@@ -27,7 +27,7 @@ export async function loginUser(data: { email: string; password: string }) {
     }
 
     // 5. Generate JWT Token
-    const token = signToken({ userId: user.id });
+    const token = signToken({ userId: user.id, email: user.email, role: user.role });
 
     // 6. Return safe user data and token
     return {
@@ -36,6 +36,7 @@ export async function loginUser(data: { email: string; password: string }) {
         email: user.email,
         name: user.name,
         emailVerified: user.emailVerified,
+        role: user.role,
       },
       token,
     };
