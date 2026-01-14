@@ -42,13 +42,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
+      // Fetch fresh session data from our API (which merges DB data)
+      const response = await fetch("/api/auth/session");
+      if (response.ok) {
+        const { user } = await response.json();
+        if (user) {
+          setUser(user);
+          setRole(user.role || null);
+        }
+      } else {
+        // Fallback to Supabase client if API fails
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        setUser(user);
+      }
     } catch (error) {
       console.error("Error refreshing user:", error);
-      setUser(null);
+      // Don't clear user on refresh failure to prevent random logouts
+      // only clear if we are sure the session is gone
     }
   };
 
