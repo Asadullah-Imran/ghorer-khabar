@@ -2,16 +2,16 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import {
-    AlertCircle,
-    Bell,
-    Camera,
-    CheckCircle,
-    Loader2,
-    Lock,
-    Phone,
-    Save,
-    User,
-    X,
+  AlertCircle,
+  Bell,
+  Camera,
+  CheckCircle,
+  Loader2,
+  Lock,
+  Phone,
+  Save,
+  User,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -193,15 +193,13 @@ export default function SettingsForm() {
         text: "Profile updated successfully! Redirecting...",
       });
       
+      // Refresh user data in auth context to update UI immediately
+      await refreshUser();
+
       // Redirect to profile page after short delay
       setTimeout(() => {
          window.location.href = "/profile"; 
       }, 1000);
-
-      // We explicitly DO NOT call refreshUser() here because:
-      // 1. We don't update Supabase metadata in the API (to avoid auth issues)
-      // 2. So refreshUser() would just fetch stale data
-      // 3. The /profile page will fetch fresh data from the API anyway
     } catch (error: any) {
       console.error("Error updating profile:", error);
       setMessage({
