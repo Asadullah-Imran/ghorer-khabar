@@ -174,8 +174,8 @@ export default function ChefOnboardingPage() {
       // Clear saved progress
       localStorage.removeItem(STORAGE_KEY);
 
-      // Redirect to chef dashboard
-      router.push("/chef");
+      // Force hard reload to update auth context with new kitchen status
+      window.location.href = "/chef/dashboard";
     } catch (error) {
       console.error("Submission error:", error);
       if (error instanceof z.ZodError) {

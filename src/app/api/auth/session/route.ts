@@ -24,6 +24,14 @@ export async function GET() {
         avatar: true,
         role: true,
         email: true,
+        kitchens: {
+          select: {
+            id: true,
+            onboardingCompleted: true,
+            isVerified: true,
+          },
+          take: 1, // Currently assuming one kitchen per user
+        },
       },
     });
 
@@ -41,6 +49,13 @@ export async function GET() {
           avatar_url: dbUser.avatar,
           picture: dbUser.avatar,
           role: dbUser.role,
+          kitchen: dbUser.kitchens[0]
+            ? {
+                id: dbUser.kitchens[0].id,
+                onboardingCompleted: dbUser.kitchens[0].onboardingCompleted,
+                isVerified: dbUser.kitchens[0].isVerified,
+              }
+            : undefined,
         },
       };
       
