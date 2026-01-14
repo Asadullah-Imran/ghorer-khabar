@@ -1,8 +1,7 @@
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
+import { createClient } from "@/lib/supabase/server";
 import { updateProfileSchema } from "@/lib/validation";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
@@ -47,6 +46,55 @@ export async function GET() {
     });
 
     if (!user) {
+      // Self-healing: Check if this is a Supabase user and sync to Prisma
+      try {
+        const supabase = await createClient();
+        const {
+          data: { user: supabaseUser },
+          error,
+        } = await supabase.auth.getUser();
+
+        if (supabaseUser && supabaseUser.id === userId) {
+          console.log(
+            "Self-healing: Recreating missing Prisma user for",
+            userId
+          );
+
+          const newUser = await prisma.user.create({
+            data: {
+              id: userId,
+              email: supabaseUser.email!,
+              name:
+                supabaseUser.user_metadata.full_name ||
+                supabaseUser.user_metadata.name ||
+                "",
+              avatar:
+                supabaseUser.user_metadata.avatar_url ||
+                supabaseUser.user_metadata.picture,
+              authProvider: "GOOGLE", // Assuming Supabase users are mostly OAuth.
+              // Note: If using email/password via Supabase, this might be inaccurate but safer than crashing.
+              role: (supabaseUser.user_metadata.role as any) || "BUYER",
+              emailVerified: true,
+            },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+              avatar: true,
+              role: true,
+              emailVerified: true,
+              authProvider: true,
+              createdAt: true,
+            },
+          });
+
+          return NextResponse.json({ user: newUser });
+        }
+      } catch (syncError) {
+        console.error("Self-healing failed:", syncError);
+      }
+
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
@@ -122,61 +170,36 @@ export async function PUT(req: NextRequest) {
     if (phone !== undefined) updateData.phone = phone;
     if (avatar !== undefined) updateData.avatar = avatar;
 
+    console.log("Updating profile for userId:", userId);
+
     // Update user in database
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: updateData,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        avatar: true,
-        role: true,
-        emailVerified: true,
-      },
-    });
-
-    // Also update Supabase user metadata for name and avatar
-    if (name !== undefined || avatar !== undefined) {
-      const metadataUpdate: {
-        name?: string;
-        full_name?: string;
-        avatar_url?: string;
-      } = {};
-      if (name !== undefined) {
-        metadataUpdate.name = name;
-        metadataUpdate.full_name = name;
+    let updatedUser;
+    try {
+      updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: updateData,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          avatar: true,
+          role: true,
+          emailVerified: true,
+        },
+      });
+    } catch (e: any) {
+      if (e.code === "P2025") {
+        console.error("User not found in database:", userId);
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
-      if (avatar !== undefined) {
-        metadataUpdate.avatar_url = avatar;
-      }
-
-      // Try to update Supabase metadata (only works for Supabase-authenticated users)
-      try {
-        const cookieStore = await cookies();
-        const supabase = createServerClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-          {
-            cookies: {
-              get(name) {
-                return cookieStore.get(name)?.value;
-              },
-            },
-          }
-        );
-
-        await supabase.auth.updateUser({
-          data: metadataUpdate,
-        });
-      } catch (supabaseError) {
-        // Silently fail - user might be using JWT auth
-        console.log(
-          "Could not update Supabase metadata (user may be using JWT auth)"
-        );
-      }
+      throw e;
     }
+
+    // Note: We don't update Supabase user metadata here because:
+    // 1. It can trigger auth state changes that cause unwanted logouts
+    // 2. All user data is already stored in Prisma database
+    // 3. The profile is fetched from the database, not from Supabase metadata
 
     return NextResponse.json({
       success: true,
