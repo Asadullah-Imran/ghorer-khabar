@@ -63,7 +63,7 @@ model EmailLogOTP {
 }
 
 model ingredients {
-  id           String     @id
+  id           String     @id @default(cuid())
   menu_item_id String
   name         String
   quantity     Float
@@ -76,7 +76,7 @@ model ingredients {
 }
 
 model menu_item_images {
-  id           String     @id
+  id           String     @id @default(cuid())
   menu_item_id String
   imageUrl     String
   order        Int        @default(0)
@@ -87,7 +87,7 @@ model menu_item_images {
 }
 
 model menu_items {
-  id               String             @id
+  id               String             @id @default(cuid())
   chef_id          String
   name             String
   description      String?

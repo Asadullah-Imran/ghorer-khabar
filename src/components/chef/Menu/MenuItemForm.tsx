@@ -1,45 +1,83 @@
 "use client";
 
 import Image from "next/image";
-import { MenuItem, Ingredient } from "@/lib/dummy-data/chef";
-import { X, Plus, Trash2, Upload, X as CloseIcon } from "lucide-react";
+import { X, Plus, Trash2, Upload, X as CloseIcon, Loader2 } from "lucide-react";
 import { useState, useRef } from "react";
+
+interface Ingredient {
+  id?: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  cost?: number;
+}
+
+interface MenuImage {
+  id?: string;
+  imageUrl?: string;
+  preview?: string;
+  order?: number;
+}
+
+interface MenuItem {
+  id?: string;
+  name: string;
+  description?: string;
+  category: string;
+  price: number;
+  prepTime?: number;
+  calories?: number;
+  spiciness?: string;
+  isVegetarian?: boolean;
+  images?: MenuImage[];
+  ingredients?: Ingredient[];
+}
 
 interface MenuItemFormProps {
   item?: MenuItem;
   onClose: () => void;
-  onSave: (item: Partial<MenuItem>) => void;
+  onSave: (item: MenuItem) => void;
+  isLoading?: boolean;
+  uploading?: boolean;
 }
 
-export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProps) {
+export default function MenuItemForm({
+  item,
+  onClose,
+  onSave,
+  isLoading = false,
+  uploading: uploadingProp = false,
+}: MenuItemFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [uploading, setUploading] = useState(uploadingProp);
 
   const [formData, setFormData] = useState({
     name: item?.name || "",
     description: item?.description || "",
     category: item?.category || "Rice",
-    currentPrice: item?.currentPrice || 100,
-    marketPriceMin: item?.marketPriceRange.min || 80,
-    marketPriceMax: item?.marketPriceRange.max || 500,
+    price: item?.price || 0,
     prepTime: item?.prepTime || 30,
+    calories: item?.calories || 0,
     spiciness: item?.spiciness || "Medium",
     isVegetarian: item?.isVegetarian || false,
-    allergens: item?.allergens?.join(", ") || "",
-    image: item?.image || "",
   });
 
-  const [uploadedImages, setUploadedImages] = useState<
-    Array<{ id: string; file: File; preview: string }>
+  const [images, setImages] = useState<
+    Array<{
+      id?: string;
+      file: File | null;
+      preview: string;
+      isNew?: boolean;
+    }>
   >(
-    item?.image
-      ? [
-          {
-            id: "existing",
-            file: new File([], "existing"),
-            preview: item.image,
-          },
-        ]
+    item?.images
+      ? item.images.map((img) => ({
+          id: img.id,
+          file: null,
+          preview: img.imageUrl || img.preview || "",
+          isNew: false,
+        }))
       : []
   );
 
@@ -47,28 +85,39 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
     item?.ingredients || []
   );
 
-  const [useCustomPrice, setUseCustomPrice] = useState(false);
+  const [errors, setErrors] = useState<string[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Use the first uploaded image as the primary image, or the preview if it exists
-    const primaryImage =
-      uploadedImages.length > 0 ? uploadedImages[0].preview : formData.image;
+    setErrors([]);
 
-    onSave({
-      id: item?.id || Date.now().toString(),
+    // console.log("\n=== FORM: handleSubmit STARTED ===");
+    // console.log("Current form data:", formData);
+    // console.log("Current images:", images);
+    // console.log("Current ingredients:", ingredients);
+
+    // Validation
+    const newErrors: string[] = [];
+    if (!formData.name.trim()) newErrors.push("Dish name is required");
+    if (!formData.category) newErrors.push("Category is required");
+    if (formData.price <= 0) newErrors.push("Price must be greater than 0");
+
+    if (newErrors.length > 0) {
+     // console.log("Validation errors:", newErrors);
+      setErrors(newErrors);
+      return;
+    }
+
+    const menuItem: MenuItem = {
+      id: item?.id,
       ...formData,
-      image: primaryImage,
-      marketPriceRange: {
-        min: formData.marketPriceMin,
-        max: formData.marketPriceMax,
-      },
-      allergens: formData.allergens
-        ? formData.allergens.split(",").map((a) => a.trim())
-        : [],
+      images: images,
       ingredients: ingredients,
-      isAvailable: true,
-    });
+    };
+
+  //  console.log("Menu item to save:", menuItem);
+   // console.log("=== FORM: handleSubmit calling onSave ===");
+    onSave(menuItem);
   };
 
   const handleDrag = (e: React.DragEvent) => {
@@ -87,44 +136,51 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
     setDragActive(false);
 
     const files = e.dataTransfer.files;
-    if (files) {
-      handleFiles(files);
+    if (files && files[0]) {
+      handleFile(files[0]);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.currentTarget.files;
-    if (files) {
-      handleFiles(files);
+    if (e.currentTarget.files && e.currentTarget.files[0]) {
+      handleFile(e.currentTarget.files[0]);
     }
   };
 
-  const handleFiles = (files: FileList) => {
-    const newImages = Array.from(files)
-      .filter((file) => file.type.startsWith("image/"))
-      .map((file) => ({
-        id: `${Date.now()}-${Math.random()}`,
+  const handleFile = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      setErrors(["Please select a valid image file"]);
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors(["Image size must be less than 5MB"]);
+      return;
+    }
+
+    // Add to images array
+    setImages([
+      ...images,
+      {
         file,
         preview: URL.createObjectURL(file),
-      }));
-
-    setUploadedImages((prev) => [...prev, ...newImages]);
+        isNew: true,
+      },
+    ]);
   };
 
-  const removeImage = (id: string) => {
-    setUploadedImages((prev) => {
-      const image = prev.find((img) => img.id === id);
-      if (image && image.preview.startsWith("blob:")) {
-        URL.revokeObjectURL(image.preview);
-      }
-      return prev.filter((img) => img.id !== id);
-    });
+  const removeImage = (index: number) => {
+    const image = images[index];
+    if (image.preview.startsWith("blob:")) {
+      URL.revokeObjectURL(image.preview);
+    }
+    setImages(images.filter((_, i) => i !== index));
   };
 
   const addIngredient = () => {
     setIngredients([
       ...ingredients,
-      { name: "", quantity: "", unit: "grams", cost: 0 },
+      { name: "", quantity: 0, unit: "gm", cost: 0 },
     ]);
   };
 
@@ -135,18 +191,21 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
   const updateIngredient = (
     index: number,
     field: keyof Ingredient,
-    value: string | number
+    value: any
   ) => {
     const updated = [...ingredients];
     updated[index] = { ...updated[index], [field]: value };
     setIngredients(updated);
   };
 
-  const totalIngredientCost = ingredients.reduce((sum, ing) => sum + (ing.cost || 0), 0);
-  const profitMargin = formData.currentPrice - totalIngredientCost;
+  const totalIngredientCost = ingredients.reduce(
+    (sum, ing) => sum + (ing.cost || 0),
+    0
+  );
+  const profitMargin = formData.price - totalIngredientCost;
   const profitMarginPercent =
     totalIngredientCost > 0
-      ? Math.round((profitMargin / formData.currentPrice) * 100)
+      ? Math.round((profitMargin / formData.price) * 100)
       : 0;
 
   return (
@@ -236,105 +295,41 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
             </div>
           </div>
 
-          {/* Price Section */}
-          <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-            <div className="flex items-center justify-between mb-4">
-              <label className="text-sm font-semibold text-gray-900">
-                Pricing
+          {/* Price & Calories */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Price (৳) *
               </label>
-              <button
-                type="button"
-                onClick={() => setUseCustomPrice(!useCustomPrice)}
-                className="text-xs text-teal-600 font-medium hover:underline"
-              >
-                {useCustomPrice ? "Use Market Slider" : "Set Custom Price"}
-              </button>
+              <input
+                type="number"
+                required
+                disabled={uploading || isLoading}
+                value={formData.price}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-gray-100"
+                min="0"
+                step="0.01"
+              />
             </div>
 
-            {!useCustomPrice ? (
-              <>
-                {/* Price Slider */}
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Market Price Range</span>
-                    <span className="text-lg font-bold text-teal-700">
-                      ৳{formData.currentPrice}
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min={formData.marketPriceMin}
-                    max={formData.marketPriceMax}
-                    value={formData.currentPrice}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        currentPrice: parseInt(e.target.value),
-                      })
-                    }
-                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
-                  />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Min: ৳{formData.marketPriceMin}</span>
-                    <span>Max: ৳{formData.marketPriceMax}</span>
-                  </div>
-                </div>
-
-                {/* Market Range Inputs */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">
-                      Market Min
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.marketPriceMin}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          marketPriceMin: parseInt(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-600 mb-1">
-                      Market Max
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.marketPriceMax}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          marketPriceMax: parseInt(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
-                    />
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div>
-                <label className="block text-sm text-gray-600 mb-2">
-                  Custom Price
-                </label>
-                <input
-                  type="number"
-                  value={formData.currentPrice}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      currentPrice: parseInt(e.target.value),
-                    })
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-                  placeholder="Enter custom price"
-                />
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Calories
+              </label>
+              <input
+                type="number"
+                disabled={uploading || isLoading}
+                value={formData.calories}
+                onChange={(e) =>
+                  setFormData({ ...formData, calories: parseInt(e.target.value) || 0 })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-gray-100"
+                min="0"
+              />
+            </div>
           </div>
 
           {/* Spiciness & Vegetarian */}
@@ -344,30 +339,32 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
                 Spiciness
               </label>
               <select
+                disabled={uploading || isLoading}
                 value={formData.spiciness}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
-                    spiciness: e.target.value as "Mild" | "Medium" | "High",
+                    spiciness: e.target.value,
                   })
                 }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 disabled:bg-gray-100"
               >
                 <option value="Mild">Mild</option>
                 <option value="Medium">Medium</option>
-                <option value="High">High</option>
+                <option value="Hot">Hot</option>
               </select>
             </div>
 
-            <div className="flex items-center">
+            <div className="flex items-end">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
+                  disabled={uploading || isLoading}
                   checked={formData.isVegetarian}
                   onChange={(e) =>
                     setFormData({ ...formData, isVegetarian: e.target.checked })
                   }
-                  className="w-5 h-5 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+                  className="w-5 h-5 text-teal-600 border-gray-300 rounded focus:ring-teal-500 disabled:opacity-50"
                 />
                 <span className="text-sm font-semibold text-gray-900">
                   Vegetarian
@@ -376,26 +373,10 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
             </div>
           </div>
 
-          {/* Allergens */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Allergens (comma-separated)
-            </label>
-            <input
-              type="text"
-              value={formData.allergens}
-              onChange={(e) =>
-                setFormData({ ...formData, allergens: e.target.value })
-              }
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
-              placeholder="e.g., Fish, Mustard, Nuts"
-            />
-          </div>
-
           {/* Image Upload */}
           <div>
             <label className="block text-sm font-semibold text-gray-900 mb-2">
-              Dish Images (optional)
+              Dish Images
             </label>
 
             {/* Drag and Drop Area */}
@@ -417,28 +398,29 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
                 multiple
                 accept="image/*"
                 onChange={handleFileChange}
+                disabled={uploading || isLoading}
                 className="hidden"
               />
 
               <Upload className="mx-auto mb-2 text-teal-600" size={32} />
               <p className="text-sm font-semibold text-gray-700 mb-1">
-                Drag and drop images here or click to browse
+                Drag and drop images or click to browse
               </p>
               <p className="text-xs text-gray-500">
-                Supported formats: JPG, PNG, GIF, WebP
+                Supported: JPG, PNG, WebP, GIF (Max 5MB each)
               </p>
             </div>
 
-            {/* Uploaded Images Preview */}
-            {uploadedImages.length > 0 && (
+            {/* Images Preview */}
+            {images.length > 0 && (
               <div className="mt-4">
                 <p className="text-xs font-semibold text-gray-600 mb-3">
-                  {uploadedImages.length} image{uploadedImages.length !== 1 ? "s" : ""} selected
+                  {images.length} image{images.length !== 1 ? "s" : ""} selected
                 </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {uploadedImages.map((image, index) => (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {images.map((image, index) => (
                     <div
-                      key={image.id}
+                      key={index}
                       className="relative group rounded-lg overflow-hidden border-2 border-gray-200 aspect-square"
                     >
                       <Image
@@ -452,10 +434,16 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
                           Primary
                         </div>
                       )}
+                      {image.isNew && (
+                        <div className="absolute top-2 right-2 bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded">
+                          New
+                        </div>
+                      )}
                       <button
                         type="button"
-                        onClick={() => removeImage(image.id)}
-                        className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                        disabled={uploading || isLoading}
+                        onClick={() => removeImage(index)}
+                        className="absolute bottom-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition disabled:opacity-50"
                         title="Remove image"
                       >
                         <CloseIcon size={16} />
@@ -527,24 +515,23 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
                     </div>
 
                     {/* Unit */}
-                    <div className="w-24">
+                    <div className="w-20">
                       <label className="block text-xs text-gray-600 mb-1">
                         Unit
                       </label>
                       <select
+                        disabled={uploading || isLoading}
                         value={ingredient.unit}
                         onChange={(e) =>
                           updateIngredient(index, "unit", e.target.value)
                         }
-                        className="w-full px-2 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
+                        className="w-full px-2 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-teal-500 disabled:bg-gray-100"
                       >
-                        <option value="grams">grams</option>
+                        <option value="gm">gm</option>
                         <option value="kg">kg</option>
                         <option value="ml">ml</option>
-                        <option value="liters">liters</option>
-                        <option value="pieces">pieces</option>
-                        <option value="tsp">tsp</option>
-                        <option value="tbsp">tbsp</option>
+                        <option value="l">liter</option>
+                        <option value="pcs">pcs</option>
                         <option value="cup">cup</option>
                       </select>
                     </div>
@@ -584,16 +571,26 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
               <div className="bg-white rounded-lg p-3 border border-teal-100 mt-4">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <p className="text-xs text-gray-600 mb-1">Total Ingredient Cost</p>
-                    <p className="text-lg font-bold text-orange-600">৳{totalIngredientCost.toFixed(0)}</p>
+                    <p className="text-xs text-gray-600 mb-1">
+                      Total Ingredient Cost
+                    </p>
+                    <p className="text-lg font-bold text-orange-600">
+                      ৳{totalIngredientCost.toFixed(0)}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-600 mb-1">Menu Price</p>
-                    <p className="text-lg font-bold text-teal-600">৳{formData.currentPrice}</p>
+                    <p className="text-lg font-bold text-teal-600">
+                      ৳{formData.price.toFixed(0)}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs text-gray-600 mb-1">Profit Margin</p>
-                    <p className={`text-lg font-bold ${profitMargin >= 0 ? "text-green-600" : "text-red-600"}`}>
+                    <p
+                      className={`text-lg font-bold ${
+                        profitMargin >= 0 ? "text-green-600" : "text-red-600"
+                      }`}
+                    >
                       ৳{profitMargin.toFixed(0)} ({profitMarginPercent}%)
                     </p>
                   </div>
@@ -606,14 +603,17 @@ export default function MenuItemForm({ item, onClose, onSave }: MenuItemFormProp
           <div className="flex gap-3 pt-4">
             <button
               type="submit"
-              className="flex-1 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition"
+              disabled={uploading || isLoading}
+              className="flex-1 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
             >
+              {isLoading && <Loader2 className="animate-spin" size={20} />}
               {item ? "Update Menu Item" : "Add Menu Item"}
             </button>
             <button
               type="button"
+              disabled={uploading || isLoading}
               onClick={onClose}
-              className="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition"
+              className="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition disabled:opacity-50"
             >
               Cancel
             </button>

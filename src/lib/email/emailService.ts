@@ -96,7 +96,86 @@ export async function sendVerificationEmail(
 }
 
 /**
- * Send password reset email
+ * Generate a 6-digit OTP code
+ */
+export function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+/**
+ * Generate OTP expiry time (10 minutes from now)
+ */
+export function getOTPExpiry(): Date {
+  return new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+}
+
+/**
+ * Send OTP email for password recovery
+ */
+export async function sendPasswordResetOTP(
+  email: string,
+  otp: string,
+  userName?: string
+) {
+  const mailOptions = {
+    from: `"Ghorer Khabar" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: "Password Reset Code - Ghorer Khabar",
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #306B62; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+            .otp-box { background: white; border: 2px dashed #306B62; padding: 20px; margin: 20px 0; text-align: center; border-radius: 8px; }
+            .otp-code { font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #306B62; font-family: monospace; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🍳 Ghorer Khabar</h1>
+            </div>
+            <div class="content">
+              <h2>Password Reset Request</h2>
+              <p>Hi${userName ? ` ${userName}` : ""},</p>
+              <p>We received a request to reset your password. Use the verification code below to proceed:</p>
+              <div class="otp-box">
+                <p style="margin: 0; font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 2px;">Your Verification Code</p>
+                <div class="otp-code">${otp}</div>
+              </div>
+              <p style="margin-top: 20px; font-size: 14px; color: #666;">
+                This code will expire in <strong>10 minutes</strong>.
+              </p>
+              <p style="margin-top: 20px; font-size: 14px; color: #999;">
+                If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.
+              </p>
+            </div>
+            <div class="footer">
+              <p>&copy; 2026 Ghorer Khabar. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log("Password reset OTP sent to:", email);
+    return true;
+  } catch (error) {
+    console.error("Error sending password reset OTP:", error);
+    throw new Error("Failed to send password reset OTP");
+  }
+}
+
+/**
+ * Send password reset email (legacy - with token link)
  */
 export async function sendPasswordResetEmail(
   email: string,

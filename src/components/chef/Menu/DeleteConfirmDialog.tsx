@@ -1,7 +1,21 @@
 "use client";
 
-import { MenuItem } from "@/lib/dummy-data/chef";
 import { AlertTriangle, X } from "lucide-react";
+
+interface MenuItem {
+  id?: string;
+  name: string;
+  description?: string;
+  category: string;
+  price: number;
+  prepTime?: number;
+  calories?: number;
+  spiciness?: string;
+  isVegetarian?: boolean;
+  isAvailable?: boolean;
+  images?: Array<{ id?: string; imageUrl?: string; order?: number }>;
+  ingredients?: Array<{ id?: string; name: string; quantity: number; unit: string; cost?: number }>;
+}
 
 interface DeleteConfirmDialogProps {
   item: MenuItem;
@@ -14,6 +28,8 @@ export default function DeleteConfirmDialog({
   onConfirm,
   onCancel,
 }: DeleteConfirmDialogProps) {
+  const totalIngredientCost = (item.ingredients || []).reduce((sum, ing) => sum + (ing.cost || 0), 0);
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
@@ -37,11 +53,11 @@ export default function DeleteConfirmDialog({
               <h3 className="font-bold text-gray-900">{item.name}</h3>
               <p className="text-sm text-gray-600 mt-1">{item.category}</p>
               <p className="text-sm text-gray-500 mt-2">
-                Current Price: <span className="font-semibold text-teal-600">৳{item.currentPrice}</span>
+                Price: <span className="font-semibold text-teal-600">৳{item.price}</span>
               </p>
               {item.ingredients && item.ingredients.length > 0 && (
                 <p className="text-sm text-gray-500 mt-1">
-                  Ingredients: <span className="font-semibold">{item.ingredients.length}</span>
+                  Ingredients: <span className="font-semibold">{item.ingredients.length}</span> (৳{totalIngredientCost.toFixed(0)})
                 </p>
               )}
             </div>
