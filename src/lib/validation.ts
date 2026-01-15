@@ -61,7 +61,7 @@ export const createSubscriptionSchema = z.object({
   servingsPerMeal: z.number().int().positive(),
   isActive: z.boolean().default(true),
   schedule: weeklyScheduleSchema,
-  coverImage: z.string().url().optional(),
+  coverImage: z.string().optional().refine(val => !val || val.startsWith('http'), 'Invalid image URL'),
   calories: z.number().int().optional(),
   protein: z.string().optional(),
   carbs: z.string().optional(),
