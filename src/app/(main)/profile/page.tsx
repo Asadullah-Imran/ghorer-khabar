@@ -2,8 +2,7 @@ import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SubscriptionActions } from "@/components/profile/ProfileInteractions";
 import {
   ACTIVE_SUBSCRIPTION,
-  ORDER_HISTORY,
-  USER_PROFILE,
+  USER_PROFILE
 } from "@/lib/dummy-data/profile";
 import {
   CalendarCheck,
@@ -12,13 +11,30 @@ import {
   MapPin,
   Phone,
   Settings,
+  ShoppingBag,
   Users,
-  Utensils,
+  Utensils
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function ProfilePage() {
+import { getAuthUserId } from "@/lib/auth/getAuthUser";
+import { prisma } from "@/lib/prisma/prisma";
+
+export default async function ProfilePage() {
+  const userId = await getAuthUserId();
+  const recentOrders = userId ? await prisma.order.findMany({
+    where: { userId },
+    take: 3,
+    orderBy: { createdAt: "desc" },
+    include: {
+      kitchen: true,
+      items: {
+        take: 1,
+        include: { menuItem: true }
+      }
+    }
+  }) : [];
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
@@ -171,9 +187,12 @@ export default function ProfilePage() {
                 <h2 className="text-2xl font-bold text-gray-900">
                   Recent Orders
                 </h2>
-                <button className="text-sm font-semibold text-brand-teal hover:text-brand-teal/80 transition-colors px-4 py-2 rounded-lg hover:bg-brand-teal/5">
+                <Link 
+                  href="/orders"
+                  className="text-sm font-semibold text-brand-teal hover:text-brand-teal/80 transition-colors px-4 py-2 rounded-lg hover:bg-brand-teal/5"
+                >
                   View All
-                </button>
+                </Link>
               </div>
               <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-lg">
                 <div className="overflow-x-auto">
@@ -188,27 +207,28 @@ export default function ProfilePage() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                      {ORDER_HISTORY.map((order) => (
+                      {recentOrders.length > 0 ? (
+                        recentOrders.map((order) => (
                         <tr
                           key={order.id}
                           className="hover:bg-gray-50 transition-colors"
                         >
                           <td className="px-6 py-4 whitespace-nowrap">
-                            {order.date}
+                            {new Date(order.createdAt).toLocaleDateString()}
                           </td>
                           <td className="px-6 py-4 font-medium text-gray-900">
-                            {order.kitchen}
+                            {order.kitchen.name}
                             <div className="text-xs text-gray-400 font-normal">
-                              {order.items}
+                              {order.items[0]?.quantity}x {order.items[0]?.menuItem.name} {order.items.length > 1 ? `+${order.items.length - 1} more` : ""}
                             </div>
                           </td>
                           <td className="px-6 py-4">৳{order.total}</td>
                           <td className="px-6 py-4">
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                                order.status === "Delivered"
+                                order.status === "COMPLETED"
                                   ? "bg-green-100 text-green-700"
-                                  : order.status === "Cancelled"
+                                  : order.status === "CANCELLED"
                                   ? "bg-red-50 text-red-600"
                                   : "bg-gray-100 text-gray-700"
                               }`}
@@ -217,12 +237,19 @@ export default function ProfilePage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <button className="text-brand-teal hover:text-brand-teal/80 font-medium text-xs uppercase flex items-center gap-1 ml-auto">
+                            <Link href={`/orders/${order.id}`} className="text-brand-teal hover:text-brand-teal/80 font-medium text-xs uppercase flex items-center gap-1 ml-auto">
                               Details <ChevronRight size={14} />
-                            </button>
+                            </Link>
                           </td>
                         </tr>
-                      ))}
+                      ))
+                      ) : (
+                        <tr>
+                            <td colSpan={5} className="px-6 py-8 text-center text-gray-400">
+                                No recent orders found.
+                            </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -236,6 +263,20 @@ export default function ProfilePage() {
               Quick Actions
             </h2>
             <div className="bg-white rounded-2xl border border-gray-200 p-3 shadow-lg space-y-1">
+              <Link
+                href="/orders"
+                className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-teal-50 hover:to-emerald-50 text-gray-700 transition-all text-left group border border-transparent hover:border-teal-200"
+              >
+                <div className="bg-teal-100 p-2.5 rounded-xl text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-all shadow-sm">
+                  <ShoppingBag size={18} />
+                </div>
+                <span className="font-semibold text-sm flex-1">My Orders</span>
+                <ChevronRight
+                  size={18}
+                  className="text-gray-400 group-hover:text-teal-600 transition-colors"
+                />
+              </Link>
+
               <Link
                 href="/profile/favorites"
                 className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50 text-gray-700 transition-all text-left group border border-transparent hover:border-red-200"
