@@ -10,7 +10,7 @@ export default function ChefLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
+    <ChefGuard>
       <ChefNavbar kitchenName="Chef's Kitchen" />
       <div className="flex">
         <ChefSidebar />
@@ -18,6 +18,6 @@ export default function ChefLayout({
           {children}
         </main>
       </div>
-    </>
+    </ChefGuard>
   );
 }

@@ -36,12 +36,29 @@ export async function GET() {
     });
 
     if (dbUser) {
+      const primaryKitchen = dbUser.kitchens[0];
+
+      // console.log("/api/auth/session -> db user", {
+      //   userId: supabaseUser.id,
+      //   email: dbUser.email,
+      //   role: dbUser.role,
+      //   kitchen: primaryKitchen,
+      // });
+
       // Merge Prisma data into the Supabase user object
       // This ensures the frontend gets fresh data even if Supabase metadata is stale
       const mergedUser = {
         ...supabaseUser,
         role: dbUser.role, // Top level role
         email: dbUser.email, // Ensure email matches DB
+        // Expose kitchen on top-level for client guards (e.g., ChefGuard)
+        kitchen: primaryKitchen
+          ? {
+              id: primaryKitchen.id,
+              onboardingCompleted: primaryKitchen.onboardingCompleted,
+              isVerified: primaryKitchen.isVerified,
+            }
+          : undefined,
         user_metadata: {
           ...supabaseUser.user_metadata,
           name: dbUser.name,
@@ -49,16 +66,23 @@ export async function GET() {
           avatar_url: dbUser.avatar,
           picture: dbUser.avatar,
           role: dbUser.role,
-          kitchen: dbUser.kitchens[0]
+          kitchen: primaryKitchen
             ? {
-                id: dbUser.kitchens[0].id,
-                onboardingCompleted: dbUser.kitchens[0].onboardingCompleted,
-                isVerified: dbUser.kitchens[0].isVerified,
+                id: primaryKitchen.id,
+                onboardingCompleted: primaryKitchen.onboardingCompleted,
+                isVerified: primaryKitchen.isVerified,
               }
             : undefined,
         },
       };
-      
+
+      // console.log("/api/auth/session -> merged user", {
+      //   id: mergedUser.id,
+      //   email: mergedUser.email,
+      //   role: mergedUser.role,
+      //   kitchen: mergedUser.kitchen,
+      // });
+
       return NextResponse.json({ user: mergedUser }, { status: 200 });
     }
 
