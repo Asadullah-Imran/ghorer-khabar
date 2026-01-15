@@ -240,6 +240,7 @@ export interface SubscriptionPlan {
   isActive: boolean;
   subscriberCount: number;
   monthlyRevenue: number;
+  image?: string;
   schedule: {
     [day: string]: {
       breakfast?: { time: string; dishIds: string[] };

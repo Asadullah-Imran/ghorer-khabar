@@ -2,7 +2,7 @@ import { imageService } from "@/services/image.service";
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
-const ALLOWED_BUCKETS = ["nid-documents", "kitchen-images", "avatars", "menu-image"];
+const ALLOWED_BUCKETS = ["nid-documents", "kitchen-images", "avatars", "menu-image", "subscription-plan-images"];
 
 export async function POST(request: NextRequest) {
   try {

@@ -1,7 +1,7 @@
 "use client";
 
 import { SubscriptionPlan, MenuItem } from "@/lib/dummy-data/chef";
-import { X, Clock, Plus, Trash2, ChefHat } from "lucide-react";
+import { X, Clock, Plus, Trash2, ChefHat, Upload, ImagePlus } from "lucide-react";
 import { useState } from "react";
 
 interface SubscriptionModalProps {
@@ -26,9 +26,12 @@ export default function SubscriptionModal({
     servingsPerMeal: subscription?.servingsPerMeal || 2,
     price: subscription?.price || 3000,
     isActive: subscription?.isActive ?? true,
+    image: subscription?.image || "",
   });
 
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>("Saturday");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<SubscriptionPlan["schedule"]>(
     subscription?.schedule || {
       Saturday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
@@ -132,6 +135,41 @@ export default function SubscriptionModal({
     });
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("bucket", "subscription-plan-images");
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      if (data.success && data.url) {
+        setFormData((prev) => ({ ...prev, image: data.url }));
+      } else {
+        throw new Error(data.error || "Upload failed");
+      }
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Upload failed");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -216,6 +254,53 @@ export default function SubscriptionModal({
                 rows={2}
                 placeholder="Brief description of the plan"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">Plan Image</label>
+              <div className="space-y-3">
+                {formData.image ? (
+                  <div className="relative group">
+                    <img
+                      src={formData.image}
+                      alt="Plan preview"
+                      className="w-full h-48 object-cover rounded-lg border border-gray-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, image: "" })}
+                      className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+                ) : (
+                  <label className="flex items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-yellow-400 hover:bg-yellow-50 transition">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <ImagePlus size={32} className="text-gray-400 mb-2" />
+                      <p className="text-sm text-gray-600">Click to upload plan image</p>
+                      <p className="text-xs text-gray-500">PNG, JPG, WebP (Max 5MB)</p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={isUploading}
+                      className="hidden"
+                    />
+                  </label>
+                )}
+                {isUploading && (
+                  <div className="text-center py-2">
+                    <p className="text-sm text-yellow-600">Uploading image...</p>
+                  </div>
+                )}
+                {uploadError && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                    {uploadError}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -9,7 +9,7 @@ export interface UploadImageResult {
 
 export class ImageService {
   private defaultBucket = "menu-image";
-  private allowedBuckets = ["menu-image", "nid-documents", "kitchen-images", "avatars"];
+  private allowedBuckets = ["menu-image", "nid-documents", "kitchen-images", "avatars", "subscription-plan-images"];
   private allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg", "image/gif"];
   private defaultMaxSize = 10 * 1024 * 1024; // 10MB
 
