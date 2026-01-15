@@ -1,5 +1,3 @@
-"use client";
-
 import ChefGuard from "@/components/auth/ChefGuard";
 import ChefNavbar from "@/components/chef/Navigation/Navbar";
 import ChefSidebar from "@/components/chef/Navigation/Sidebar";

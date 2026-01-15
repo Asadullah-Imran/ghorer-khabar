@@ -4,32 +4,97 @@ import InventoryTable from "@/components/chef/Inventory/InventoryTable";
 import SmartShoppingList from "@/components/chef/Inventory/SmartShoppingList";
 import StockUpdateModal from "@/components/chef/Inventory/StockUpdateModal";
 import AddInventoryItemModal from "@/components/chef/Inventory/AddInventoryItemModal";
-import { InventoryItem, INVENTORY_ITEMS } from "@/lib/dummy-data/chef";
-import { AlertCircle, Package, TrendingUp, ShoppingCart, Plus } from "lucide-react";
-import { useState } from "react";
+import { InventoryItem } from "@/lib/dummy-data/chef";
+import { AlertCircle, Package, TrendingUp, ShoppingCart, Plus, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function InventoryPage() {
-  const [items, setItems] = useState<InventoryItem[]>(INVENTORY_ITEMS);
+  const [items, setItems] = useState<InventoryItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const fetchItems = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await fetch("/api/chef/inventory");
+      const data = await res.json();
+      
+      if (data.success) {
+        setItems(data.data || []);
+      } else {
+        setError(data.error || "Failed to fetch inventory");
+      }
+    } catch (err) {
+      setError("Failed to fetch inventory");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleUpdateStock = (item: InventoryItem) => {
     setSelectedItem(item);
   };
 
-  const handleSaveStock = (newStock: number) => {
-    if (selectedItem) {
-      setItems(
-        items.map((item) =>
-          item.id === selectedItem.id ? { ...item, currentStock: newStock } : item
-        )
-      );
-      setSelectedItem(null);
+  const handleSaveStock = async (newStock: number) => {
+    if (!selectedItem?.id) return;
+    
+    try {
+      const res = await fetch(`/api/chef/inventory/${selectedItem.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentStock: newStock }),
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        await fetchItems();
+        setSelectedItem(null);
+      } else {
+        setError(data.error || "Failed to update stock");
+      }
+    } catch (err) {
+      setError("Failed to update stock");
+      console.error(err);
     }
   };
 
-  const handleAddItem = (newItem: InventoryItem) => {
-    setItems([...items, newItem]);
+  const handleAddItem = async (newItem: InventoryItem) => {
+    try {
+      const res = await fetch("/api/chef/inventory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newItem.name,
+          unit: newItem.unit,
+          currentStock: newItem.currentStock,
+          demandFromOrders: newItem.demandFromOrders,
+          forecastDemand: newItem.forecastDemand,
+          reorderLevel: newItem.reorderLevel,
+          unitCost: newItem.unitCost,
+        }),
+      });
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        await fetchItems();
+        setIsAddModalOpen(false);
+      } else {
+        setError(data.error || "Failed to add item");
+      }
+    } catch (err) {
+      setError("Failed to add item");
+      console.error(err);
+    }
   };
 
   // Calculate metrics
@@ -48,8 +113,16 @@ export default function InventoryPage() {
 
   return (
     <div className="p-6 space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Loading State - Inline */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 className="animate-spin text-teal-600 mb-4" size={48} />
+          <p className="text-lg font-semibold text-gray-900">Loading inventory...</p>
+        </div>
+      ) : (
+        <>
+          {/* Header */}
+          <div className="flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-black text-gray-900">Smart Bazar (Inventory)</h1>
           <p className="text-gray-500 mt-2">
@@ -136,6 +209,8 @@ export default function InventoryPage() {
           <SmartShoppingList items={items} />
         </div>
       </div>
+        </>
+      )}
 
       {/* Stock Update Modal */}
       {selectedItem && (
@@ -152,6 +227,13 @@ export default function InventoryPage() {
           onClose={() => setIsAddModalOpen(false)}
           onSave={handleAddItem}
         />
+      )}
+
+      {/* Error Alert */}
+      {error && (
+        <div className="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg z-50">
+          {error}
+        </div>
       )}
     </div>
   );
