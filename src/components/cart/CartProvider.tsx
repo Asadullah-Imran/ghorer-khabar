@@ -8,6 +8,11 @@ export type CartItem = {
   price: number;
   image?: string;
   quantity: number;
+  kitchenId: string;
+  kitchenName: string;
+  kitchenLocation?: string;
+  kitchenRating?: number;
+  kitchenReviewCount?: number;
 };
 
 type CartContextType = {
@@ -15,6 +20,7 @@ type CartContextType = {
   addItem: (item: Omit<CartItem, "quantity">, qty?: number) => void;
   incrementItem: (id: string, delta?: number) => void;
   removeItem: (id: string) => void;
+  removeItemsByKitchen: (kitchenId: string) => void;
   clearCart: () => void;
   totalItems: number;
 };
@@ -29,7 +35,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem("cart");
     if (saved) {
       try {
-        setItems(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        // Filter out items without valid kitchen info to prevent grouping errors
+        const validItems = parsed.filter((i: CartItem) => i.kitchenId && i.kitchenId !== "unknown");
+        setItems(validItems);
+        // Update local storage if we filtered anything
+        if (validItems.length !== parsed.length) {
+            localStorage.setItem("cart", JSON.stringify(validItems));
+        }
       } catch (e) {
         console.error("Failed to parse cart", e);
       }
@@ -42,6 +55,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items]);
 
   const addItem = (item: Omit<CartItem, "quantity">, qty: number = 1) => {
+    console.log("DEBUG_CART_ADD_ITEM:", item);
     setItems((prev) => {
       const idx = prev.findIndex((i) => i.id === item.id);
       if (idx >= 0) {
@@ -66,6 +80,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => prev.filter((i) => i.id !== id));
   };
 
+  const removeItemsByKitchen = (kitchenId: string) => {
+    setItems((prev) => prev.filter((i) => i.kitchenId !== kitchenId));
+  };
+
   const clearCart = () => setItems([]);
 
   const totalItems = useMemo(
@@ -78,6 +96,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     addItem,
     incrementItem,
     removeItem,
+    removeItemsByKitchen,
     clearCart,
     totalItems,
   };
