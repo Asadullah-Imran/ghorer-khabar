@@ -8,24 +8,25 @@ datasource db {
 }
 
 model User {
-  id                 String        @id
+  id                 String            @id
   name               String?
-  email              String        @unique
+  email              String            @unique
   password           String?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  role               Role          @default(BUYER)
-  authProvider       AuthProvider  @default(EMAIL)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  role               Role              @default(BUYER)
+  authProvider       AuthProvider      @default(EMAIL)
   avatar             String?
-  emailVerified      Boolean       @default(false)
+  emailVerified      Boolean           @default(false)
   providerId         String?
-  resetToken         String?       @unique
+  resetToken         String?           @unique
   resetTokenExpiry   DateTime?
   verificationExpiry DateTime?
-  verificationToken  String?       @unique
-  phone              String?       @unique
+  verificationToken  String?           @unique
+  phone              String?           @unique
   addresses          Address[]
   EmailLogOTPs       EmailLogOTP[]
+  inventory_items    inventory_items[]
   kitchens           Kitchen[]
   menu_items         menu_items[]
   orders             orders[]
@@ -216,6 +217,23 @@ model orders {
 
   @@index([kitchen_id])
   @@index([user_id])
+}
+
+model inventory_items {
+  id               String   @id
+  chef_id          String
+  name             String
+  unit             String
+  currentStock     Float    @default(0)
+  demandFromOrders Float    @default(0)
+  forecastDemand   Float    @default(0)
+  reorderLevel     Float    @default(0)
+  unitCost         Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime
+  users            User     @relation(fields: [chef_id], references: [id], onDelete: Cascade)
+
+  @@index([chef_id])
 }
 
 enum Role {
