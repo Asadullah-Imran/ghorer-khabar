@@ -28,6 +28,7 @@ model User {
   EmailLogOTPs       EmailLogOTP[]
   kitchens           Kitchen[]
   menu_items         menu_items[]
+  orders             orders[]
 
   @@map("users")
 }
@@ -105,6 +106,7 @@ model menu_items {
   ingredients      ingredients[]
   menu_item_images menu_item_images[]
   users            User               @relation(fields: [chef_id], references: [id], onDelete: Cascade)
+  order_items      order_items[]
 
   @@index([chef_id])
 }
@@ -140,6 +142,7 @@ model Kitchen {
   updatedAt           DateTime             @updatedAt
   gallery             KitchenGallery[]
   seller              User                 @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  orders              orders[]
   subscription_plans  subscription_plans[]
 
   @@index([sellerId])
@@ -176,13 +179,43 @@ model subscription_plans {
   carbs             String?
   fats              String?
   chef_quote        String?  @map("chef_quote")
-  weekly_schedule   Json     @default("{}") @map("weekly_schedule")
   created_at        DateTime @default(now()) @map("created_at")
   updated_at        DateTime @updatedAt @map("updated_at")
+  weekly_schedule   Json     @default("{}") @map("weekly_schedule")
   kitchen           Kitchen  @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
 
   @@index([kitchen_id])
   @@map("subscription_plans")
+}
+
+model order_items {
+  id           String     @id
+  order_id     String
+  menu_item_id String
+  quantity     Int
+  price        Float
+  menu_items   menu_items @relation(fields: [menu_item_id], references: [id])
+  orders       orders     @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  @@index([menu_item_id])
+  @@index([order_id])
+}
+
+model orders {
+  id          String        @id
+  user_id     String
+  kitchen_id  String
+  total       Float
+  status      OrderStatus   @default(PENDING)
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime
+  order_items order_items[]
+  kitchens    Kitchen       @relation(fields: [kitchen_id], references: [id])
+  users       User          @relation(fields: [user_id], references: [id])
+
+  @@index([kitchen_id])
+  @@index([user_id])
 }
 
 enum Role {
@@ -211,4 +244,13 @@ enum MealType {
   LUNCH
   SNACKS
   DINNER
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  DELIVERING
+  COMPLETED
+  CANCELLED
 }
