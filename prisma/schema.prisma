@@ -8,26 +8,28 @@ datasource db {
 }
 
 model User {
-  id                 String        @id
+  id                 String            @id
   name               String?
-  email              String        @unique
+  email              String            @unique
   password           String?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
-  role               Role          @default(BUYER)
-  authProvider       AuthProvider  @default(EMAIL)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  role               Role              @default(BUYER)
+  authProvider       AuthProvider      @default(EMAIL)
   avatar             String?
-  emailVerified      Boolean       @default(false)
+  emailVerified      Boolean           @default(false)
   providerId         String?
-  resetToken         String?       @unique
+  resetToken         String?           @unique
   resetTokenExpiry   DateTime?
   verificationExpiry DateTime?
-  verificationToken  String?       @unique
-  phone              String?       @unique
+  verificationToken  String?           @unique
+  phone              String?           @unique
   addresses          Address[]
   EmailLogOTPs       EmailLogOTP[]
+  inventory_items    inventory_items[]
   kitchens           Kitchen[]
   menu_items         menu_items[]
+  orders             Order[]
 
   @@map("users")
 }
@@ -105,7 +107,7 @@ model menu_items {
   ingredients      ingredients[]
   menu_item_images menu_item_images[]
   users            User               @relation(fields: [chef_id], references: [id], onDelete: Cascade)
-  plan_schedules   plan_schedules[]
+  orderItems       OrderItem[]
 
   @@index([chef_id])
 }
@@ -141,6 +143,7 @@ model Kitchen {
   updatedAt           DateTime             @updatedAt
   gallery             KitchenGallery[]
   seller              User                 @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  orders              Order[]
   subscription_plans  subscription_plans[]
 
   @@index([sellerId])
@@ -160,51 +163,79 @@ model KitchenGallery {
 }
 
 model subscription_plans {
-  id                String           @id @default(cuid())
-  kitchen_id        String           @map("kitchen_id")
+  id                String   @id @default(cuid())
+  kitchen_id        String   @map("kitchen_id")
   name              String
   description       String?
   price             Float
-  meals_per_day     Int              @default(1)
-  servings_per_meal Int              @default(1)
-  is_active         Boolean          @default(true)
-  subscriber_count  Int              @default(0)
-  monthly_revenue   Float            @default(0)
-  rating            Decimal?         @default(0) @db.Decimal(3, 2)
-  cover_image       String?          @map("cover_image")
+  meals_per_day     Int      @default(1)
+  servings_per_meal Int      @default(1)
+  is_active         Boolean  @default(true)
+  subscriber_count  Int      @default(0)
+  monthly_revenue   Float    @default(0)
+  rating            Decimal? @default(0) @db.Decimal(3, 2)
+  cover_image       String?  @map("cover_image")
   calories          Int?
   protein           String?
   carbs             String?
   fats              String?
-  chef_quote        String?          @map("chef_quote")
-  created_at        DateTime         @default(now()) @map("created_at")
-  updated_at        DateTime         @updatedAt @map("updated_at")
-  plan_schedules    plan_schedules[]
-  kitchen           Kitchen          @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
+  chef_quote        String?  @map("chef_quote")
+  created_at        DateTime @default(now()) @map("created_at")
+  updated_at        DateTime @updatedAt @map("updated_at")
+  weekly_schedule   Json     @default("{}")
+  kitchen           Kitchen  @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
 
   @@index([kitchen_id])
   @@map("subscription_plans")
 }
 
-model plan_schedules {
-  id                String             @id @default(cuid())
-  plan_id           String             @map("plan_id")
-  day_of_week       DayOfWeek          @map("day_of_week")
-  meal_type         MealType           @map("meal_type")
-  time              String             @map("time")
-  dish_id           String?            @map("dish_id")
-  dish_name         String             @map("dish_name")
-  dish_desc         String?            @map("dish_desc")
-  image_url         String?            @map("image_url")
-  created_at        DateTime           @default(now()) @map("created_at")
-  updated_at        DateTime           @updatedAt @map("updated_at")
-  menu_item         menu_items?        @relation(fields: [dish_id], references: [id])
-  subscription_plan subscription_plans @relation(fields: [plan_id], references: [id], onDelete: Cascade)
+model Order {
+  id        String      @id @default(cuid())
+  userId    String      @map("user_id")
+  kitchenId String      @map("kitchen_id")
+  total     Float
+  status    OrderStatus @default(PENDING)
+  notes     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  items     OrderItem[]
+  kitchen   Kitchen     @relation(fields: [kitchenId], references: [id])
+  user      User        @relation(fields: [userId], references: [id])
 
-  @@unique([plan_id, day_of_week, meal_type, dish_id])
-  @@index([plan_id])
-  @@index([dish_id])
-  @@map("plan_schedules")
+  @@index([userId])
+  @@index([kitchenId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String     @id @default(cuid())
+  orderId    String     @map("order_id")
+  menuItemId String     @map("menu_item_id")
+  quantity   Int
+  price      Float
+  menuItem   menu_items @relation(fields: [menuItemId], references: [id])
+  order      Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([menuItemId])
+  @@map("order_items")
+}
+
+model inventory_items {
+  id               String   @id
+  chef_id          String
+  name             String
+  unit             String
+  currentStock     Float    @default(0)
+  demandFromOrders Float    @default(0)
+  forecastDemand   Float    @default(0)
+  reorderLevel     Float    @default(0)
+  unitCost         Float    @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime
+  users            User     @relation(fields: [chef_id], references: [id], onDelete: Cascade)
+
+  @@index([chef_id])
 }
 
 enum Role {
@@ -233,4 +264,13 @@ enum MealType {
   LUNCH
   SNACKS
   DINNER
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  DELIVERING
+  COMPLETED
+  CANCELLED
 }
