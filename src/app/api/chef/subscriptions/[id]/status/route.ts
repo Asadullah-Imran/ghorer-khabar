@@ -27,7 +27,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/prisma";
-// import { getUserIdFromRequest, getChefKitchen } from "@/lib/auth/chef-auth";
+import { getUserIdFromRequest, getChefKitchen, authErrors } from "@/lib/auth/chef-auth";
 import { toggleSubscriptionStatusSchema } from "@/lib/validation";
 import { ZodError } from "zod";
 
@@ -36,7 +36,22 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const TEMP_KITCHEN_ID = process.env.TEMP_KITCHEN_ID || "temp-kitchen-1";
+    const userId = await getUserIdFromRequest(req);
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: authErrors.UNAUTHORIZED.message },
+        { status: 401 }
+      );
+    }
+
+    const kitchen = await getChefKitchen(userId);
+    if (!kitchen) {
+      return NextResponse.json(
+        { success: false, error: authErrors.KITCHEN_NOT_FOUND.message },
+        { status: 404 }
+      );
+    }
+
     const { id } = await params;
     const body = await req.json();
     const validated = toggleSubscriptionStatusSchema.parse(body);
@@ -45,7 +60,7 @@ export async function PATCH(
       where: { id },
     });
 
-    if (!existingPlan || existingPlan.kitchen_id !== TEMP_KITCHEN_ID) {
+    if (!existingPlan || existingPlan.kitchen_id !== kitchen.id) {
       return NextResponse.json(
         { success: false, error: "Plan not found" },
         { status: 404 }

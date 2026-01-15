@@ -105,7 +105,6 @@ model menu_items {
   ingredients      ingredients[]
   menu_item_images menu_item_images[]
   users            User               @relation(fields: [chef_id], references: [id], onDelete: Cascade)
-  plan_schedules   plan_schedules[]
 
   @@index([chef_id])
 }
@@ -160,51 +159,30 @@ model KitchenGallery {
 }
 
 model subscription_plans {
-  id                String           @id @default(cuid())
-  kitchen_id        String           @map("kitchen_id")
+  id                String   @id @default(cuid())
+  kitchen_id        String   @map("kitchen_id")
   name              String
   description       String?
   price             Float
-  meals_per_day     Int              @default(1)
-  servings_per_meal Int              @default(1)
-  is_active         Boolean          @default(true)
-  subscriber_count  Int              @default(0)
-  monthly_revenue   Float            @default(0)
-  rating            Decimal?         @default(0) @db.Decimal(3, 2)
-  cover_image       String?          @map("cover_image")
+  meals_per_day     Int      @default(1)
+  servings_per_meal Int      @default(1)
+  is_active         Boolean  @default(true)
+  subscriber_count  Int      @default(0)
+  monthly_revenue   Float    @default(0)
+  rating            Decimal? @default(0) @db.Decimal(3, 2)
+  cover_image       String?  @map("cover_image")
   calories          Int?
   protein           String?
   carbs             String?
   fats              String?
-  chef_quote        String?          @map("chef_quote")
-  created_at        DateTime         @default(now()) @map("created_at")
-  updated_at        DateTime         @updatedAt @map("updated_at")
-  plan_schedules    plan_schedules[]
-  kitchen           Kitchen          @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
+  chef_quote        String?  @map("chef_quote")
+  weekly_schedule   Json     @default("{}") @map("weekly_schedule")
+  created_at        DateTime @default(now()) @map("created_at")
+  updated_at        DateTime @updatedAt @map("updated_at")
+  kitchen           Kitchen  @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
 
   @@index([kitchen_id])
   @@map("subscription_plans")
-}
-
-model plan_schedules {
-  id                String             @id @default(cuid())
-  plan_id           String             @map("plan_id")
-  day_of_week       DayOfWeek          @map("day_of_week")
-  meal_type         MealType           @map("meal_type")
-  time              String             @map("time")
-  dish_id           String?            @map("dish_id")
-  dish_name         String             @map("dish_name")
-  dish_desc         String?            @map("dish_desc")
-  image_url         String?            @map("image_url")
-  created_at        DateTime           @default(now()) @map("created_at")
-  updated_at        DateTime           @updatedAt @map("updated_at")
-  menu_item         menu_items?        @relation(fields: [dish_id], references: [id])
-  subscription_plan subscription_plans @relation(fields: [plan_id], references: [id], onDelete: Cascade)
-
-  @@unique([plan_id, day_of_week, meal_type, dish_id])
-  @@index([plan_id])
-  @@index([dish_id])
-  @@map("plan_schedules")
 }
 
 enum Role {

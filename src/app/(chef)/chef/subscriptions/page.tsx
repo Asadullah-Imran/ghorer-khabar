@@ -1,29 +1,196 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Trash2, ChefHat, Power, Edit, Users, DollarSign, TrendingUp } from "lucide-react";
-import { SubscriptionPlan, SUBSCRIPTION_PLANS, MenuItem, MENU_ITEMS } from "@/lib/dummy-data/chef";
+import { useState, useEffect } from "react";
+import { Plus, Trash2, ChefHat, Power, Edit, Users, DollarSign, TrendingUp, AlertCircle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import SubscriptionModal from "@/components/chef/Subscription/SubscriptionModal";
 
+interface MenuItem {
+  id: string;
+  name: string;
+  description?: string;
+  category: string;
+  price: number;
+  prepTime?: number;
+  calories?: number;
+  isVegetarian: boolean;
+  isAvailable: boolean;
+}
+
+interface MealSlot {
+  time: string;
+  dishIds: string[];
+}
+
+interface DaySchedule {
+  breakfast?: MealSlot;
+  lunch?: MealSlot;
+  snacks?: MealSlot;
+  dinner?: MealSlot;
+}
+
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description?: string;
+  mealsPerDay: number;
+  servingsPerMeal: number;
+  price: number;
+  isActive: boolean;
+  subscriberCount: number;
+  monthlyRevenue: number;
+  coverImage?: string;
+  schedule?: Record<string, DaySchedule>;
+  createdAt: Date;
+}
+
 export default function SubscriptionsPage() {
-  const [subscriptions, setSubscriptions] = useState<SubscriptionPlan[]>(SUBSCRIPTION_PLANS);
+  const { user } = useAuth();
+  const [subscriptions, setSubscriptions] = useState<SubscriptionPlan[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState<SubscriptionPlan | undefined>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSave = (data: Partial<SubscriptionPlan>) => {
-    if (editingSubscription) {
-      // Update existing
-      setSubscriptions(
-        subscriptions.map((sub) =>
-          sub.id === editingSubscription.id ? { ...sub, ...data } as SubscriptionPlan : sub
-        )
-      );
-    } else {
-      // Add new
-      setSubscriptions([...subscriptions, data as SubscriptionPlan]);
+  // Fetch subscriptions and menu items
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user?.kitchen?.id) {
+        setError("Kitchen information not available");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch menu items
+        const menuResponse = await fetch("/api/chef/menu");
+        if (!menuResponse.ok) {
+          throw new Error("Failed to fetch menu items");
+        }
+        const menuData = await menuResponse.json();
+        setMenuItems(menuData.data || []);
+
+        // Fetch subscriptions
+        const subsResponse = await fetch("/api/chef/subscriptions");
+        if (!subsResponse.ok) {
+          throw new Error("Failed to fetch subscriptions");
+        }
+        const subsData = await subsResponse.json();
+
+        // Transform API response to component format
+        const dayMap: Record<string, string> = {
+          SATURDAY: "Saturday",
+          SUNDAY: "Sunday",
+          MONDAY: "Monday",
+          TUESDAY: "Tuesday",
+          WEDNESDAY: "Wednesday",
+          THURSDAY: "Thursday",
+          FRIDAY: "Friday",
+        };
+
+        const transformedPlans = subsData.data.map((plan: any) => {
+          // Transform schedule keys from UPPERCASE to day names
+          let schedule = plan.schedule;
+          if (schedule) {
+            const transformedSchedule: Record<string, any> = {};
+            for (const [day, daySchedule] of Object.entries(schedule)) {
+              const dayName = dayMap[day as string] || day;
+              transformedSchedule[dayName] = daySchedule;
+            }
+            schedule = transformedSchedule;
+          }
+
+          return {
+            ...plan,
+            schedule,
+            createdAt: new Date(plan.createdAt),
+          };
+        });
+
+        setSubscriptions(transformedPlans);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to load data";
+        setError(message);
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [user?.kitchen?.id]);
+
+  const handleSave = async (data: Partial<SubscriptionPlan>) => {
+    try {
+      // Transform schedule keys from day names to UPPERCASE enums
+      const transformedData = { ...data };
+      if (data.schedule) {
+        const transformedSchedule: Record<string, any> = {};
+        for (const [day, daySchedule] of Object.entries(data.schedule)) {
+          const uppercaseDay = day.toUpperCase();
+          transformedSchedule[uppercaseDay] = daySchedule;
+        }
+        transformedData.schedule = transformedSchedule;
+      }
+
+      if (editingSubscription) {
+        // Update existing
+        const response = await fetch(`/api/chef/subscriptions/${editingSubscription.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(transformedData),
+        });
+        if (!response.ok) throw new Error("Failed to update subscription");
+
+        setSubscriptions(
+          subscriptions.map((sub) =>
+            sub.id === editingSubscription.id ? { ...sub, ...data } as SubscriptionPlan : sub
+          )
+        );
+      } else {
+        // Add new
+        const response = await fetch("/api/chef/subscriptions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(transformedData),
+        });
+        if (!response.ok) throw new Error("Failed to create subscription");
+
+        const result = await response.json();
+        
+        // Transform schedule keys from UPPERCASE to day names (same as GET endpoint)
+        const dayMap: Record<string, string> = {
+          SATURDAY: "Saturday",
+          SUNDAY: "Sunday",
+          MONDAY: "Monday",
+          TUESDAY: "Tuesday",
+          WEDNESDAY: "Wednesday",
+          THURSDAY: "Thursday",
+          FRIDAY: "Friday",
+        };
+        
+        let schedule = result.data.schedule;
+        if (schedule) {
+          const transformedSchedule: Record<string, any> = {};
+          for (const [day, daySchedule] of Object.entries(schedule)) {
+            const dayName = dayMap[day as string] || day;
+            transformedSchedule[dayName] = daySchedule;
+          }
+          schedule = transformedSchedule;
+        }
+        
+        setSubscriptions([...subscriptions, { ...result.data, schedule, createdAt: new Date(), subscriberCount: 0, monthlyRevenue: 0, coverImage: data.coverImage } as SubscriptionPlan]);
+      }
+      setIsModalOpen(false);
+      setEditingSubscription(undefined);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Operation failed";
+      alert(message);
     }
-    setIsModalOpen(false);
-    setEditingSubscription(undefined);
   };
 
   const handleEdit = (subscription: SubscriptionPlan) => {
@@ -31,18 +198,43 @@ export default function SubscriptionsPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this subscription plan?")) {
-      setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
+      try {
+        const response = await fetch(`/api/chef/subscriptions/${id}`, {
+          method: "DELETE",
+        });
+        if (!response.ok) throw new Error("Failed to delete subscription");
+
+        setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to delete";
+        alert(message);
+      }
     }
   };
 
-  const toggleActive = (id: string) => {
-    setSubscriptions(
-      subscriptions.map((sub) =>
-        sub.id === id ? { ...sub, isActive: !sub.isActive } : sub
-      )
-    );
+  const toggleActive = async (id: string) => {
+    try {
+      const subscription = subscriptions.find((s) => s.id === id);
+      if (!subscription) return;
+
+      const response = await fetch(`/api/chef/subscriptions/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !subscription.isActive }),
+      });
+      if (!response.ok) throw new Error("Failed to update status");
+
+      setSubscriptions(
+        subscriptions.map((sub) =>
+          sub.id === id ? { ...sub, isActive: !sub.isActive } : sub
+        )
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to update status";
+      alert(message);
+    }
   };
 
   // Calculate metrics
@@ -51,8 +243,30 @@ export default function SubscriptionsPage() {
   const activePlans = subscriptions.filter((sub) => sub.isActive).length;
   const avgSubscribersPerPlan = subscriptions.length > 0 ? Math.round(totalSubscribers / subscriptions.length) : 0;
 
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <ChefHat size={48} className="mx-auto text-gray-400 mb-4" />
+          <p className="text-gray-600">Loading subscriptions...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-8 max-w-7xl mx-auto">
+      {/* Error Banner */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+          <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={20} />
+          <div>
+            <h3 className="font-semibold text-red-900">Error Loading Data</h3>
+            <p className="text-red-800 text-sm">{error}</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -136,7 +350,7 @@ export default function SubscriptionsPage() {
               <SubscriptionCard
                 key={subscription.id}
                 subscription={subscription}
-                menuItems={MENU_ITEMS}
+                menuItems={menuItems}
                 onEdit={() => handleEdit(subscription)}
                 onDelete={() => handleDelete(subscription.id)}
                 onToggleActive={() => toggleActive(subscription.id)}
@@ -150,7 +364,7 @@ export default function SubscriptionsPage() {
       {isModalOpen && (
         <SubscriptionModal
           subscription={editingSubscription}
-          menuItems={MENU_ITEMS}
+          menuItems={menuItems}
           onClose={() => {
             setIsModalOpen(false);
             setEditingSubscription(undefined);
@@ -164,7 +378,7 @@ export default function SubscriptionsPage() {
 
 interface SubscriptionCardProps {
   subscription: SubscriptionPlan;
-  menuItems: MenuItem[]; // For future use to display dish names
+  menuItems: MenuItem[];
   onEdit: () => void;
   onDelete: () => void;
   onToggleActive: () => void;
@@ -176,7 +390,10 @@ function SubscriptionCard({
   onDelete,
   onToggleActive,
 }: SubscriptionCardProps) {
-  const totalDishes = Object.entries(subscription.schedule).reduce((sum, [, daySchedule]) => {
+  // Handle cases where schedule might be undefined
+  const schedule = subscription.schedule || {};
+  
+  const totalDishes = Object.entries(schedule).reduce((sum, [, daySchedule]) => {
     if (!daySchedule || typeof daySchedule !== "object") return sum;
     return sum +
       (daySchedule.breakfast?.dishIds?.length || 0) +
@@ -202,98 +419,96 @@ function SubscriptionCard({
               {subscription.isActive ? "Active" : "Inactive"}
             </span>
           </div>
-          <p className="text-sm text-gray-600">{subscription.description}</p>
+          {subscription.description && (
+            <p className="text-sm text-gray-600">{subscription.description}</p>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={onEdit}
+            className="p-2 hover:bg-gray-100 rounded-lg transition"
+            title="Edit"
+          >
+            <Edit size={20} className="text-gray-600" />
+          </button>
+          <button
+            onClick={onDelete}
+            className="p-2 hover:bg-red-50 rounded-lg transition"
+            title="Delete"
+          >
+            <Trash2 size={20} className="text-red-600" />
+          </button>
+        </div>
+      </div>
+
+      {/* Price and Details */}
+      <div className="grid grid-cols-2 gap-4 mb-4 pb-4 border-b border-gray-200">
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase">Price</p>
+          <p className="text-xl font-bold text-gray-900">৳{subscription.price.toLocaleString()}</p>
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase">Meals Per Day</p>
+          <p className="text-xl font-bold text-gray-900">{subscription.mealsPerDay}</p>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-gray-200">
-        <div className="text-center">
-          <p className="text-xs text-gray-600 mb-1">Days Active</p>
-          <p className="font-bold text-gray-900">{Object.keys(subscription.schedule).length}</p>
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="bg-blue-50 rounded-lg p-3">
+          <p className="text-xs text-gray-600">Subscribers</p>
+          <p className="text-lg font-bold text-blue-600">{subscription.subscriberCount}</p>
         </div>
-        <div className="text-center">
-          <p className="text-xs text-gray-600 mb-1">Subscribers</p>
-          <p className="font-bold text-blue-600">{subscription.subscriberCount}</p>
+        <div className="bg-green-50 rounded-lg p-3">
+          <p className="text-xs text-gray-600">Revenue</p>
+          <p className="text-lg font-bold text-green-600">৳{(subscription.monthlyRevenue / 1000).toFixed(0)}K</p>
         </div>
-        <div className="text-center">
-          <p className="text-xs text-gray-600 mb-1">Revenue</p>
-          <p className="font-bold text-green-600">৳{(subscription.monthlyRevenue / 1000).toFixed(0)}K</p>
-        </div>
-      </div>
-
-      {/* Details */}
-      <div className="space-y-2 mb-4 text-sm">
-        <div className="flex justify-between">
-          <span className="text-gray-600">Meals per day:</span>
-          <span className="font-semibold text-gray-900">{subscription.mealsPerDay}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-600">Servings per meal:</span>
-          <span className="font-semibold text-gray-900">{subscription.servingsPerMeal}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-600">Total dishes in schedule:</span>
-          <span className="font-semibold text-gray-900">{totalDishes}</span>
-        </div>
-        <div className="flex justify-between">
-          <span className="text-gray-600">Price:</span>
-          <span className="font-bold text-teal-600 text-lg">৳{subscription.price}</span>
+        <div className="bg-purple-50 rounded-lg p-3">
+          <p className="text-xs text-gray-600">Dishes</p>
+          <p className="text-lg font-bold text-purple-600">{totalDishes}</p>
         </div>
       </div>
 
-      {/* Schedule Preview */}
-      <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-        <p className="text-xs font-semibold text-gray-700 mb-2">Weekly Schedule:</p>
-        <div className="grid grid-cols-7 gap-1 text-xs">
-          {["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((day) => {
-            const daySchedule = subscription.schedule[day];
-            const mealCount = daySchedule
-              ? [daySchedule.breakfast, daySchedule.lunch, daySchedule.snacks, daySchedule.dinner].filter(m => m).length
-              : 0;
-            return (
-              <div
-                key={day}
-                className={`p-2 rounded text-center font-semibold ${
-                  mealCount > 0 ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"
-                }`}
-              >
-                <p className="text-xs">{day.slice(0, 3)}</p>
-                <p className="text-lg">{mealCount}</p>
-              </div>
-            );
-          })}
+      {/* Weekly Schedule Preview */}
+      {Object.keys(schedule).length > 0 && (
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <p className="text-xs font-semibold text-gray-700 mb-2">Weekly Schedule:</p>
+          <div className="grid grid-cols-7 gap-1 text-xs">
+            {["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map((day) => {
+              const daySchedule = schedule[day];
+              const meals = [];
+              if (daySchedule?.breakfast?.dishIds?.length) meals.push("B");
+              if (daySchedule?.lunch?.dishIds?.length) meals.push("L");
+              if (daySchedule?.snacks?.dishIds?.length) meals.push("S");
+              if (daySchedule?.dinner?.dishIds?.length) meals.push("D");
+              return (
+                <div
+                  key={day}
+                  className={`p-2 rounded text-center font-semibold ${
+                    meals.length > 0 ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"
+                  }`}
+                >
+                  <p className="text-xs uppercase font-bold">{day.slice(0, 3)}</p>
+                  <p className="text-xs mt-1">{meals.join("/")}</p>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Actions */}
-      <div className="grid grid-cols-3 gap-2">
-        <button
-          onClick={onToggleActive}
-          className={`py-2 rounded-lg font-semibold text-sm transition flex items-center justify-center gap-1 ${
-            subscription.isActive
-              ? "bg-red-100 text-red-700 hover:bg-red-200"
-              : "bg-green-100 text-green-700 hover:bg-green-200"
-          }`}
-        >
-          <Power size={16} />
-          {subscription.isActive ? "Disable" : "Enable"}
-        </button>
-        <button
-          onClick={onEdit}
-          className="py-2 bg-blue-600 text-white rounded-lg font-semibold text-sm hover:bg-blue-700 transition flex items-center justify-center gap-1"
-        >
-          <Edit size={16} />
-          Edit
-        </button>
-        <button
-          onClick={onDelete}
-          className="py-2 bg-red-600 text-white rounded-lg font-semibold text-sm hover:bg-red-700 transition flex items-center justify-center gap-1"
-        >
-          <Trash2 size={16} />
-          Delete
-        </button>
-      </div>
+      {/* Toggle Active */}
+      <button
+        onClick={onToggleActive}
+        className={`w-full py-2 rounded-lg font-semibold flex items-center justify-center gap-2 transition ${
+          subscription.isActive
+            ? "bg-red-50 text-red-600 hover:bg-red-100"
+            : "bg-green-50 text-green-600 hover:bg-green-100"
+        }`}
+      >
+        <Power size={16} />
+        {subscription.isActive ? "Deactivate Plan" : "Activate Plan"}
+      </button>
     </div>
   );
 }

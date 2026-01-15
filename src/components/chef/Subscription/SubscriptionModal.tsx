@@ -1,8 +1,46 @@
 "use client";
 
-import { SubscriptionPlan, MenuItem } from "@/lib/dummy-data/chef";
 import { X, Clock, Plus, Trash2, ChefHat, Upload, ImagePlus } from "lucide-react";
 import { useState } from "react";
+
+interface MealSlot {
+  time: string;
+  dishIds: string[];
+}
+
+interface DaySchedule {
+  breakfast?: MealSlot;
+  lunch?: MealSlot;
+  snacks?: MealSlot;
+  dinner?: MealSlot;
+}
+
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description?: string;
+  mealsPerDay: number;
+  servingsPerMeal: number;
+  price: number;
+  isActive: boolean;
+  subscriberCount: number;
+  monthlyRevenue: number;
+  coverImage?: string;
+  schedule?: Record<string, DaySchedule>;
+  createdAt: Date;
+}
+
+interface MenuItem {
+  id: string;
+  name: string;
+  description?: string;
+  category: string;
+  price: number;
+  prepTime?: number;
+  calories?: number;
+  isVegetarian: boolean;
+  isAvailable: boolean;
+}
 
 interface SubscriptionModalProps {
   subscription?: SubscriptionPlan;
@@ -26,22 +64,47 @@ export default function SubscriptionModal({
     servingsPerMeal: subscription?.servingsPerMeal || 2,
     price: subscription?.price || 3000,
     isActive: subscription?.isActive ?? true,
-    image: subscription?.image || "",
+    coverImage: subscription?.coverImage || "",
   });
 
   const [selectedDay, setSelectedDay] = useState<DayOfWeek>("Saturday");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [schedule, setSchedule] = useState<SubscriptionPlan["schedule"]>(
-    subscription?.schedule || {
-      Saturday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
-      Sunday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
-      Monday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
-      Tuesday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
-      Wednesday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
-      Thursday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
-      Friday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+
+  // Transform incoming schedule from API (UPPERCASE keys) to component format (Title Case)
+  const transformScheduleFromAPI = (apiSchedule?: Record<string, DaySchedule>) => {
+    if (!apiSchedule) {
+      return {
+        Saturday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+        Sunday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+        Monday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+        Tuesday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+        Wednesday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+        Thursday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+        Friday: { breakfast: { time: "08:00", dishIds: [] }, lunch: { time: "13:00", dishIds: [] }, snacks: { time: "17:00", dishIds: [] }, dinner: { time: "21:00", dishIds: [] } },
+      };
     }
+
+    const dayMap: Record<string, string> = {
+      SATURDAY: "Saturday",
+      SUNDAY: "Sunday",
+      MONDAY: "Monday",
+      TUESDAY: "Tuesday",
+      WEDNESDAY: "Wednesday",
+      THURSDAY: "Thursday",
+      FRIDAY: "Friday",
+    };
+
+    const transformed: Record<string, DaySchedule> = {};
+    for (const [apiDay, daySchedule] of Object.entries(apiSchedule)) {
+      const componentDay = dayMap[apiDay] || apiDay;
+      transformed[componentDay] = daySchedule;
+    }
+    return transformed;
+  };
+
+  const [schedule, setSchedule] = useState<SubscriptionPlan["schedule"]>(
+    transformScheduleFromAPI(subscription?.schedule)
   );
 
   const [selectedDish, setSelectedDish] = useState<string | null>(null);
@@ -159,7 +222,7 @@ export default function SubscriptionModal({
       }
 
       if (data.success && data.url) {
-        setFormData((prev) => ({ ...prev, image: data.url }));
+        setFormData((prev) => ({ ...prev, coverImage: data.url }));
       } else {
         throw new Error(data.error || "Upload failed");
       }
@@ -180,7 +243,12 @@ export default function SubscriptionModal({
 
     const subscriptionData: Partial<SubscriptionPlan> = {
       id: subscription?.id || `sub-${Date.now()}`,
-      ...formData,
+      name: formData.name,
+      description: formData.description,
+      price: formData.price,
+      servingsPerMeal: formData.servingsPerMeal,
+      isActive: formData.isActive,
+      coverImage: formData.coverImage,
       mealsPerDay,
       subscriberCount: subscription?.subscriberCount || 0,
       monthlyRevenue: subscription?.monthlyRevenue || 0,
@@ -259,16 +327,16 @@ export default function SubscriptionModal({
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Plan Image</label>
               <div className="space-y-3">
-                {formData.image ? (
+                {formData.coverImage ? (
                   <div className="relative group">
                     <img
-                      src={formData.image}
+                      src={formData.coverImage}
                       alt="Plan preview"
                       className="w-full h-48 object-cover rounded-lg border border-gray-300"
                     />
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, image: "" })}
+                      onClick={() => setFormData({ ...formData, coverImage: "" })}
                       className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg opacity-0 group-hover:opacity-100 transition"
                     >
                       <X size={18} />
