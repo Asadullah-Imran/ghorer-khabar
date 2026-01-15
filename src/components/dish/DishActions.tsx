@@ -9,12 +9,17 @@ export default function DishActions({
   name,
   image,
   price,
+  kitchenId,
+  kitchenName,
 }: {
   id: string;
   name: string;
   image?: string;
   price: number;
+  kitchenId: string;
+  kitchenName: string;
 }) {
+  console.log("DEBUG_DISH_ACTIONS_PROPS:", { id, kitchenId, kitchenName });
   const [qty, setQty] = useState(1);
   const { addItem } = useCart();
 
@@ -54,7 +59,7 @@ export default function DishActions({
           {/* Add Button */}
           <button
             className="flex-1 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-lg py-3 px-6 flex items-center justify-center gap-2 transition-transform active:scale-[0.98] shadow-md"
-            onClick={() => addItem({ id, name, image, price }, qty)}
+            onClick={() => addItem({ id, name, image, price, kitchenId, kitchenName }, qty)}
           >
             <ShoppingBag size={20} />
             Add to Cart

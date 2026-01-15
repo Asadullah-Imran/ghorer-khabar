@@ -37,6 +37,12 @@ export default async function SingleDishPage({ params }: PageProps) {
 
   if (!dishData) return <div>Dish not found</div>;
 
+  console.log("DEBUG_DISH_DATA:", {
+      dishId: dishData.id,
+      chefId: dishData.users.id,
+      kitchens: dishData.users.kitchens
+  });
+
   // Map database data to UI format
   const dish = {
     id: dishData.id,
@@ -226,12 +232,23 @@ export default async function SingleDishPage({ params }: PageProps) {
             <IngredientTransparency ingredients={dish.ingredients} />
 
             {/* Sticky Action Bar (Client) */}
-            <DishActions
-              id={dish.id}
-              name={dish.name}
-              image={dish.images[0]}
-              price={dish.price}
-            />
+            {/* Sticky Action Bar (Client) */}
+            {dishData.users.kitchens[0] ? (
+                <DishActions
+                id={dish.id}
+                name={dish.name}
+                image={dish.images[0]}
+                price={dish.price}
+                kitchenId={dishData.users.kitchens[0].id}
+                kitchenName={dishData.users.kitchens[0].name}
+                />
+            ) : (
+                <div className="bg-amber-50 rounded-xl border border-amber-200 p-6 mt-auto">
+                    <p className="text-amber-800 font-medium text-center">
+                        This item is currently unavailable for ordering (Kitchen not set up).
+                    </p>
+                </div>
+            )}
           </div>
         </div>
       </div>

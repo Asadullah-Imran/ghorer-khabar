@@ -15,13 +15,31 @@ import {
   UserCheck
 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 export default function CheckoutPageContent({ userData }: { userData: any }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const kitchenId = searchParams.get("kitchenId");
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { items, clearCart } = useCart();
+  const { items: allItems, clearCart } = useCart();
+  
+  // Filter items for specific kitchen
+  const items = useMemo(() => {
+      if (!kitchenId) return [];
+      return allItems.filter(item => item.kitchenId === kitchenId);
+  }, [allItems, kitchenId]);
+
+  useEffect(() => {
+      if (!kitchenId || items.length === 0) {
+          // Redirect to cart if no kitchen selected or no items for that kitchen
+          // toast.error("Invalid checkout items");
+          router.push("/cart");
+      }
+  }, [kitchenId, items, router]);
+
   const [showMap, setShowMap] = useState(false);
   const [addresses, setAddresses] = useState<any[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(true);

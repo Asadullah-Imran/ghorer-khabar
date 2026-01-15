@@ -3,7 +3,7 @@ import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard"; // 1. Import PlanCard
 import SectionHeader from "@/components/shared/SectionHeader";
 import {
-    MONTHLY_TOP_KITCHENS
+  MONTHLY_TOP_KITCHENS
 } from "@/lib/dummy-data/feed";
 import { FEATURED_PLANS } from "@/lib/dummy-data/newSubscriptionData";
 import { prisma } from "@/lib/prisma/prisma";
@@ -29,6 +29,11 @@ export default async function FeedPage() {
     rating: item.rating || 0,
     image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg", // Fallback image
     kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
+    kitchenId: item.users.kitchens[0]?.id || "unknown",
+    kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
+    kitchenLocation: item.users.kitchens[0]?.location || undefined, // Provide fallback? or undefined is fine
+    kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
+    kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
     deliveryTime: "30-45 min", // hardcoded for now as it's not on menu_item directly, maybe calc from kitchen?
   }));
 
