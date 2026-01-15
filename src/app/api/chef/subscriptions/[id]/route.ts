@@ -50,7 +50,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/prisma";
-// import { getUserIdFromRequest, getChefKitchen, authErrors } from "@/lib/auth/chef-auth";
+import { getUserIdFromRequest, getChefKitchen, authErrors } from "@/lib/auth/chef-auth";
 import { updateSubscriptionSchema } from "@/lib/validation";
 import { ZodError } from "zod";
 
@@ -64,44 +64,6 @@ interface DaySchedule {
   lunch?: MealSlot;
   snacks?: MealSlot;
   dinner?: MealSlot;
-}
-
-interface ScheduleRow {
-  day_of_week: string;
-  meal_type: string;
-  time: string;
-  dish_id: string | null;
-}
-
-function reconstructSchedule(rows: ScheduleRow[]): Record<string, DaySchedule> {
-  const schedule: Record<string, DaySchedule> = {
-    SATURDAY: {},
-    SUNDAY: {},
-    MONDAY: {},
-    TUESDAY: {},
-    WEDNESDAY: {},
-    THURSDAY: {},
-    FRIDAY: {},
-  };
-
-  for (const row of rows) {
-    const slot = row.meal_type.toLowerCase() as keyof DaySchedule;
-    if (!schedule[row.day_of_week][slot]) {
-      schedule[row.day_of_week][slot] = {
-        time: row.time,
-        dishIds: [],
-      };
-    }
-    if (row.dish_id) {
-      schedule[row.day_of_week][slot]!.dishIds.push(row.dish_id);
-    }
-  }
-
-  Object.keys(schedule).forEach((day) => {
-    if (Object.keys(schedule[day]).length === 0) delete schedule[day];
-  });
-
-  return schedule;
 }
 
 function calculateMealsPerDay(schedule: Record<string, unknown>): number {
@@ -125,25 +87,34 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const TEMP_KITCHEN_ID = process.env.TEMP_KITCHEN_ID || "temp-kitchen-1";
+    const userId = await getUserIdFromRequest(req);
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: authErrors.UNAUTHORIZED.message },
+        { status: 401 }
+      );
+    }
+
+    const kitchen = await getChefKitchen(userId);
+    if (!kitchen) {
+      return NextResponse.json(
+        { success: false, error: authErrors.KITCHEN_NOT_FOUND.message },
+        { status: 404 }
+      );
+    }
+
     const { id } = await params;
 
     const plan = await prisma.subscription_plans.findUnique({
       where: { id },
     });
 
-    if (!plan || plan.kitchen_id !== TEMP_KITCHEN_ID) {
+    if (!plan || plan.kitchen_id !== kitchen.id) {
       return NextResponse.json(
         { success: false, error: "Plan not found" },
         { status: 404 }
       );
     }
-
-    const scheduleRows = await prisma.plan_schedules.findMany({
-      where: { plan_id: id },
-    });
-
-    const schedule = reconstructSchedule(scheduleRows);
 
     return NextResponse.json({
       success: true,
@@ -158,7 +129,8 @@ export async function GET(
         subscriberCount: plan.subscriber_count,
         monthlyRevenue: plan.monthly_revenue,
         createdAt: plan.created_at,
-        schedule,
+        coverImage: plan.cover_image,
+        schedule: plan.weekly_schedule as Record<string, DaySchedule>,
       },
     });
   } catch (error) {
@@ -175,7 +147,22 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const TEMP_KITCHEN_ID = process.env.TEMP_KITCHEN_ID || "temp-kitchen-1";
+    const userId = await getUserIdFromRequest(req);
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: authErrors.UNAUTHORIZED.message },
+        { status: 401 }
+      );
+    }
+
+    const kitchen = await getChefKitchen(userId);
+    if (!kitchen) {
+      return NextResponse.json(
+        { success: false, error: authErrors.KITCHEN_NOT_FOUND.message },
+        { status: 404 }
+      );
+    }
+
     const { id } = await params;
     const body = await req.json();
     const validated = updateSubscriptionSchema.parse(body);
@@ -184,7 +171,7 @@ export async function PUT(
       where: { id },
     });
 
-    if (!existingPlan || existingPlan.kitchen_id !== TEMP_KITCHEN_ID) {
+    if (!existingPlan || existingPlan.kitchen_id !== kitchen.id) {
       return NextResponse.json(
         { success: false, error: "Plan not found" },
         { status: 404 }
@@ -210,60 +197,16 @@ export async function PUT(
           ...(validated.isActive !== undefined && {
             is_active: validated.isActive,
           }),
-          ...(validated.schedule && { meals_per_day: mealsPerDay }),
+          ...(validated.coverImage && { cover_image: validated.coverImage }),
+          ...(validated.schedule && { 
+            meals_per_day: mealsPerDay,
+            weekly_schedule: validated.schedule,
+          }),
         },
       });
 
-      if (validated.schedule) {
-        await tx.plan_schedules.deleteMany({ where: { plan_id: id } });
-
-        // Get kitchen to validate chef_id for dishes
-        const kitchen = await tx.kitchen.findUnique({
-          where: { id: TEMP_KITCHEN_ID },
-          select: { sellerId: true },
-        });
-
-        const scheduleEntries = Object.entries(validated.schedule) as [string, DaySchedule][];
-        for (const [day, daySchedule] of scheduleEntries) {
-          if (!daySchedule || typeof daySchedule !== "object") continue;
-
-          for (const [slot, mealSlot] of Object.entries(daySchedule)) {
-            if (!mealSlot?.dishIds?.length) continue;
-
-            for (const dishId of mealSlot.dishIds) {
-              const dish = await tx.menu_items.findUnique({
-                where: { id: dishId },
-              });
-              if (!dish || !kitchen || dish.chef_id !== kitchen.sellerId) {
-                throw new Error(
-                  `Dish ${dishId} not found or doesn't belong to your kitchen`
-                );
-              }
-
-              await tx.plan_schedules.create({
-                data: {
-                  plan_id: id,
-                  day_of_week: day as "SATURDAY" | "SUNDAY" | "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY",
-                  meal_type: slot.toUpperCase() as "BREAKFAST" | "LUNCH" | "SNACKS" | "DINNER",
-                  time: mealSlot.time,
-                  dish_id: dishId,
-                  dish_name: dish.name,
-                  dish_desc: dish.description || null,
-                  image_url: null,
-                },
-              });
-            }
-          }
-        }
-      }
-
       return updated;
     });
-
-    const scheduleRows = await prisma.plan_schedules.findMany({
-      where: { plan_id: id },
-    });
-    const schedule = reconstructSchedule(scheduleRows);
 
     return NextResponse.json({
       success: true,
@@ -272,7 +215,7 @@ export async function PUT(
         name: result.name,
         price: result.price,
         mealsPerDay: result.meals_per_day,
-        schedule,
+        schedule: result.weekly_schedule,
       },
     });
   } catch (error) {
@@ -304,14 +247,29 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const TEMP_KITCHEN_ID = process.env.TEMP_KITCHEN_ID || "temp-kitchen-1";
+    const userId = await getUserIdFromRequest(req);
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: authErrors.UNAUTHORIZED.message },
+        { status: 401 }
+      );
+    }
+
+    const kitchen = await getChefKitchen(userId);
+    if (!kitchen) {
+      return NextResponse.json(
+        { success: false, error: authErrors.KITCHEN_NOT_FOUND.message },
+        { status: 404 }
+      );
+    }
+
     const { id } = await params;
 
     const existingPlan = await prisma.subscription_plans.findUnique({
       where: { id },
     });
 
-    if (!existingPlan || existingPlan.kitchen_id !== TEMP_KITCHEN_ID) {
+    if (!existingPlan || existingPlan.kitchen_id !== kitchen.id) {
       return NextResponse.json(
         { success: false, error: "Plan not found" },
         { status: 404 }

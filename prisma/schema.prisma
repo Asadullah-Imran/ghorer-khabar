@@ -26,10 +26,10 @@ model User {
   phone              String?           @unique
   addresses          Address[]
   EmailLogOTPs       EmailLogOTP[]
-  inventory_items    inventory_items[]
   kitchens           Kitchen[]
   menu_items         menu_items[]
   orders             Order[]
+  inventory_items    inventory_items[]
 
   @@map("users")
 }
@@ -180,9 +180,9 @@ model subscription_plans {
   carbs             String?
   fats              String?
   chef_quote        String?  @map("chef_quote")
+  weekly_schedule   Json     @default("{}")
   created_at        DateTime @default(now()) @map("created_at")
   updated_at        DateTime @updatedAt @map("updated_at")
-  weekly_schedule   Json     @default("{}")
   kitchen           Kitchen  @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
 
   @@index([kitchen_id])
@@ -222,7 +222,7 @@ model OrderItem {
 }
 
 model inventory_items {
-  id               String   @id
+  id               String   @id @default(cuid())
   chef_id          String
   name             String
   unit             String
@@ -232,7 +232,7 @@ model inventory_items {
   reorderLevel     Float    @default(0)
   unitCost         Float    @default(0)
   createdAt        DateTime @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime @updatedAt
   users            User     @relation(fields: [chef_id], references: [id], onDelete: Cascade)
 
   @@index([chef_id])
