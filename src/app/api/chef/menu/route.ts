@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { verifyToken } from "@/lib/auth/jwt";
 import { prisma } from "@/lib/prisma/prisma";
-import { imageService } from "@/services/image.service";
 import { createClient } from "@/lib/supabase/server";
+import { imageService } from "@/services/image.service";
+import { cookies } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
 /**
  * GET /api/chef/menu
@@ -9,14 +11,29 @@ import { createClient } from "@/lib/supabase/server";
  */
 export async function GET(req: NextRequest) {
   try {
+    let userId: string | undefined;
+
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    if (user && !authError) {
+      userId = user.id;
+    } else {
+      const cookieStore = await cookies();
+      const token = cookieStore.get("auth_token")?.value;
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded && typeof decoded === "object" && "userId" in decoded) {
+          userId = (decoded as any).userId;
+        }
+      }
+    }
+
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+    const dbUser = await prisma.user.findUnique({ where: { id: userId } });
     if (!dbUser || dbUser.role !== "SELLER") {
       return NextResponse.json(
         { error: "Only sellers can access chef menu" },
@@ -25,7 +42,7 @@ export async function GET(req: NextRequest) {
     }
 
     const menuItems = await prisma.menu_items.findMany({
-      where: { chef_id: user.id },
+      where: { chef_id: userId },
       include: {
         ingredients: {
           select: { id: true, name: true, quantity: true, unit: true, cost: true },
@@ -61,16 +78,35 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     console.log("\n=== BACKEND: POST /api/chef/menu STARTED ===");
+    let userId: string | undefined;
+
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    if (user && !authError) {
+      userId = user.id;
+      console.log("Authenticated via Supabase. User ID:", userId);
+    } else {
+      // Try JWT auth
+      console.log("Supabase auth not found, checking JWT cookie...");
+      const cookieStore = await cookies();
+      const token = cookieStore.get("auth_token")?.value;
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded && typeof decoded === "object" && "userId" in decoded) {
+          userId = (decoded as any).userId;
+          console.log("Authenticated via JWT Cookie. User ID:", userId);
+        }
+      }
+    }
+
+    if (!userId) {
       console.log("Auth error - User not authenticated");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("Authenticated user ID:", user.id);
-    const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+    console.log("Authenticated user ID:", userId);
+    const dbUser = await prisma.user.findUnique({ where: { id: userId } });
     if (!dbUser || dbUser.role !== "SELLER") {
       console.log("User is not a SELLER. Role:", dbUser?.role);
       return NextResponse.json(
@@ -141,7 +177,7 @@ export async function POST(req: NextRequest) {
     console.log("Creating menu item in database...");
     const menuItem = await prisma.menu_items.create({
       data: {
-        chef_id: user.id,
+        chef_id: userId,
         name,
         description,
         category,
