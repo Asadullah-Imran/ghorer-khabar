@@ -182,7 +182,7 @@ model subscription_plans {
   chef_quote        String?  @map("chef_quote")
   created_at        DateTime @default(now()) @map("created_at")
   updated_at        DateTime @updatedAt @map("updated_at")
-  weekly_schedule   Json     @default("{}")
+  weekly_schedule   Json     @default("{}") @map("weekly_schedule")
   kitchen           Kitchen  @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
 
   @@index([kitchen_id])

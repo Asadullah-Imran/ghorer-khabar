@@ -13,7 +13,8 @@ import {
   User,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface OperatingDay {
   day: string;
@@ -23,35 +24,126 @@ interface OperatingDay {
 }
 
 export default function SettingsPage() {
+  const router = useRouter();
+
   // General Information State
-  const [kitchenName, setKitchenName] = useState("Rahim's Curry House");
-  const [address, setAddress] = useState(
-    "House 42, Road 7, Dhanmondi, Dhaka - 1209"
-  );
-  const ownerName = "Rahim Ahmed"; // Read-only
-  const phoneNumber = "+880 1712-345678"; // Read-only
+  const [kitchenName, setKitchenName] = useState("");
+  const [address, setAddress] = useState("");
+  const [ownerName, setOwnerName] = useState(""); // Read-only
+  const [phoneNumber, setPhoneNumber] = useState(""); // Read-only
 
   // Operating Hours State
   const [operatingHours, setOperatingHours] = useState<OperatingDay[]>([
-    { day: "Monday", isOpen: true, openTime: "10:00", closeTime: "22:00" },
-    { day: "Tuesday", isOpen: true, openTime: "10:00", closeTime: "22:00" },
-    { day: "Wednesday", isOpen: true, openTime: "10:00", closeTime: "22:00" },
-    { day: "Thursday", isOpen: true, openTime: "10:00", closeTime: "22:00" },
-    { day: "Friday", isOpen: true, openTime: "10:00", closeTime: "23:00" },
-    { day: "Saturday", isOpen: true, openTime: "09:00", closeTime: "23:00" },
-    { day: "Sunday", isOpen: false, openTime: "10:00", closeTime: "22:00" },
+    { day: "MONDAY", isOpen: true, openTime: "10:00", closeTime: "22:00" },
+    { day: "TUESDAY", isOpen: true, openTime: "10:00", closeTime: "22:00" },
+    { day: "WEDNESDAY", isOpen: true, openTime: "10:00", closeTime: "22:00" },
+    { day: "THURSDAY", isOpen: true, openTime: "10:00", closeTime: "22:00" },
+    { day: "FRIDAY", isOpen: true, openTime: "10:00", closeTime: "23:00" },
+    { day: "SATURDAY", isOpen: true, openTime: "09:00", closeTime: "23:00" },
+    { day: "SUNDAY", isOpen: false, openTime: "10:00", closeTime: "22:00" },
   ]);
 
   // Legal & Verification (Read-only)
-  const [verificationStatus] = useState<"verified" | "pending" | "rejected">(
-    "verified"
-  );
-  const tradeLicense = "****-5678";
-  const nidNumber = "****-****-4321";
+  const [verificationStatus, setVerificationStatus] = useState<"verified" | "pending" | "rejected">("pending");
+  const [nidNumber, setNidNumber] = useState("");
 
-  const handleSaveGeneral = () => {
-    alert("General information saved successfully!");
-    // API call would go here
+  // Loading and error states
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+
+  // Delete confirmation dialog state
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+
+  // Fetch settings on component mount
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await fetch("/api/chef/settings");
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to fetch settings");
+      }
+
+      if (result.success && result.data) {
+        const { data } = result;
+        setKitchenName(data.kitchenName || "");
+        setAddress(data.address || "");
+        setOwnerName(data.ownerName || "");
+        setPhoneNumber(data.phoneNumber || "");
+        setNidNumber(data.nidNumber || "");
+        setVerificationStatus(data.isVerified ? "verified" : "pending");
+
+        // Parse operating days
+        if (data.operatingDays && typeof data.operatingDays === "object") {
+          const parsedHours = Object.entries(data.operatingDays).map(([day, hours]) => ({
+            day: day.toUpperCase(),
+            isOpen: (hours as { isOpen?: boolean }).isOpen || false,
+            openTime: (hours as { openTime?: string }).openTime || "10:00",
+            closeTime: (hours as { closeTime?: string }).closeTime || "22:00",
+          }));
+          if (parsedHours.length > 0) {
+            setOperatingHours(parsedHours);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching settings:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch settings");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveGeneral = async () => {
+    try {
+      setSaving(true);
+      setError("");
+      setSuccessMessage("");
+
+      // Validation
+      if (!kitchenName.trim()) {
+        setError("Kitchen name is required");
+        return;
+      }
+      if (!address.trim()) {
+        setError("Address is required");
+        return;
+      }
+
+      const response = await fetch("/api/chef/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kitchenName: kitchenName.trim(),
+          address: address.trim(),
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to save settings");
+      }
+
+      setSuccessMessage("General information saved successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      console.error("Error saving general settings:", err);
+      setError(err instanceof Error ? err.message : "Failed to save settings");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const toggleDayOpen = (index: number) => {
@@ -70,21 +162,100 @@ export default function SettingsPage() {
     setOperatingHours(updated);
   };
 
-  const handleSaveHours = () => {
-    alert("Operating hours saved successfully!");
-    // API call would go here
-  };
+  const handleSaveHours = async () => {
+    try {
+      setSaving(true);
+      setError("");
+      setSuccessMessage("");
 
-  const handleDeleteAccount = () => {
-    if (
-      confirm(
-        "Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted."
-      )
-    ) {
-      alert("Account deletion initiated. You will be logged out.");
-      // API call would go here
+      // Convert operating hours to the format expected by the backend
+      const operatingDaysObj = operatingHours.reduce((acc, day) => {
+        acc[day.day] = {
+          isOpen: day.isOpen,
+          openTime: day.openTime,
+          closeTime: day.closeTime,
+        };
+        return acc;
+      }, {} as Record<string, { isOpen: boolean; openTime: string; closeTime: string }>);
+
+      const response = await fetch("/api/chef/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kitchenName,
+          address,
+          operatingDays: operatingDaysObj,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to save operating hours");
+      }
+
+      setSuccessMessage("Operating hours saved successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      console.error("Error saving operating hours:", err);
+      setError(err instanceof Error ? err.message : "Failed to save operating hours");
+    } finally {
+      setSaving(false);
     }
   };
+
+  const handleDeleteAccount = async () => {
+    // Validate that user typed the correct kitchen name
+    if (deleteConfirmText.trim() !== kitchenName.trim()) {
+      setError("Kitchen name does not match. Please type the exact kitchen name to confirm deletion.");
+      return;
+    }
+
+    try {
+      setDeleting(true);
+      setError("");
+
+      const response = await fetch("/api/chef/delete-account", {
+        method: "DELETE",
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to delete account");
+      }
+
+      alert("Your account has been permanently deleted. You will now be logged out.");
+      
+      // Clear any local storage auth data
+      if (typeof window !== "undefined") {
+        localStorage.clear();
+        sessionStorage.clear();
+      }
+
+      // Small delay to ensure cookies are set on client before redirect
+      setTimeout(() => {
+        router.push("/");
+      }, 500);
+    } catch (err) {
+      console.error("Error deleting account:", err);
+      setError(err instanceof Error ? err.message : "Failed to delete account");
+      setDeleting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="p-6 max-w-5xl mx-auto">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading settings...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
@@ -95,6 +266,22 @@ export default function SettingsPage() {
           Manage your kitchen profile, hours, and legal details.
         </p>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg flex items-start gap-2">
+          <AlertTriangle className="flex-shrink-0 mt-0.5" size={18} />
+          <p className="text-sm">{error}</p>
+        </div>
+      )}
+
+      {/* Success Message */}
+      {successMessage && (
+        <div className="bg-green-50 border border-green-300 text-green-800 px-4 py-3 rounded-lg flex items-start gap-2">
+          <CheckCircle2 className="flex-shrink-0 mt-0.5" size={18} />
+          <p className="text-sm">{successMessage}</p>
+        </div>
+      )}
 
       {/* Section 1: General Information */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
@@ -122,7 +309,7 @@ export default function SettingsPage() {
 
           {/* Address */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
               <MapPin size={16} />
               Address *
             </label>
@@ -137,7 +324,7 @@ export default function SettingsPage() {
 
           {/* Owner Name (Read-only) */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
               <User size={16} />
               Owner Full Name
             </label>
@@ -154,7 +341,7 @@ export default function SettingsPage() {
 
           {/* Phone Number (Read-only) */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
               <Phone size={16} />
               Phone Number
             </label>
@@ -172,10 +359,11 @@ export default function SettingsPage() {
           {/* Save Button */}
           <button
             onClick={handleSaveGeneral}
-            className="w-full md:w-auto px-6 py-3 bg-yellow-400 text-gray-900 font-semibold rounded-lg hover:bg-yellow-500 transition shadow-md flex items-center justify-center gap-2"
+            disabled={saving}
+            className="w-full md:w-auto px-6 py-3 bg-yellow-400 text-gray-900 font-semibold rounded-lg hover:bg-yellow-500 transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Save size={20} />
-            Save Changes
+            {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>
@@ -197,7 +385,9 @@ export default function SettingsPage() {
             >
               {/* Day Name */}
               <div className="flex-shrink-0 w-32">
-                <span className="font-semibold text-gray-900">{day.day}</span>
+                <span className="font-semibold text-gray-900">
+                  {day.day.charAt(0) + day.day.slice(1).toLowerCase()}
+                </span>
               </div>
 
               {/* Toggle Switch */}
@@ -252,10 +442,11 @@ export default function SettingsPage() {
         {/* Save Button */}
         <button
           onClick={handleSaveHours}
-          className="mt-6 w-full md:w-auto px-6 py-3 bg-yellow-400 text-gray-900 font-semibold rounded-lg hover:bg-yellow-500 transition shadow-md flex items-center justify-center gap-2"
+          disabled={saving}
+          className="mt-6 w-full md:w-auto px-6 py-3 bg-yellow-400 text-gray-900 font-semibold rounded-lg hover:bg-yellow-500 transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Save size={20} />
-          Save Operating Hours
+          {saving ? "Saving..." : "Save Operating Hours"}
         </button>
       </div>
 
@@ -314,23 +505,10 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-4">
-          {/* Trade License */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Trade License / TIN
-            </label>
-            <input
-              type="text"
-              value={tradeLicense}
-              disabled
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed font-mono"
-            />
-          </div>
-
           {/* NID Number */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              NID Number
+              NID Number (Masked for Security)
             </label>
             <input
               type="text"
@@ -338,6 +516,9 @@ export default function SettingsPage() {
               disabled
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed font-mono"
             />
+            <p className="text-xs text-gray-500 mt-1">
+              Only the last 4 digits are shown for security purposes
+            </p>
           </div>
 
           {/* Helper Text */}
@@ -347,8 +528,8 @@ export default function SettingsPage() {
               size={18}
             />
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> To update legal details or submit new
-              documents, please contact our support team at{" "}
+              <strong>Note:</strong> To update your NID or submit new
+              verification documents, please contact our support team at{" "}
               <a href="mailto:support@ghorerkhabar.com" className="underline">
                 support@ghorerkhabar.com
               </a>
@@ -375,7 +556,7 @@ export default function SettingsPage() {
               data will be permanently removed.
             </p>
             <button
-              onClick={handleDeleteAccount}
+              onClick={() => setShowDeleteDialog(true)}
               className="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition shadow-md flex items-center gap-2"
             >
               <Trash2 size={20} />
@@ -384,6 +565,120 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Dialog Header */}
+            <div className="bg-red-600 text-white p-6 rounded-t-xl">
+              <div className="flex items-center gap-3">
+                <AlertTriangle size={32} />
+                <div>
+                  <h2 className="text-2xl font-bold">Delete Account</h2>
+                  <p className="text-red-100 mt-1">This action cannot be undone</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Dialog Content */}
+            <div className="p-6 space-y-6">
+              {/* Warning Message */}
+              <div className="bg-red-50 border-2 border-red-300 rounded-lg p-4">
+                <p className="text-red-900 font-semibold text-lg mb-2">
+                  ⚠️ Permanent Deletion Warning
+                </p>
+                <p className="text-red-800 text-sm">
+                  This will permanently and irreversibly delete all your data from our system.
+                </p>
+              </div>
+
+              {/* What Will Be Deleted */}
+              <div>
+                <h3 className="font-bold text-gray-900 text-lg mb-3">
+                  The following will be permanently deleted:
+                </h3>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2 text-gray-700">
+                    <XCircle className="shrink-0 text-red-500 mt-0.5" size={18} />
+                    <span>Your kitchen profile: <strong>{kitchenName}</strong></span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-700">
+                    <XCircle className="shrink-0 text-red-500 mt-0.5" size={18} />
+                    <span>All menu items and dishes you&apos;ve created</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-700">
+                    <XCircle className="shrink-0 text-red-500 mt-0.5" size={18} />
+                    <span>All subscription plans and their data</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-700">
+                    <XCircle className="shrink-0 text-red-500 mt-0.5" size={18} />
+                    <span>All inventory and stock information</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-700">
+                    <XCircle className="shrink-0 text-red-500 mt-0.5" size={18} />
+                    <span>All order history related to your kitchen</span>
+                  </li>
+                  <li className="flex items-start gap-2 text-gray-700">
+                    <XCircle className="shrink-0 text-red-500 mt-0.5" size={18} />
+                    <span>Your account and personal data</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Confirmation Input */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  To confirm deletion, type your kitchen name:{" "}
+                  <span className="text-red-600">{kitchenName}</span>
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="Type your kitchen name here"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  disabled={deleting}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  This confirmation is case-sensitive and must match exactly
+                </p>
+              </div>
+
+              {/* Error Message in Dialog */}
+              {error && (
+                <div className="bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg flex items-start gap-2">
+                  <AlertTriangle className="shrink-0 mt-0.5" size={18} />
+                  <p className="text-sm">{error}</p>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => {
+                    setShowDeleteDialog(false);
+                    setDeleteConfirmText("");
+                    setError("");
+                  }}
+                  disabled={deleting}
+                  className="flex-1 px-6 py-3 bg-gray-200 text-gray-900 font-semibold rounded-lg hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deleting || deleteConfirmText.trim() !== kitchenName.trim()}
+                  className="flex-1 px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Trash2 size={20} />
+                  {deleting ? "Deleting..." : "Delete Permanently"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
