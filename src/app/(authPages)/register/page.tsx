@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import Image from "next/image";
 import {
   ChefHat,
   Loader2,
@@ -124,8 +125,14 @@ function RegisterContent() {
 
         {/* Logo Area */}
         <div className="relative z-10 flex items-center gap-3">
-          <div className="bg-yellow-400 p-2 rounded-lg text-teal-900">
-            <ChefHat size={32} />
+          <div className="bg-yellow-400 p-2 rounded-lg">
+            <Image
+              src="/ghorer-khabar-logo.png"
+              alt="Ghorer Khabar Logo"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
           </div>
           <span className="font-bold text-2xl tracking-tight">
             Ghorer<span className="text-yellow-400">Khabar</span>
@@ -175,8 +182,14 @@ function RegisterContent() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 relative">
         {/* Mobile Logo (Visible only on small screens) */}
         <div className="absolute top-6 left-6 lg:hidden flex items-center gap-2">
-          <div className="bg-yellow-400 p-1.5 rounded-lg text-teal-900">
-            <ChefHat size={20} />
+          <div className="bg-yellow-400 p-1.5 rounded-lg">
+            <Image
+              src="/ghorer-khabar-logo.png"
+              alt="Ghorer Khabar Logo"
+              width={20}
+              height={20}
+              className="object-contain"
+            />
           </div>
           <span className="font-bold text-lg text-teal-900">
             Ghorer<span className="text-yellow-500">Khabar</span>

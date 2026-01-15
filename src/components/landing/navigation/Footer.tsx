@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 const Footer = () => {
   const companyLinks = [
     { name: "About Us", href: "#" },
@@ -25,11 +27,13 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center size-8 rounded-full bg-primary text-brand-dark">
-                <span className="material-symbols-outlined text-sm">
-                  soup_kitchen
-                </span>
-              </div>
+              <Image
+                src="/ghorer-khabar-logo.png"
+                alt="Ghorer Khabar Logo"
+                width={40}
+                height={40}
+                className="object-contain"
+              />
               <h3 className="text-lg font-bold">Ghorer Khabar</h3>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">

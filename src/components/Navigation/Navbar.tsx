@@ -87,9 +87,13 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
           {/* Logo */}
           <Link href="/feed" className="flex items-center gap-2">
-            <div className="bg-primary p-1.5 rounded-lg">
-              <ChefHat size={24} className="text-brand-teal" />
-            </div>
+            <Image
+              src="/ghorer-khabar-logo.png"
+              alt="Ghorer Khabar Logo"
+              width={40}
+              height={40}
+              className="object-contain"
+            />
             <span className="font-bold text-xl text-brand-teal tracking-tight hidden sm:block">
               Ghorer<span className="text-primary">Khabar</span>
             </span>

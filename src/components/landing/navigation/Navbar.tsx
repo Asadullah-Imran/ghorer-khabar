@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -20,10 +21,15 @@ const Navbar = () => {
       <div className="px-4 md:px-10 py-3 flex items-center justify-between max-w-7xl mx-auto">
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex items-center justify-center size-10 rounded-full bg-primary/20 text-brand-teal">
-              <span className="material-symbols-outlined">soup_kitchen</span>
-            </div>
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/ghorer-khabar-logo.png"
+              alt="Ghorer Khabar Logo"
+              width={50}
+              height={50}
+              className="object-contain"
+              priority
+            />
             <h2 className="text-brand-dark text-xl font-bold tracking-tight">
               Ghorer Khabar
             </h2>

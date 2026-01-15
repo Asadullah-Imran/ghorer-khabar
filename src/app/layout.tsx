@@ -14,6 +14,10 @@ export const metadata: Metadata = {
   title: "Ghorer Khabar - Homemade Goodness",
   description:
     "Connecting health-conscious students and professionals with verified home chefs for authentic, transparently prepared meals.",
+  icons: {
+    icon: "/ghorer-khabar-logo.png",
+    apple: "/ghorer-khabar-logo.png",
+  },
 };
 
 export default function RootLayout({
