@@ -1,6 +1,8 @@
 import { imageService } from "@/services/image.service";
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import { verifyToken } from "@/lib/auth/jwt";
+import { cookies } from "next/headers";
 
 const ALLOWED_BUCKETS = ["nid-documents", "kitchen-images", "avatars", "menu-image", "subscription-plan-images"];
 
@@ -8,17 +10,37 @@ export async function POST(request: NextRequest) {
   try {
     console.log("\n=== BACKEND: POST /api/upload STARTED ===");
     
-    // Authenticate user with Supabase
+    let userId: string | undefined;
+
+    // 1. Try Supabase Auth
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
-      console.log("Auth error - user not authenticated");
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    if (user && !authError) {
+      userId = user.id;
+      console.log("Authenticated via Supabase. User ID:", userId);
+    } else {
+      // 2. Try JWT Cookie Auth (Fallback)
+      console.log("Supabase auth not found, checking JWT cookie...");
+      const cookieStore = await cookies();
+      const token = cookieStore.get("auth_token")?.value;
+
+      if (token) {
+        const decoded = verifyToken(token);
+        // Ensure decoded is an object and has userId
+        if (decoded && typeof decoded === "object" && "userId" in decoded) {
+          userId = (decoded as any).userId;
+          console.log("Authenticated via JWT Cookie. User ID:", userId);
+        } else {
+           console.log("Invalid JWT token structure");
+        }
+      }
     }
 
-    console.log("Authenticated user ID:", user.id);
-    const userId = user.id;
+    if (!userId) {
+      console.log("Auth error - user not authenticated via Supabase or JWT");
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
