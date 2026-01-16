@@ -1,6 +1,6 @@
 "use client";
 
-import { Star, MapPin, Navigation, Heart, Share2, Phone, Bell } from "lucide-react";
+import { Bell, Heart, MapPin, Navigation, Phone, Share2, Star } from "lucide-react";
 import Image from "next/image";
 
 export default function KitchenHeader({ kitchen }: { kitchen: any }) {
@@ -9,7 +9,7 @@ export default function KitchenHeader({ kitchen }: { kitchen: any }) {
       {/* Cover Image */}
       <div className="h-64 w-full relative">
         <Image 
-          src={kitchen.coverImage} 
+          src={kitchen.image || "/placeholder-kitchen.jpg"} 
           alt="Cover" 
           fill 
           className="object-cover" 
@@ -25,7 +25,12 @@ export default function KitchenHeader({ kitchen }: { kitchen: any }) {
           {/* Profile Picture */}
           <div className="relative w-32 h-32 md:w-40 md:h-40 shrink-0">
             <div className="w-full h-full rounded-full border-4 border-white overflow-hidden shadow-md relative">
-               <Image src={kitchen.profileImage} alt={kitchen.name} fill className="object-cover" />
+               <Image 
+                 src={kitchen.profileImage || kitchen.image || "/placeholder-kitchen.jpg"} 
+                 alt={kitchen.name} 
+                 fill 
+                 className="object-cover" 
+               />
             </div>
             {/* KRI Badge (New Requirement) */}
             <div className="absolute -bottom-2 -right-2 bg-teal-700 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border-2 border-white flex flex-col items-center leading-tight">

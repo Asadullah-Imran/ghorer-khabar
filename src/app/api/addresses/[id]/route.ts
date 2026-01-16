@@ -1,3 +1,4 @@
+import { syncUserFromSupabase } from "@/lib/auth/syncUser";
 import { prisma } from "@/lib/prisma/prisma";
 import { createClient } from "@/lib/supabase/server";
 import jwt from "jsonwebtoken";

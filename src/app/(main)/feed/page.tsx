@@ -4,9 +4,6 @@ import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard";
 import SectionHeader from "@/components/shared/SectionHeader";
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
-import {
-  MONTHLY_TOP_KITCHENS
-} from "@/lib/dummy-data/feed";
 import { prisma } from "@/lib/prisma/prisma";
 
 
@@ -83,6 +80,27 @@ export default async function FeedPage() {
     type: plan.meals_per_day >= 3 ? "Full Day" : plan.meals_per_day >= 2 ? "Daily Plan" : "Single Meal",
   }));
 
+  // Fetch top-rated kitchens from database
+  const topKitchensData = await prisma.kitchen.findMany({
+    where: {
+      isActive: true,
+      isVerified: true
+    },
+    orderBy: {
+      rating: 'desc'
+    },
+    take: 8
+  });
+
+  const topKitchens = topKitchensData.map((kitchen) => ({
+    id: kitchen.id,
+    name: kitchen.name,
+    rating: Number(kitchen.rating) || 0,
+    reviews: kitchen.reviewCount,
+    image: kitchen.coverImage || "/placeholder-kitchen.jpg",
+    specialty: kitchen.type || "Home Kitchen"
+  }));
+
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -119,7 +137,7 @@ export default async function FeedPage() {
             href="/explore?tab=kitchens&sort=top_rated"
           />
           <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-4 scrollbar-hide snap-x">
-            {MONTHLY_TOP_KITCHENS.map((kitchen) => (
+            {topKitchens.map((kitchen) => (
               <div key={kitchen.id} className="snap-center">
                 <KitchenCard data={kitchen} />
               </div>
