@@ -24,7 +24,8 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
   const kitchenId = searchParams.get("kitchenId");
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { items: allItems, clearCart } = useCart();
+  const [isOrderPlaced, setIsOrderPlaced] = useState(false); // Track success to prevent redirect
+  const { items: allItems, removeItemsByKitchen, isInitialized } = useCart();
   
   // Filter items for specific kitchen
   const items = useMemo(() => {
@@ -33,12 +34,24 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
   }, [allItems, kitchenId]);
 
   useEffect(() => {
-      if (!kitchenId || items.length === 0) {
-          // Redirect to cart if no kitchen selected or no items for that kitchen
-          // toast.error("Invalid checkout items");
-          router.push("/cart");
+      // Only redirect if cart is fully loaded and initialized
+      // AND if we haven't just placed an order successfully
+      if (isInitialized && !isOrderPlaced) {
+          if (!kitchenId || items.length === 0) {
+              // Redirect to cart if no kitchen selected or no items for that kitchen
+              router.push("/cart");
+          }
       }
-  }, [kitchenId, items, router]);
+  }, [kitchenId, items, router, isInitialized, isOrderPlaced]);
+
+  // Show loading while initializing cart
+  if (!isInitialized) {
+      return (
+          <div className="flex justify-center items-center min-h-[400px]">
+              <Loader2 className="animate-spin text-teal-600" size={40} />
+          </div>
+      );
+  }
 
   const [showMap, setShowMap] = useState(false);
   const [addresses, setAddresses] = useState<any[]>([]);
@@ -111,13 +124,21 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
             throw new Error(data.error || "Failed to place order");
         }
 
-        clearCart();
+        // 1. Mark order as placed so the useEffect doesn't redirect to /cart
+        setIsOrderPlaced(true);
+
+        // 2. Remove ONLY items for this kitchen
+        if (kitchenId) {
+            removeItemsByKitchen(kitchenId);
+        }
+
+        // 3. Navigate to order details
         router.push(`/orders/${data.orderId}`);
     } catch (error: any) {
         alert(error.message);
-    } finally {
-        setIsSubmitting(false);
-    }
+        setIsSubmitting(false); // Only reset if error
+    } 
+    // Do not reset submitting or orderPlaced if success, as we are navigating away
   };
 
   return (

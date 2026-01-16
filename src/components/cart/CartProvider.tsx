@@ -23,12 +23,14 @@ type CartContextType = {
   removeItemsByKitchen: (kitchenId: string) => void;
   clearCart: () => void;
   totalItems: number;
+  isInitialized: boolean;
 };
 
 const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -47,12 +49,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         console.error("Failed to parse cart", e);
       }
     }
+    setIsInitialized(true);
   }, []);
 
   // Save to localStorage on change
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(items));
-  }, [items]);
+    if (isInitialized) {
+        localStorage.setItem("cart", JSON.stringify(items));
+    }
+  }, [items, isInitialized]);
 
   const addItem = (item: Omit<CartItem, "quantity">, qty: number = 1) => {
     console.log("DEBUG_CART_ADD_ITEM:", item);
@@ -99,6 +104,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     removeItemsByKitchen,
     clearCart,
     totalItems,
+    isInitialized, 
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
