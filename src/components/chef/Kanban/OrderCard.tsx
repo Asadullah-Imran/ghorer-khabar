@@ -1,6 +1,25 @@
-import { Order } from "@/lib/dummy-data/chef";
 import { Phone, ShoppingBag, Truck } from "lucide-react";
 import TimerBadge from "./TimerBadge";
+
+interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  id: string;
+  orderNumber: string;
+  status: "new" | "cooking" | "ready" | "handover";
+  customerName: string;
+  customerPhone: string;
+  items: OrderItem[];
+  totalPrice: number;
+  specialNotes?: string;
+  createdAt: Date;
+  prepTime: number;
+  userId: string;
+}
 
 interface OrderCardProps {
   order: Order;
@@ -14,7 +33,10 @@ export default function OrderCard({ order, onMove }: OrderCardProps) {
       <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
         <h3 className="font-bold text-gray-900">{order.orderNumber}</h3>
         {(order.status === "cooking" || order.status === "ready") && (
-          <TimerBadge startTime={order.startTime} warningThreshold={20} />
+          <TimerBadge
+            createdAt={order.createdAt}
+            prepTime={order.prepTime}
+          />
         )}
       </div>
 
@@ -51,21 +73,10 @@ export default function OrderCard({ order, onMove }: OrderCardProps) {
         </div>
       )}
 
-      {/* Runner/Tiffin Info (if handover) */}
+      {/* Handover Info */}
       {order.status === "handover" && (
-        <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs space-y-1">
-          <div className="flex items-center gap-1">
-            <Truck size={12} className="text-blue-600" />
-            <span className="font-semibold text-blue-900">
-              {order.runnerId}
-            </span>
-          </div>
-          <div className="flex items-center gap-1">
-            <ShoppingBag size={12} className="text-blue-600" />
-            <span className="font-semibold text-blue-900">
-              {order.tiffinId}
-            </span>
-          </div>
+        <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+          <p className="font-semibold text-blue-900">Order completed and handed over</p>
         </div>
       )}
 

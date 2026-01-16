@@ -8,7 +8,7 @@ import {
   Info,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 type NotificationType = "info" | "success" | "warning" | "error";
 
@@ -131,17 +131,104 @@ export default function NotificationFeed({
   onMarkAsRead,
 }: NotificationFeedProps) {
   const [items, setItems] = useState(notifications);
+  const [markingAsRead, setMarkingAsRead] = useState<string | null>(null);
+  const localChangesRef = useRef<Set<string>>(new Set());
 
-  const handleDismiss = (id: string) => {
-    setItems(items.filter((item) => item.id !== id));
-    onDismiss?.(id);
+  // Update local state when notifications prop changes, but preserve optimistic updates
+  useEffect(() => {
+    setItems((currentItems) => {
+      // Create a map of current items by ID for quick lookup
+      const currentMap = new Map(currentItems.map(item => [item.id, item]));
+      
+      // Merge new notifications, preserving local read state for items we've optimistically marked as read
+      return notifications.map(notif => {
+        const currentItem = currentMap.get(notif.id);
+        // If we have a local change (marked as read) and the incoming data is still unread,
+        // preserve our optimistic update. Otherwise, use the incoming data (backend has confirmed)
+        if (localChangesRef.current.has(notif.id) && currentItem?.read && !notif.read) {
+          return currentItem;
+        }
+        // If backend confirms it's read, clear the local change flag
+        if (notif.read && localChangesRef.current.has(notif.id)) {
+          localChangesRef.current.delete(notif.id);
+        }
+        return notif;
+      });
+    });
+  }, [notifications]);
+
+  const handleDismiss = async (id: string) => {
+    try {
+      const response = await fetch(`/api/chef/dashboard/notifications?id=${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setItems(items.filter((item) => item.id !== id));
+        onDismiss?.(id);
+      } else {
+        console.error("Failed to dismiss notification");
+      }
+    } catch (error) {
+      console.error("Error dismissing notification:", error);
+    }
   };
 
-  const handleMarkAsRead = (id: string) => {
-    setItems(
-      items.map((item) => (item.id === id ? { ...item, read: true } : item))
+  const handleMarkAsRead = async (id: string) => {
+    // Optimistically update UI immediately
+    setItems((currentItems) =>
+      currentItems.map((item) => (item.id === id ? { ...item, read: true } : item))
     );
-    onMarkAsRead?.(id);
+    localChangesRef.current.add(id);
+    setMarkingAsRead(id);
+
+    try {
+      const response = await fetch("/api/chef/dashboard/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ notificationId: id }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Callback to parent to refresh (but our local state is already updated)
+          onMarkAsRead?.(id);
+        } else {
+          // Revert on error
+          setItems((currentItems) =>
+            currentItems.map((item) => (item.id === id ? { ...item, read: false } : item))
+          );
+          localChangesRef.current.delete(id);
+        }
+      } else {
+        // Revert on error
+        const errorData = await response.json();
+        console.error("Failed to mark as read:", errorData);
+        setItems((currentItems) =>
+          currentItems.map((item) => (item.id === id ? { ...item, read: false } : item))
+        );
+        localChangesRef.current.delete(id);
+      }
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      // Revert on error
+      setItems((currentItems) =>
+        currentItems.map((item) => (item.id === id ? { ...item, read: false } : item))
+      );
+      localChangesRef.current.delete(id);
+    } finally {
+      setMarkingAsRead(null);
+    }
+  };
+
+  // Auto-mark as read when notification is viewed (clicked)
+  const handleNotificationClick = (notification: Notification) => {
+    if (!notification.read) {
+      handleMarkAsRead(notification.id);
+    }
   };
 
   const unreadCount = items.filter((n) => !n.read).length;
@@ -173,7 +260,8 @@ export default function NotificationFeed({
             return (
               <div
                 key={notification.id}
-                className={`relative ${config.bgColor} border ${config.borderColor} rounded-lg p-4 transition hover:shadow-md ${
+                onClick={() => handleNotificationClick(notification)}
+                className={`relative ${config.bgColor} border ${config.borderColor} rounded-lg p-4 transition hover:shadow-md cursor-pointer ${
                   !notification.read ? "ring-1 ring-offset-1 ring-teal-300" : ""
                 }`}
               >
@@ -212,13 +300,14 @@ export default function NotificationFeed({
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         {!notification.read && (
                           <button
                             onClick={() => handleMarkAsRead(notification.id)}
-                            className="text-xs font-medium text-teal-600 hover:text-teal-700 transition"
+                            disabled={markingAsRead === notification.id}
+                            className="text-xs font-medium text-teal-600 hover:text-teal-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            Mark as read
+                            {markingAsRead === notification.id ? "Marking..." : "Mark as read"}
                           </button>
                         )}
                         <button
