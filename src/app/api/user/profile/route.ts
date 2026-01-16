@@ -60,36 +60,80 @@ export async function GET() {
             userId
           );
 
-          const newUser = await prisma.user.create({
-            data: {
-              id: userId,
-              email: supabaseUser.email!,
-              name:
-                supabaseUser.user_metadata.full_name ||
-                supabaseUser.user_metadata.name ||
-                "",
-              avatar:
-                supabaseUser.user_metadata.avatar_url ||
-                supabaseUser.user_metadata.picture,
-              authProvider: "GOOGLE", // Assuming Supabase users are mostly OAuth.
-              // Note: If using email/password via Supabase, this might be inaccurate but safer than crashing.
-              role: (supabaseUser.user_metadata.role as any) || "BUYER",
-              emailVerified: true,
-            },
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              phone: true,
-              avatar: true,
-              role: true,
-              emailVerified: true,
-              authProvider: true,
-              createdAt: true,
-            },
+          // Check if user exists with the same email but different ID
+          // This happens if the DB has an old record or different ID generation
+          const existingUserByEmail = await prisma.user.findUnique({
+            where: { email: supabaseUser.email! },
+            select: { id: true },
           });
 
-          return NextResponse.json({ user: newUser });
+          if (existingUserByEmail) {
+            console.log(
+              `User exists by email (${supabaseUser.email}) with different ID (${existingUserByEmail.id}). Syncing to Supabase ID (${userId}).`
+            );
+
+            // Update the existing user's ID to match Supabase ID
+            // We need to use update which might be tricky for ID, but Prisma allows it
+            // if we handle foreign keys. However, cascading updates usually handle this.
+            // If ID update is restricted, we might need a different strategy,
+            // but assuming standard cascade setup:
+            const updatedUser = await prisma.user.update({
+              where: { email: supabaseUser.email! },
+              data: {
+                id: userId,
+                authProvider: "GOOGLE", // Sync auth provider
+                avatar:
+                  supabaseUser.user_metadata.avatar_url ||
+                  supabaseUser.user_metadata.picture,
+                emailVerified: true,
+              },
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                avatar: true,
+                role: true,
+                emailVerified: true,
+                authProvider: true,
+                createdAt: true,
+              },
+            });
+
+            return NextResponse.json({ user: updatedUser });
+          } else {
+            console.log("Creating new user for", userId);
+            // No existing email, allow create
+            const newUser = await prisma.user.create({
+              data: {
+                id: userId,
+                email: supabaseUser.email!,
+                name:
+                  supabaseUser.user_metadata.full_name ||
+                  supabaseUser.user_metadata.name ||
+                  "",
+                avatar:
+                  supabaseUser.user_metadata.avatar_url ||
+                  supabaseUser.user_metadata.picture,
+                authProvider: "GOOGLE",
+                role: (supabaseUser.user_metadata.role as any) || "BUYER",
+                emailVerified: true,
+              },
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                avatar: true,
+                role: true,
+                emailVerified: true,
+                authProvider: true,
+                createdAt: true,
+              },
+            });
+
+            return NextResponse.json({ user: newUser });
+          }
         }
       } catch (syncError) {
         console.error("Self-healing failed:", syncError);
