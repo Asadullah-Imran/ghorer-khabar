@@ -1,18 +1,17 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Moon, Sun, Sunrise } from "lucide-react";
+import NextImage from "next/image";
 import { useState } from "react";
 
 const DAYS = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 export default function WeeklySchedule({ schedule }: { schedule: any }) {
-  console.log("🔍 WeeklySchedule - Full schedule data:", schedule);
-  
   const [activeDay, setActiveDay] = useState("Saturday");
   
   // Fallback if day data is missing in dummy data
   const daySchedule = schedule[activeDay] || {};
-  console.log(`📅 Active day: ${activeDay}, Day schedule:`, daySchedule); 
+ 
 
   return (
     <section>
@@ -33,10 +32,7 @@ export default function WeeklySchedule({ schedule }: { schedule: any }) {
         {DAYS.map((day) => (
           <button
             key={day}
-            onClick={() => {
-              console.log(`🔄 Switching to day: ${day}`);
-              setActiveDay(day);
-            }}
+            onClick={() => setActiveDay(day)}
             className={`px-6 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-colors ${
               activeDay === day
                 ? "bg-teal-700 text-white"
@@ -52,10 +48,8 @@ export default function WeeklySchedule({ schedule }: { schedule: any }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {["breakfast", "lunch", "dinner"].map((type) => {
           const meal = daySchedule[type];
-          console.log(`🍽️ ${activeDay} - ${type}:`, meal);
-          console.log(`🖼️ ${activeDay} - ${type} image:`, meal?.image);
+          
           if (!meal) {
-            console.log(`⚠️ No meal data for ${activeDay} - ${type}`);
             return null;
           }
 
@@ -68,10 +62,13 @@ export default function WeeklySchedule({ schedule }: { schedule: any }) {
                    {type === 'dinner' && <Moon size={12}/>}
                    {type} • {meal.time}
                 </div>
-                <div 
-                    className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" 
-                    style={{ backgroundImage: `url(${meal.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80"})` }}
-                ></div>
+                <NextImage
+                  src={meal.image || "/placeholder-meal.jpg"}
+                  alt={meal.dish || "Meal"}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 33vw"
+                />
               </div>
               <h3 className="font-bold text-lg mb-1 text-gray-900 group-hover:text-teal-700 transition-colors capitalize">
                 {meal.dish || "Chef's Special"}

@@ -1,12 +1,114 @@
-import KitchenHeader from "@/components/kitchen/KitchenHeader";
 import KitchenGallery from "@/components/kitchen/KitchenGallery";
+import KitchenHeader from "@/components/kitchen/KitchenHeader";
 import MenuSection from "@/components/kitchen/MenuSection";
-import { KITCHEN_DETAILS } from "@/lib/dummy-data/kitchen-details";
-import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { prisma } from "@/lib/prisma/prisma";
+import { Star } from "lucide-react";
 import Image from "next/image";
+import { notFound } from "next/navigation";
 
-export default function KitchenProfilePage() {
-  const data = KITCHEN_DETAILS;
+export default async function KitchenProfilePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  // Fetch kitchen data from database
+  const kitchen = await prisma.kitchen.findUnique({
+    where: { id },
+    include: {
+      gallery: {
+        orderBy: { order: 'asc' }
+      },
+      seller: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true
+        }
+      }
+    }
+  });
+
+  if (!kitchen) {
+    notFound();
+  }
+
+  // Fetch menu items for this kitchen
+  const menuItems = await prisma.menu_items.findMany({
+    where: {
+      chef_id: kitchen.sellerId,
+      isAvailable: true
+    },
+    include: {
+      menu_item_images: {
+        orderBy: { order: 'asc' },
+        take: 1
+      }
+    },
+    orderBy: { category: 'asc' }
+  });
+
+  // Fetch similar kitchens
+  const similarKitchens = await prisma.kitchen.findMany({
+    where: {
+      id: { not: id },
+      isActive: true,
+      isVerified: true,
+      OR: [
+        { type: kitchen.type },
+        { area: kitchen.area }
+      ]
+    },
+    orderBy: { rating: 'desc' },
+    take: 3
+  });
+
+  // Transform data to match component expectations
+  const transformedMenu = menuItems.map(item => ({
+    id: item.id,
+    name: item.name,
+    desc: item.description || "",
+    description: item.description || "",
+    price: item.price,
+    category: item.category,
+    image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
+    rating: item.rating || 0,
+    isVegetarian: item.isVegetarian,
+    spiciness: item.spiciness,
+    prepTime: item.prepTime,
+    time: item.prepTime ? `${item.prepTime} min` : "30 min"
+  }));
+
+  const data = {
+    id: kitchen.id,
+    name: kitchen.name,
+    type: kitchen.type || "Home Kitchen",
+    description: kitchen.description || "A wonderful kitchen serving delicious food",
+    location: kitchen.location || "Dhaka",
+    area: kitchen.area || "Unknown Area",
+    distance: kitchen.distance || 0,
+    image: kitchen.coverImage || "/placeholder-kitchen.jpg",
+    profileImage: kitchen.profileImage,
+    rating: Number(kitchen.rating) || 0,
+    reviewCount: kitchen.reviewCount,
+    kriScore: kitchen.kriScore,
+    stats: {
+      orders: kitchen.totalOrders.toString(),
+      satisfaction: `${Number(kitchen.satisfactionRate) || 90}%`
+    },
+    gallery: kitchen.gallery?.map(img => img.imageUrl) || [],
+    menu: transformedMenu,
+    // Featured items - top rated menu items
+    featuredItems: transformedMenu
+      .filter(item => item.rating >= 4)
+      .slice(0, 5)
+      .length > 0 
+        ? transformedMenu.filter(item => item.rating >= 4).slice(0, 5)
+        : transformedMenu.slice(0, 5),
+    // Placeholder for plans - would need to fetch from subscription_plans table
+    plans: []
+  };
 
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
@@ -40,10 +142,12 @@ export default function KitchenProfilePage() {
           {/* Sidebar (Right) */}
           <aside className="lg:col-span-4 space-y-6">
             
-            {/* NEW: Kitchen Gallery */}
-            <KitchenGallery images={data.gallery} />
+            {/* Kitchen Gallery */}
+            {data.gallery.length > 0 && (
+              <KitchenGallery images={data.gallery} />
+            )}
 
-            {/* Performance Stats (Simplified to KRI mainly) */}
+            {/* Performance Stats */}
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
               <h3 className="font-bold text-xs text-gray-400 uppercase tracking-widest mb-4">
                 Performance
@@ -73,44 +177,44 @@ export default function KitchenProfilePage() {
               </div>
             </div>
 
-            {/* Recommendations */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-xs text-gray-400 uppercase tracking-widest">Similar Kitchens</h3>
-                <div className="flex gap-1">
-                    <button className="p-1 hover:bg-gray-100 rounded-full"><ChevronLeft size={16}/></button>
-                    <button className="p-1 hover:bg-gray-100 rounded-full"><ChevronRight size={16}/></button>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 group cursor-pointer">
-                    <div className="w-12 h-12 rounded-xl bg-gray-200 relative overflow-hidden">
-                        <Image src="https://images.unsplash.com/photo-1595295333158-4742f28fbd85?q=80&w=100" alt="k" fill className="object-cover"/>
-                    </div>
-                    <div className="flex-1">
-                        <h4 className="text-sm font-bold text-gray-900 group-hover:text-teal-700 transition-colors">Aunty's Kitchen</h4>
-                        <p className="text-[10px] text-gray-500">Bengali • 1.2km</p>
-                    </div>
-                    <div className="flex items-center gap-1 text-[10px] font-bold bg-gray-50 px-1.5 py-0.5 rounded">
-                        4.9 <Star size={8} className="text-orange-400 fill-current" />
-                    </div>
+            {/* Similar Kitchens */}
+            {similarKitchens.length > 0 && (
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-xs text-gray-400 uppercase tracking-widest">Similar Kitchens</h3>
                 </div>
                 
-                <div className="flex items-center gap-3 group cursor-pointer">
-                    <div className="w-12 h-12 rounded-xl bg-gray-200 relative overflow-hidden">
-                        <Image src="https://images.unsplash.com/photo-1606787366850-de6330128bfc?q=80&w=100" alt="k" fill className="object-cover"/>
-                    </div>
-                    <div className="flex-1">
-                        <h4 className="text-sm font-bold text-gray-900 group-hover:text-teal-700 transition-colors">Spice Garden</h4>
-                        <p className="text-[10px] text-gray-500">Indian • 3.5km</p>
-                    </div>
-                    <div className="flex items-center gap-1 text-[10px] font-bold bg-gray-50 px-1.5 py-0.5 rounded">
-                        4.7 <Star size={8} className="text-orange-400 fill-current" />
-                    </div>
+                <div className="space-y-4">
+                  {similarKitchens.map((k) => (
+                    <a
+                      key={k.id}
+                      href={`/explore/kitchen/${k.id}`}
+                      className="flex items-center gap-3 group cursor-pointer"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-gray-200 relative overflow-hidden">
+                        <Image 
+                          src={k.coverImage || "/placeholder-kitchen.jpg"} 
+                          alt={k.name} 
+                          fill 
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-gray-900 group-hover:text-teal-700 transition-colors">
+                          {k.name}
+                        </h4>
+                        <p className="text-[10px] text-gray-500">
+                          {k.type || "Kitchen"} • {k.area || k.location || "Dhaka"}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 text-[10px] font-bold bg-gray-50 px-1.5 py-0.5 rounded">
+                        {Number(k.rating).toFixed(1)} <Star size={8} className="text-orange-400 fill-current" />
+                      </div>
+                    </a>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
 
           </aside>
         </div>

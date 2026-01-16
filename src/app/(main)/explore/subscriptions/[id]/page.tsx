@@ -8,18 +8,59 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+// Type definitions for schedule data
+interface MealData {
+  dishIds?: string[];
+  time?: string;
+}
+
+interface DayMeals {
+  breakfast?: MealData;
+  lunch?: MealData;
+  dinner?: MealData;
+  snacks?: MealData;
+  [mealType: string]: MealData | undefined;
+}
+
+interface WeeklyScheduleData {
+  [day: string]: DayMeals;
+}
+
+interface MenuItem {
+  id: string;
+  name: string;
+  description: string | null;
+  menu_item_images: { imageUrl: string }[];
+}
+
+interface TransformedMeal {
+  time: string;
+  dish: string;
+  desc: string;
+  image: string;
+}
+
+interface TransformedSchedule {
+  [day: string]: {
+    [mealType: string]: TransformedMeal;
+  };
+}
+
+// Default fallback image for meals
+const DEFAULT_MEAL_IMAGE = "/placeholder-meal.jpg";
+
 // Helper function to extract all dish IDs from schedule
-function extractDishIds(schedule: any): string[] {
+function extractDishIds(schedule: WeeklyScheduleData | null | undefined): string[] {
   const dishIds: string[] = [];
   if (!schedule || typeof schedule !== 'object') return dishIds;
   
   for (const dayMeals of Object.values(schedule)) {
     if (dayMeals && typeof dayMeals === 'object') {
-      for (const meal of Object.values(dayMeals as any)) {
+      for (const meal of Object.values(dayMeals)) {
         if (meal && typeof meal === 'object' && 'dishIds' in meal) {
-          const ids = (meal as any).dishIds;
-          if (Array.isArray(ids)) {
-            dishIds.push(...ids);
+          const mealData = meal as MealData;
+          if (Array.isArray(mealData.dishIds)) {
+            dishIds.push(...mealData.dishIds);
           }
         }
       }
@@ -35,28 +76,28 @@ function capitalizeFirst(str: string): string {
 }
 
 // Transform schedule from database format to UI format
-function transformSchedule(rawSchedule: any, menuItems: any[]): any {
+function transformSchedule(rawSchedule: WeeklyScheduleData | null | undefined, menuItems: MenuItem[]): TransformedSchedule {
   if (!rawSchedule || typeof rawSchedule !== 'object') return {};
   
   const menuMap = new Map(menuItems.map(item => [item.id, item]));
-  const transformed: any = {};
+  const transformed: TransformedSchedule = {};
   
   for (const [dayUpper, meals] of Object.entries(rawSchedule)) {
     const dayTitle = capitalizeFirst(dayUpper); // SATURDAY -> Saturday
     transformed[dayTitle] = {};
     
     if (meals && typeof meals === 'object') {
-      for (const [mealType, mealData] of Object.entries(meals as any)) {
-        const mealInfo = mealData as { dishIds?: string[]; time?: string };
-        const dishId = mealInfo.dishIds?.[0];
+      for (const [mealType, mealData] of Object.entries(meals)) {
+        if (!mealData) continue;
+        
+        const dishId = mealData.dishIds?.[0];
         const menuItem = dishId ? menuMap.get(dishId) : null;
         
         transformed[dayTitle][mealType] = {
-          time: mealInfo.time || "12:00",
+          time: mealData.time || "12:00",
           dish: menuItem?.name || "Chef's Special",
           desc: menuItem?.description || "A delicious meal prepared by our chef",
-          image: menuItem?.menu_item_images?.[0]?.imageUrl || 
-                 "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=400&auto=format"
+          image: menuItem?.menu_item_images?.[0]?.imageUrl || DEFAULT_MEAL_IMAGE
         };
       }
     }
