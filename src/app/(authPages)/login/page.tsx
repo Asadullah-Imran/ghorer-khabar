@@ -2,7 +2,7 @@
 
 import logo from "@/lib/image/logo.png";
 import { createClient } from "@/lib/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, User, UtensilsCrossed } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,6 +11,7 @@ import { Suspense, useState } from "react";
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<"BUYER" | "SELLER">("BUYER");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,11 +26,12 @@ function LoginForm() {
    */
   const handleGoogleLogin = async () => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const roleQuery = role.toLowerCase();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         // origin helps it work on both localhost and production
-        redirectTo: `${origin}/api/auth/callback?role=buyer`,
+        redirectTo: `${origin}/api/auth/callback?role=${roleQuery}`,
         queryParams: {
           access_type: "offline",
           prompt: "consent",
@@ -115,6 +117,32 @@ function LoginForm() {
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
+            {/* Role Switcher */}
+            <div className="grid grid-cols-2 bg-gray-100 p-1 rounded-xl mb-6">
+                <button
+                    type="button"
+                    onClick={() => setRole("BUYER")}
+                    className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                        role === "BUYER"
+                        ? "bg-white text-[#3d7068] shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                >
+                    <User size={16} /> Foodie
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setRole("SELLER")}
+                    className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                        role === "SELLER"
+                        ? "bg-white text-[#3d7068] shadow-sm"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                >
+                    <UtensilsCrossed size={16} /> Home Chef
+                </button>
+            </div>
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Email or Username

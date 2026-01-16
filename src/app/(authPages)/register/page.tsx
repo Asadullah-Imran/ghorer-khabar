@@ -1,16 +1,15 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import Image from "next/image";
 import {
-  ChefHat,
   Loader2,
   Lock,
   Mail,
   ShoppingBag,
   User,
-  UtensilsCrossed,
+  UtensilsCrossed
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
