@@ -25,7 +25,7 @@ interface MenuItemReview {
   rating: number;
   comment: string;
   customerName: string;
-  date: string;
+  date: string | Date;
   isAppealedByChef?: boolean;
   appealReason?: string;
 }
@@ -35,6 +35,7 @@ interface MenuInsightsModalProps {
   reviews: MenuItemReview[];
   isOpen: boolean;
   onClose: () => void;
+  loading?: boolean;
 }
 
 export default function MenuInsightsModal({
@@ -42,6 +43,7 @@ export default function MenuInsightsModal({
   reviews,
   isOpen,
   onClose,
+  loading = false,
 }: MenuInsightsModalProps) {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [appealedReviews, setAppealedReviews] = useState<Set<string>>(
@@ -55,7 +57,7 @@ export default function MenuInsightsModal({
   const avgRating =
     reviews.length > 0
       ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
-      : menuItem.rating || 0;
+      : 0;
 
   const ratingDistribution = {
     5: reviews.filter((r) => r.rating === 5).length,
@@ -98,43 +100,100 @@ export default function MenuInsightsModal({
 
         <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
           {/* Rating Summary */}
-          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Average Rating</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-orange-500">{avgRating}</span>
-                  <span className="text-lg text-gray-500">/5.0</span>
+          {loading ? (
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6 animate-pulse">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="h-4 w-24 bg-gray-200 rounded mb-2"></div>
+                  <div className="flex items-baseline gap-2">
+                    <div className="h-10 w-16 bg-gray-200 rounded"></div>
+                    <div className="h-5 w-8 bg-gray-200 rounded"></div>
+                  </div>
+                </div>
+                {/* Rating Distribution Skeleton */}
+                <div className="space-y-2">
+                  {[5, 4, 3, 2, 1].map((stars) => (
+                    <div key={stars} className="flex items-center gap-2">
+                      <div className="w-12 h-3 bg-gray-200 rounded"></div>
+                      <div className="w-24 h-2 bg-gray-200 rounded-full"></div>
+                      <div className="w-6 h-3 bg-gray-200 rounded"></div>
+                    </div>
+                  ))}
                 </div>
               </div>
-
-              {/* Rating Distribution */}
-              <div className="space-y-2">
-                {[5, 4, 3, 2, 1].map((stars) => (
-                  <div key={stars} className="flex items-center gap-2">
-                    <span className="text-xs text-gray-600 w-12 text-right">{stars}★</span>
-                    <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-yellow-400 transition-all"
-                        style={{
-                          width: `${reviews.length > 0 ? (ratingDistribution[stars as keyof typeof ratingDistribution] / reviews.length) * 100 : 0}%`,
-                        }}
-                      ></div>
-                    </div>
-                    <span className="text-xs text-gray-600 w-6">
-                      {ratingDistribution[stars as keyof typeof ratingDistribution]}
-                    </span>
+            </div>
+          ) : (
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-xl p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Average Rating</p>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-black text-orange-500">{avgRating}</span>
+                    <span className="text-lg text-gray-500">/5.0</span>
                   </div>
-                ))}
+                </div>
+
+                {/* Rating Distribution */}
+                <div className="space-y-2">
+                  {[5, 4, 3, 2, 1].map((stars) => (
+                    <div key={stars} className="flex items-center gap-2">
+                      <span className="text-xs text-gray-600 w-12 text-right">{stars}★</span>
+                      <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-yellow-400 transition-all"
+                          style={{
+                            width: `${reviews.length > 0 ? (ratingDistribution[stars as keyof typeof ratingDistribution] / reviews.length) * 100 : 0}%`,
+                          }}
+                        ></div>
+                      </div>
+                      <span className="text-xs text-gray-600 w-6">
+                        {ratingDistribution[stars as keyof typeof ratingDistribution]}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Reviews List */}
           <div className="space-y-3">
             <h3 className="font-bold text-gray-900 text-lg">Customer Reviews</h3>
 
-            {reviews.length === 0 ? (
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="border border-gray-200 rounded-lg p-4 bg-white animate-pulse"
+                  >
+                    {/* Review Header Skeleton */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="h-4 w-24 bg-gray-200 rounded"></div>
+                          <div className="flex gap-0.5">
+                            {[...Array(5)].map((_, j) => (
+                              <div
+                                key={j}
+                                className="w-3 h-3 bg-gray-200 rounded"
+                              ></div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="h-3 w-20 bg-gray-200 rounded"></div>
+                      </div>
+                      <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                    </div>
+                    {/* Review Text Skeleton */}
+                    <div className="space-y-2">
+                      <div className="h-3 w-full bg-gray-200 rounded"></div>
+                      <div className="h-3 w-4/5 bg-gray-200 rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : reviews.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <p>No reviews yet. Encourage customers to share their feedback!</p>
               </div>
@@ -168,7 +227,9 @@ export default function MenuInsightsModal({
                         </div>
                       </div>
                       <p className="text-xs text-gray-500">
-                        {new Date(review.date).toLocaleDateString()}
+                        {review.date instanceof Date
+                          ? review.date.toLocaleDateString()
+                          : new Date(review.date).toLocaleDateString()}
                       </p>
                     </div>
 
@@ -209,7 +270,12 @@ export default function MenuInsightsModal({
                   </div>
 
                   {/* Review Text */}
-                  <p className="text-sm text-gray-700 mb-2">{review.comment}</p>
+                  {review.comment && (
+                    <p className="text-sm text-gray-700 mb-2">{review.comment}</p>
+                  )}
+                  {!review.comment && (
+                    <p className="text-sm text-gray-400 italic mb-2">No comment provided</p>
+                  )}
 
                   {/* Appeal Status Badge */}
                   {appealedReviews.has(review.id) && (

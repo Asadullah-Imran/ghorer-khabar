@@ -17,13 +17,12 @@ interface Notification {
   type: NotificationType;
   title: string;
   message: string;
-  timestamp: Date;
+  timestamp: Date | string;
   read: boolean;
 }
 
-interface NotificationFeedProps {
+interface UserNotificationFeedProps {
   notifications?: Notification[];
-  maxHeight?: string;
   onDismiss?: (id: string) => void;
   onMarkAsRead?: (id: string) => void;
 }
@@ -32,49 +31,25 @@ const defaultNotifications: Notification[] = [
   {
     id: "1",
     type: "success",
-    title: "Order Completed",
-    message: "Order #1024 has been successfully delivered",
-    timestamp: new Date(Date.now() - 10 * 60000), // 10 min ago
+    title: "Order Received",
+    message: "Your order has been received by the chef",
+    timestamp: new Date(Date.now() - 10 * 60000),
     read: false,
   },
   {
     id: "2",
     type: "info",
-    title: "New Order Received",
-    message: "New order from Sadia Rahman for ৳450",
-    timestamp: new Date(Date.now() - 25 * 60000), // 25 min ago
+    title: "Order Update",
+    message: "Your order is being prepared",
+    timestamp: new Date(Date.now() - 25 * 60000),
     read: false,
   },
   {
     id: "3",
-    type: "warning",
-    title: "Low Inventory",
-    message: "Your Beef Bhuna stock is running low",
-    timestamp: new Date(Date.now() - 1 * 3600000), // 1 hour ago
-    read: true,
-  },
-  {
-    id: "4",
     type: "success",
-    title: "Payment Received",
-    message: "৳2,450 credited to your account",
-    timestamp: new Date(Date.now() - 2 * 3600000), // 2 hours ago
-    read: true,
-  },
-  {
-    id: "5",
-    type: "info",
-    title: "Review Added",
-    message: "Rahim K. left a 5-star review: 'Tastes exactly like my mom's cooking'",
-    timestamp: new Date(Date.now() - 4 * 3600000), // 4 hours ago
-    read: true,
-  },
-  {
-    id: "6",
-    type: "error",
-    title: "Order Cancelled",
-    message: "Order #1019 was cancelled by customer",
-    timestamp: new Date(Date.now() - 6 * 3600000), // 6 hours ago
+    title: "Order Ready",
+    message: "Your order is ready for pickup",
+    timestamp: new Date(Date.now() - 1 * 3600000),
     read: true,
   },
 ];
@@ -112,14 +87,12 @@ const notificationConfig = {
 
 function formatTime(date: Date | string): string {
   const now = new Date();
-  // Convert string to Date if needed
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  
-  // Handle invalid dates
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+
   if (isNaN(dateObj.getTime())) {
     return "Invalid date";
   }
-  
+
   const diffMs = now.getTime() - dateObj.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
@@ -132,31 +105,25 @@ function formatTime(date: Date | string): string {
   return dateObj.toLocaleDateString();
 }
 
-export default function NotificationFeed({
+export default function UserNotificationFeed({
   notifications = defaultNotifications,
-  maxHeight = "max-h-96",
   onDismiss,
   onMarkAsRead,
-}: NotificationFeedProps) {
+}: UserNotificationFeedProps) {
   const [items, setItems] = useState(notifications);
   const [markingAsRead, setMarkingAsRead] = useState<string | null>(null);
+  const [isMarkingAllAsRead, setIsMarkingAllAsRead] = useState(false);
   const localChangesRef = useRef<Set<string>>(new Set());
 
-  // Update local state when notifications prop changes, but preserve optimistic updates
   useEffect(() => {
     setItems((currentItems) => {
-      // Create a map of current items by ID for quick lookup
-      const currentMap = new Map(currentItems.map(item => [item.id, item]));
-      
-      // Merge new notifications, preserving local read state for items we've optimistically marked as read
-      return notifications.map(notif => {
+      const currentMap = new Map(currentItems.map((item) => [item.id, item]));
+
+      return notifications.map((notif) => {
         const currentItem = currentMap.get(notif.id);
-        // If we have a local change (marked as read) and the incoming data is still unread,
-        // preserve our optimistic update. Otherwise, use the incoming data (backend has confirmed)
         if (localChangesRef.current.has(notif.id) && currentItem?.read && !notif.read) {
           return currentItem;
         }
-        // If backend confirms it's read, clear the local change flag
         if (notif.read && localChangesRef.current.has(notif.id)) {
           localChangesRef.current.delete(notif.id);
         }
@@ -167,7 +134,7 @@ export default function NotificationFeed({
 
   const handleDismiss = async (id: string) => {
     try {
-      const response = await fetch(`/api/chef/dashboard/notifications?id=${id}`, {
+      const response = await fetch(`/api/user/notifications?id=${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -184,7 +151,6 @@ export default function NotificationFeed({
   };
 
   const handleMarkAsRead = async (id: string) => {
-    // Optimistically update UI immediately
     setItems((currentItems) =>
       currentItems.map((item) => (item.id === id ? { ...item, read: true } : item))
     );
@@ -192,7 +158,7 @@ export default function NotificationFeed({
     setMarkingAsRead(id);
 
     try {
-      const response = await fetch("/api/chef/dashboard/notifications", {
+      const response = await fetch("/api/user/notifications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -202,17 +168,14 @@ export default function NotificationFeed({
       if (response.ok) {
         const data = await response.json();
         if (data.success) {
-          // Callback to parent to refresh (but our local state is already updated)
           onMarkAsRead?.(id);
         } else {
-          // Revert on error
           setItems((currentItems) =>
             currentItems.map((item) => (item.id === id ? { ...item, read: false } : item))
           );
           localChangesRef.current.delete(id);
         }
       } else {
-        // Revert on error
         const errorData = await response.json();
         console.error("Failed to mark as read:", errorData);
         setItems((currentItems) =>
@@ -222,7 +185,6 @@ export default function NotificationFeed({
       }
     } catch (error) {
       console.error("Error marking notification as read:", error);
-      // Revert on error
       setItems((currentItems) =>
         currentItems.map((item) => (item.id === id ? { ...item, read: false } : item))
       );
@@ -232,10 +194,48 @@ export default function NotificationFeed({
     }
   };
 
-  // Auto-mark as read when notification is viewed (clicked)
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.read) {
       handleMarkAsRead(notification.id);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    const unreadNotifications = items.filter((n) => !n.read);
+    if (unreadNotifications.length === 0) return;
+
+    // Optimistically update all unread items
+    setItems((currentItems) =>
+      currentItems.map((item) => ({ ...item, read: true }))
+    );
+    setIsMarkingAllAsRead(true);
+
+    try {
+      const response = await fetch("/api/user/notifications/mark-all-read", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          // Success - all marked as read
+        } else {
+          // Revert on error
+          setItems(notifications);
+        }
+      } else {
+        console.error("Failed to mark all as read");
+        // Revert on error
+        setItems(notifications);
+      }
+    } catch (error) {
+      console.error("Error marking all as read:", error);
+      // Revert on error
+      setItems(notifications);
+    } finally {
+      setIsMarkingAllAsRead(false);
     }
   };
 
@@ -248,7 +248,7 @@ export default function NotificationFeed({
         <div className="flex items-center gap-2">
           <Bell size={20} className="text-teal-600" />
           <h3 className="text-lg font-bold text-gray-900">
-            Recent Alerts
+            Notifications
             {unreadCount > 0 && (
               <span className="ml-2 inline-flex items-center justify-center w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full">
                 {unreadCount}
@@ -259,7 +259,7 @@ export default function NotificationFeed({
       </div>
 
       {/* Notifications List */}
-      <div className={`${maxHeight} overflow-y-auto space-y-3`}>
+      <div className="max-h-96 overflow-y-auto space-y-3">
         {items.length > 0 ? (
           items.map((notification) => {
             const config = notificationConfig[notification.type];
@@ -337,17 +337,28 @@ export default function NotificationFeed({
             <Bell size={32} className="text-gray-300 mb-3" />
             <p className="text-gray-500 font-medium">No notifications yet</p>
             <p className="text-sm text-gray-400">
-              You&apos;ll get alerts about orders, inventory, and updates here
+              You&apos;ll get alerts about orders, deliveries, and updates here
             </p>
           </div>
         )}
       </div>
 
       {/* Footer */}
-      {items.length > 0 && (
+      {items.length > 0 && items.some((n) => !n.read) && (
         <div className="mt-4 pt-4 border-t border-gray-100">
-          <button className="w-full py-2 text-sm font-medium text-teal-600 hover:text-teal-700 transition">
-            View All Notifications →
+          <button
+            onClick={handleMarkAllAsRead}
+            disabled={isMarkingAllAsRead}
+            className="w-full py-2 text-sm font-medium text-teal-600 hover:text-teal-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          >
+            {isMarkingAllAsRead ? (
+              <>
+                <div className="w-3 h-3 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
+                Marking all as read...
+              </>
+            ) : (
+              "Mark all as read"
+            )}
           </button>
         </div>
       )}

@@ -1,6 +1,7 @@
 import DishActions from "@/components/dish/DishActions";
 import DishGallery from "@/components/dish/DishGallery";
 import IngredientTransparency from "@/components/dish/IngredientTransparency";
+import ReviewSection from "@/components/dish/ReviewSection";
 import { prisma } from "@/lib/prisma/prisma";
 import {
     AlertTriangle,
@@ -8,7 +9,6 @@ import {
     Clock,
     Flame,
     ShieldCheck,
-    Star,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -94,57 +94,11 @@ export default async function SingleDishPage({ params }: PageProps) {
             <DishGallery images={dish.images} />
 
             {/* Reviews Section */}
-            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-bold text-lg text-gray-900">
-                  What Foodies Say
-                </h3>
-                <div className="flex items-center gap-1 text-yellow-500">
-                  <Star size={20} fill="currentColor" />
-                  <span className="font-bold text-gray-900 text-lg">
-                    {dish.rating}
-                  </span>
-                  <span className="text-gray-400 text-sm">
-                    ({dish.reviewsCount} Reviews)
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                {dish.reviews.length > 0 ? (
-                    dish.reviews.map((review) => (
-                    <div
-                        key={review.id}
-                        className="border-b border-gray-50 pb-6 last:border-0 last:pb-0"
-                    >
-                        <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-3">
-                            <div className="relative w-8 h-8 rounded-full overflow-hidden bg-gray-200">
-                            <Image
-                                src={review.avatar}
-                                alt={review.user}
-                                fill
-                                className="object-cover"
-                            />
-                            </div>
-                            <span className="text-sm font-semibold text-gray-900">
-                            {review.user}
-                            </span>
-                        </div>
-                        <span className="text-xs text-gray-400">
-                            {review.date}
-                        </span>
-                        </div>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                        "{review.text}"
-                        </p>
-                    </div>
-                    ))
-                ) : (
-                    <p className="text-gray-500 text-sm italic">No reviews yet.</p>
-                )}
-              </div>
-            </div>
+            <ReviewSection
+              menuItemId={dish.id}
+              currentRating={dish.rating}
+              reviewCount={dish.reviewsCount}
+            />
           </div>
 
           {/* --- RIGHT COLUMN (Details & Actions) --- */}
