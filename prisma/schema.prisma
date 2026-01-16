@@ -25,6 +25,7 @@ model User {
   verificationToken  String?           @unique
   phone              String?           @unique
   addresses          Address[]
+  favorites          Favorite[]
   EmailLogOTPs       EmailLogOTP[]
   inventory_items    inventory_items[]
   kitchens           Kitchen[]
@@ -106,6 +107,7 @@ model menu_items {
   reviewCount      Int                @default(0)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime
+  favorites        Favorite[]
   ingredients      ingredients[]
   menu_item_images menu_item_images[]
   users            User               @relation(fields: [chef_id], references: [id], onDelete: Cascade)
@@ -144,6 +146,7 @@ model Kitchen {
   operatingDays       Json?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
+  favorites           Favorite[]
   gallery             KitchenGallery[]
   seller              User                 @relation(fields: [sellerId], references: [id], onDelete: Cascade)
   notifications       Notification[]
@@ -167,27 +170,28 @@ model KitchenGallery {
 }
 
 model subscription_plans {
-  id                String   @id @default(cuid())
-  kitchen_id        String   @map("kitchen_id")
+  id                String     @id @default(cuid())
+  kitchen_id        String     @map("kitchen_id")
   name              String
   description       String?
   price             Float
-  meals_per_day     Int      @default(1)
-  servings_per_meal Int      @default(1)
-  is_active         Boolean  @default(true)
-  subscriber_count  Int      @default(0)
-  monthly_revenue   Float    @default(0)
-  rating            Decimal? @default(0) @db.Decimal(3, 2)
-  cover_image       String?  @map("cover_image")
+  meals_per_day     Int        @default(1)
+  servings_per_meal Int        @default(1)
+  is_active         Boolean    @default(true)
+  subscriber_count  Int        @default(0)
+  monthly_revenue   Float      @default(0)
+  rating            Decimal?   @default(0) @db.Decimal(3, 2)
+  cover_image       String?    @map("cover_image")
   calories          Int?
   protein           String?
   carbs             String?
   fats              String?
-  chef_quote        String?  @map("chef_quote")
-  created_at        DateTime @default(now()) @map("created_at")
-  updated_at        DateTime @updatedAt @map("updated_at")
-  weekly_schedule   Json     @default("{}") @map("weekly_schedule")
-  kitchen           Kitchen  @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
+  chef_quote        String?    @map("chef_quote")
+  created_at        DateTime   @default(now()) @map("created_at")
+  updated_at        DateTime   @updatedAt @map("updated_at")
+  weekly_schedule   Json       @default("{}") @map("weekly_schedule")
+  favorites         Favorite[]
+  kitchen           Kitchen    @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
 
   @@index([kitchen_id])
   @@map("subscription_plans")
@@ -279,6 +283,28 @@ model Review {
   @@index([menuItemId])
   @@index([orderId])
   @@map("reviews")
+}
+
+model Favorite {
+  id        String              @id @default(cuid())
+  userId    String              @map("user_id")
+  dishId    String?             @map("dish_id")
+  kitchenId String?             @map("kitchen_id")
+  planId    String?             @map("plan_id")
+  createdAt DateTime            @default(now())
+  dish      menu_items?         @relation(fields: [dishId], references: [id], onDelete: Cascade)
+  kitchen   Kitchen?            @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
+  plan      subscription_plans? @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dishId])
+  @@unique([userId, kitchenId])
+  @@unique([userId, planId])
+  @@index([userId])
+  @@index([dishId])
+  @@index([kitchenId])
+  @@index([planId])
+  @@map("favorites")
 }
 
 enum Role {

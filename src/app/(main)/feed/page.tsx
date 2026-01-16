@@ -101,6 +101,28 @@ export default async function FeedPage() {
     specialty: kitchen.type || "Home Kitchen"
   }));
 
+  // Fetch user's favorites once to avoid multiple API calls
+  let favoriteDishIds = new Set<string>();
+  let favoriteKitchenIds = new Set<string>();
+  let favoritePlanIds = new Set<string>();
+
+  if (userId) {
+    const userFavorites = await prisma.favorite.findMany({
+      where: { userId },
+      select: {
+        dishId: true,
+        kitchenId: true,
+        planId: true,
+      },
+    });
+
+    userFavorites.forEach((fav) => {
+      if (fav.dishId) favoriteDishIds.add(fav.dishId);
+      if (fav.kitchenId) favoriteKitchenIds.add(fav.kitchenId);
+      if (fav.planId) favoritePlanIds.add(fav.planId);
+    });
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -123,7 +145,7 @@ export default async function FeedPage() {
              {/* Using fetched dishes for now as 'Weekly Best' */}
             {dishes.map((dish) => (
               <div key={dish.id} className="snap-center">
-                <DishCard data={dish} featured={true} />
+                <DishCard data={dish} featured={true} isFavorite={favoriteDishIds.has(dish.id)} />
               </div>
             ))}
           </div>
@@ -139,7 +161,7 @@ export default async function FeedPage() {
           <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-4 scrollbar-hide snap-x">
             {topKitchens.map((kitchen) => (
               <div key={kitchen.id} className="snap-center">
-                <KitchenCard data={kitchen} />
+                <KitchenCard data={kitchen} isFavorite={favoriteKitchenIds.has(kitchen.id)} />
               </div>
             ))}
           </div>
@@ -155,7 +177,7 @@ export default async function FeedPage() {
           <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-4 scrollbar-hide snap-x">
             {featuredPlans.map((plan) => (
               <div key={plan.id} className="snap-center min-w-[280px]">
-                <PlanCard data={plan} />
+                <PlanCard data={plan} isFavorite={favoritePlanIds.has(plan.id)} />
               </div>
             ))}
           </div>
@@ -170,7 +192,7 @@ export default async function FeedPage() {
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {dishes.map((dish) => (
-              <DishCard key={dish.id} data={dish} />
+              <DishCard key={dish.id} data={dish} isFavorite={favoriteDishIds.has(dish.id)} />
             ))}
           </div>
           <div className="mt-8 text-center">

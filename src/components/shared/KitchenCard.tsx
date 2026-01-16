@@ -1,6 +1,7 @@
 import { Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import FavoriteButton from "./FavoriteButton";
 
 interface KitchenProps {
   data: {
@@ -11,9 +12,10 @@ interface KitchenProps {
     image: string;
     specialty: string;
   };
+  isFavorite?: boolean; // NEW: Pass from parent
 }
 
-export default function KitchenCard({ data }: KitchenProps) {
+export default function KitchenCard({ data, isFavorite }: KitchenProps) {
   return (
     <Link
       href={`/explore/kitchen/${data.id}`}
@@ -28,6 +30,9 @@ export default function KitchenCard({ data }: KitchenProps) {
             className="object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+          <div className="absolute top-2 right-2 z-10">
+            <FavoriteButton itemId={data.id} itemType="kitchen" initialIsFavorite={isFavorite} />
+          </div>
           <div className="absolute bottom-2 left-2 text-white">
             <p className="text-xs font-medium bg-yellow-500 text-black px-1.5 py-0.5 rounded-sm inline-block mb-1">
               {data.specialty}
