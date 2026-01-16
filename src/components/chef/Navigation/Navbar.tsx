@@ -97,7 +97,7 @@ export default function ChefNavbar({
               {isProfileMenuOpen && (
                 <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden min-w-[200px]">
                   <Link
-                    href="/chef/profile"
+                    href="/chef-profile"
                     className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition"
                   >
                     View Profile
@@ -162,7 +162,7 @@ export default function ChefNavbar({
 
             {/* Mobile Menu Items */}
             <Link
-              href="/chef/profile"
+              href="/chef-profile"
               className="block px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
               onClick={() => setIsMobileMenuOpen(false)}
             >
