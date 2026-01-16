@@ -26,26 +26,22 @@ const navItems = [
         href: "/admin/dashboard",
       },
       { icon: <Users size={18} />, label: "Users", href: "/admin/users" },
-      { icon: <Package size={18} />, label: "Content", href: "/admin/content" },
+      { icon: <ShieldCheck size={18} />, label: "Sellers", href: "/admin/onboarding" },
+      { icon: <Package size={18} />, label: "Menu Items", href: "/admin/menu" },
       {
         icon: <Receipt size={18} />,
-        label: "Transactions",
-        href: "/admin/transactions",
+        label: "Orders & Transactions",
+        href: "/admin/orders",
       },
     ],
   },
   {
-    section: "Platform",
+    section: "Support & Management",
     items: [
       {
-        icon: <ShieldCheck size={18} />,
-        label: "Integrity",
-        href: "/admin/integrity",
-      },
-      {
         icon: <BarChart3 size={18} />,
-        label: "Reports",
-        href: "/admin/reports",
+        label: "Support Tickets",
+        href: "/admin/support",
       },
       {
         icon: <Settings size={18} />,
