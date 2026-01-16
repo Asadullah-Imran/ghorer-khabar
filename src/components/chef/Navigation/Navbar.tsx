@@ -1,27 +1,74 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { ChefHat, Loader2, LogOut, Menu, X } from "lucide-react";
+import { Home, Loader2, LogOut, Menu, Settings, User, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
 
-interface ChefNavbarProps {
-  kitchenName?: string;
-  chefImage?: string;
-}
-
-export default function ChefNavbar({
-  kitchenName = "Chef's Kitchen",
-  chefImage = "https://i.pravatar.cc/150?u=chef001",
-}: ChefNavbarProps) {
+export default function ChefNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { signOut } = useAuth();
+  const [kitchenName, setKitchenName] = useState("Chef's Kitchen");
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const { user, signOut } = useAuth();
+  const router = useRouter();
+
+  // Fetch kitchen data on mount
+  useEffect(() => {
+    const fetchKitchen = async () => {
+      try {
+        const res = await fetch("/api/chef/onboarding");
+        
+        // Check if response is ok before parsing JSON
+        if (!res.ok) {
+          console.error(`Kitchen fetch failed with status ${res.status}`);
+          return;
+        }
+
+        // Check if response has content
+        const contentType = res.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          console.error("Invalid response content type:", contentType);
+          return;
+        }
+
+        const data = await res.json();
+        if (data.success && data.data?.kitchen) {
+          setKitchenName(data.data.kitchen.name || "Chef's Kitchen");
+        }
+      } catch (error) {
+        console.error("Failed to fetch kitchen data:", error);
+      }
+    };
+    fetchKitchen();
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    if (isProfileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isProfileMenuOpen]);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
+    setIsProfileMenuOpen(false);
     try {
       await signOut();
     } catch (error) {
@@ -29,6 +76,14 @@ export default function ChefNavbar({
       setIsLoggingOut(false);
     }
   };
+
+  // Get user avatar from Google or use default
+  const userAvatar =
+    user?.user_metadata?.avatar_url ||
+    user?.user_metadata?.picture ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      user?.email || "Chef"
+    )}&background=14b8a6&color=fff`;
 
   return (
     <>
@@ -58,46 +113,69 @@ export default function ChefNavbar({
             </h2>
           </div>
 
-          {/* Right Section - Chef Info & Logout */}
-          <div className="flex items-center gap-4">
-            {/* Profile Button with Menu (Desktop) */}
-            <div className="hidden md:flex items-center gap-3 relative">
-              {/* Profile Button */}
+          {/* Right Section */}
+          <div className="flex items-center gap-6">
+            {/* Switch to Buyer Button */}
+            <button
+              onClick={() => router.push("/feed")}
+              className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-brand-teal transition"
+            >
+              <Home size={18} />
+              <span>Switch to Buyer</span>
+            </button>
+
+            {/* Profile Dropdown */}
+            <div className="hidden md:block relative" ref={profileMenuRef}>
               <button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                className="relative w-10 h-10 bg-gray-200 rounded-full overflow-hidden border-2 border-teal-600 shadow-sm hover:border-teal-700 transition"
+                className="w-9 h-9 bg-gray-200 rounded-full overflow-hidden border-2 border-white shadow-sm hover:border-brand-teal transition"
+                title={user?.email || "Profile"}
               >
                 <Image
-                  src={chefImage}
-                  alt="Profile"
-                  width={40}
-                  height={40}
+                  src={userAvatar}
+                  alt={user?.user_metadata?.full_name || "Profile"}
+                  width={36}
+                  height={36}
                   className="object-cover"
                 />
               </button>
 
-              {/* Profile Dropdown Menu */}
+              {/* Dropdown Menu */}
               {isProfileMenuOpen && (
-                <div className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden min-w-[200px]">
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                  <div className="px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-gray-900">
+                      {user?.user_metadata?.full_name ||
+                        user?.user_metadata?.name ||
+                        "Chef"}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {user?.email}
+                    </p>
+                  </div>
+
                   <Link
                     href="/chef/profile"
-                    className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
                   >
+                    <User size={16} />
                     View Profile
                   </Link>
+
                   <Link
                     href="/chef/settings"
-                    className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition border-t border-gray-100"
+                    onClick={() => setIsProfileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
                   >
+                    <Settings size={16} />
                     Settings
                   </Link>
+
                   <button
-                    onClick={() => {
-                      setIsProfileMenuOpen(false);
-                      handleLogout();
-                    }}
+                    onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition border-t border-gray-100 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition border-t border-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoggingOut ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -132,32 +210,55 @@ export default function ChefNavbar({
 
             {/* Chef Info */}
             <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
-              <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden border-2 border-teal-600">
+              <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden border-2 border-brand-teal">
                 <Image
-                  src={chefImage}
+                  src={userAvatar}
                   alt="Profile"
                   width={48}
                   height={48}
                   className="object-cover"
                 />
               </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">
+                  {user?.user_metadata?.full_name ||
+                    user?.user_metadata?.name ||
+                    "Chef"}
+                </p>
+                <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+              </div>
             </div>
 
             {/* Mobile Menu Items */}
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                router.push("/feed");
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+            >
+              <Home size={16} />
+              Switch to Buyer
+            </button>
+
             <Link
               href="/chef/profile"
-              className="block px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+              className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
               onClick={() => setIsMobileMenuOpen(false)}
             >
+              <User size={16} />
               View Profile
             </Link>
+
             <Link
               href="/chef/settings"
-              className="block px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+              className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
               onClick={() => setIsMobileMenuOpen(false)}
             >
+              <Settings size={16} />
               Settings
             </Link>
+
             <button
               onClick={() => {
                 setIsMobileMenuOpen(false);
