@@ -9,10 +9,14 @@ import { useState } from "react";
 
 interface ChefNavbarProps {
   kitchenName?: string;
+  onToggleEditMode?: () => void;
+  isEditMode?: boolean;
 }
 
 export default function ChefNavbar({
   kitchenName = "Chef's Kitchen",
+  onToggleEditMode,
+  isEditMode = false
 }: ChefNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -68,14 +72,26 @@ export default function ChefNavbar({
 
           {/* Right Section - Chef Info & Logout */}
           <div className="flex items-center gap-4">
+            {/* Toggle Edit Mode Button (when in edit mode within profile) */}
+            {onToggleEditMode && (
+              <button
+                onClick={onToggleEditMode}
+                className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-teal-600 transition"
+              >
+                <span>{isEditMode ? "Back to View" : "Edit Kitchen"}</span>
+              </button>
+            )}
+
             {/* Switch to Buyer Button */}
-            <button
-              onClick={() => router.push("/feed")}
-              className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-teal-600 transition"
-            >
-              <ChefHat size={18} />
-              <span>Switch to Buyer</span>
-            </button>
+            {!onToggleEditMode && (
+              <button
+                onClick={() => router.push("/feed")}
+                className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-teal-600 transition"
+              >
+                <ChefHat size={18} />
+                <span>Switch to Buyer</span>
+              </button>
+            )}
 
             {/* Profile Button with Menu (Desktop) */}
             <div className="hidden md:flex items-center gap-3 relative">

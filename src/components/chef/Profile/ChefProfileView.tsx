@@ -3,6 +3,7 @@
 import { useState } from "react";
 import KitchenGallery from "@/components/kitchen/KitchenGallery";
 import MenuSection from "@/components/kitchen/MenuSection";
+import ChefNavbar from "@/components/chef/Navigation/Navbar";
 import { Edit2, X } from "lucide-react";
 import Image from "next/image";
 import ChefProfileEditModal from "./ChefProfileEditModal";
@@ -35,6 +36,7 @@ interface Kitchen {
 }
 
 export default function ChefProfileView({ kitchen }: { kitchen: Kitchen }) {
+  const [isEditMode, setIsEditMode] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("menu");
   const [kitchenData, setKitchenData] = useState(kitchen);
