@@ -2,13 +2,14 @@
 
 import { useCart } from "@/components/cart/CartProvider";
 import {
-  ArrowRight,
-  BadgeCheck,
-  Info,
-  Minus,
-  Plus,
-  Star,
-  Trash2,
+    ArrowRight,
+    BadgeCheck,
+    Info,
+    Loader2,
+    Minus,
+    Plus,
+    Star,
+    Trash2
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,8 +23,18 @@ export default function CartPageContent() {
     removeItem,
     removeItemsByKitchen,
     clearCart,
+    isInitialized,
   } = useCart();
   const router = useRouter();
+
+  // Show loading while initializing
+  if (!isInitialized) {
+      return (
+          <div className="flex justify-center items-center min-h-[50vh]">
+              <Loader2 className="animate-spin text-teal-600" size={40} />
+          </div>
+      );
+  }
 
   // Group items by kitchen
   const groupedItems = useMemo(() => {
