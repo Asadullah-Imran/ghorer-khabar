@@ -47,24 +47,18 @@ export async function PATCH(
     }
 
     // Check if user exists in database, if not check by email (OAuth vs email/password issue)
-    const existingUser = await prisma.user.findUnique({
+    let existingUser = await prisma.user.findUnique({
       where: { id: userId },
     });
 
     if (!existingUser) {
-      const supabase = await createClient();
-      const {
-        data: { user: supabaseUser },
-      } = await supabase.auth.getUser();
-
-      if (supabaseUser?.email) {
-        const userByEmail = await prisma.user.findUnique({
-          where: { email: supabaseUser.email },
-        });
-
-        if (userByEmail) {
-          userId = userByEmail.id;
-        }
+      // Try to sync from Supabase
+      existingUser = await syncUserFromSupabase(userId);
+      
+      if (!existingUser && userId) {
+          // If still no user, we proceed only if it's JWT, but for PATCH we need user? 
+          // Actually PATCH addresses checks findFirst({userId}). So if user doesn't exist, address won't be found.
+          // So it's safe.
       }
     }
 
@@ -124,25 +118,13 @@ export async function DELETE(
     }
 
     // Check if user exists in database, if not check by email (OAuth vs email/password issue)
-    const existingUser = await prisma.user.findUnique({
+    let existingUser = await prisma.user.findUnique({
       where: { id: userId },
     });
 
     if (!existingUser) {
-      const supabase = await createClient();
-      const {
-        data: { user: supabaseUser },
-      } = await supabase.auth.getUser();
-
-      if (supabaseUser?.email) {
-        const userByEmail = await prisma.user.findUnique({
-          where: { email: supabaseUser.email },
-        });
-
-        if (userByEmail) {
-          userId = userByEmail.id;
-        }
-      }
+      // Try to sync from Supabase
+      existingUser = await syncUserFromSupabase(userId);
     }
 
     const { id } = await params;

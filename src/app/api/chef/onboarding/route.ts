@@ -5,6 +5,75 @@ import { chefOnboardingSchema } from "@/lib/validation";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * GET /api/chef/onboarding
+ * Fetch the authenticated chef's kitchen information
+ */
+export async function GET() {
+  try {
+    // Get authenticated user
+    const supabase = await createClient();
+    let {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    // If no Supabase session, check for custom JWT
+    if (!user) {
+      const cookieStore = await cookies();
+      const token = cookieStore.get("auth_token")?.value;
+
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded && typeof decoded !== "string" && decoded.userId) {
+          // Construct a user-like object from the JWT
+          user = {
+            id: decoded.userId as string,
+            email: decoded.email,
+            role: decoded.role,
+            app_metadata: {},
+            user_metadata: {},
+            aud: "authenticated",
+            created_at: new Date().toISOString(),
+          } as any;
+        }
+      }
+    }
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Fetch the kitchen for this user
+    const kitchen = await prisma.kitchen.findFirst({
+      where: { sellerId: user.id },
+      select: {
+        id: true,
+        name: true,
+        isVerified: true,
+        onboardingCompleted: true,
+      },
+    });
+
+    if (!kitchen) {
+      return NextResponse.json(
+        { success: false, data: { kitchen: null } },
+        { status: 200 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: { kitchen },
+    });
+  } catch (error) {
+    console.error("Error fetching chef onboarding data:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Get authenticated user
@@ -44,10 +113,22 @@ export async function POST(request: NextRequest) {
     const validatedData = chefOnboardingSchema.parse(body);
 
     // Check if user exists
-    const existingUser = await prisma.user.findUnique({
+    let existingUser = await prisma.user.findUnique({
       where: { id: user.id },
       include: { kitchens: true },
     });
+
+    if (!existingUser) {
+      // Try to sync from Supabase
+      const syncedUser = await syncUserFromSupabase(user.id);
+      if (syncedUser) {
+          // Re-fetch to get relations
+          existingUser = await prisma.user.findUnique({
+              where: { id: syncedUser.id },
+              include: { kitchens: true },
+          });
+      }
+    }
 
     if (!existingUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });

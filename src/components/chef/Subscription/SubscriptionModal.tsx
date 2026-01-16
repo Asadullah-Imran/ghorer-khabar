@@ -103,13 +103,13 @@ export default function SubscriptionModal({
     return transformed;
   };
 
-  const [schedule, setSchedule] = useState<SubscriptionPlan["schedule"]>(
+  const [schedule, setSchedule] = useState<SubscriptionPlan["schedule"] | undefined>(
     transformScheduleFromAPI(subscription?.schedule)
   );
 
   const [selectedDish, setSelectedDish] = useState<string | null>(null);
 
-  const currentDaySchedule = schedule[selectedDay] || {
+  const currentDaySchedule = (schedule && schedule[selectedDay]) || {
     breakfast: { time: "08:00", dishIds: [] },
     lunch: { time: "13:00", dishIds: [] },
     snacks: { time: "17:00", dishIds: [] },
@@ -119,7 +119,7 @@ export default function SubscriptionModal({
   // Auto-calculate meals per day based on which slots have dishes
   const mealsPerDay = Math.max(
     ...DAYS_OF_WEEK.map((day) => {
-      const daySchedule = schedule[day];
+      const daySchedule = schedule?.[day];
       if (!daySchedule) return 0;
       return (daySchedule.breakfast?.dishIds.length ? 1 : 0) +
              (daySchedule.lunch?.dishIds.length ? 1 : 0) +
@@ -130,7 +130,7 @@ export default function SubscriptionModal({
 
   const addDishToSlot = (day: DayOfWeek, slot: "breakfast" | "lunch" | "snacks" | "dinner", dishId: string) => {
     setSchedule((prev) => {
-      const existingDay = prev[day] || {
+      const existingDay = prev?.[day] || {
         breakfast: { time: "08:00", dishIds: [] },
         lunch: { time: "13:00", dishIds: [] },
         snacks: { time: "17:00", dishIds: [] },
@@ -154,7 +154,7 @@ export default function SubscriptionModal({
 
   const removeDishFromSlot = (day: DayOfWeek, slot: "breakfast" | "lunch" | "snacks" | "dinner", dishId: string) => {
     setSchedule((prev) => {
-      const existingDay = prev[day] || {
+      const existingDay = prev?.[day] || {
         breakfast: { time: "08:00", dishIds: [] },
         lunch: { time: "13:00", dishIds: [] },
         snacks: { time: "17:00", dishIds: [] },
@@ -177,7 +177,7 @@ export default function SubscriptionModal({
 
   const updateMealTime = (day: DayOfWeek, slot: "breakfast" | "lunch" | "snacks" | "dinner", time: string) => {
     setSchedule((prev) => {
-      const existingDay = prev[day] || {
+      const existingDay = prev?.[day] || {
         breakfast: { time: "08:00", dishIds: [] },
         lunch: { time: "13:00", dishIds: [] },
         snacks: { time: "17:00", dishIds: [] },
@@ -262,7 +262,7 @@ export default function SubscriptionModal({
   const getDishById = (id: string) => menuItems.find((item) => item.id === id);
   const selectedMenuItem = selectedDish ? getDishById(selectedDish) : null;
 
-  const totalDishes = Object.values(schedule).reduce((sum, daySchedule) => {
+  const totalDishes = (schedule ? Object.values(schedule) : []).reduce((sum, daySchedule) => {
     return sum +
       (daySchedule.breakfast?.dishIds.length || 0) +
       (daySchedule.lunch?.dishIds.length || 0) +

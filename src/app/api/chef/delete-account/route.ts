@@ -100,9 +100,9 @@ export async function DELETE() {
       });
 
       // 3. Delete all order items related to this chef's menu items
-      await tx.order_items.deleteMany({
+      await tx.orderItem.deleteMany({
         where: {
-          menu_items: {
+          menuItem: {
             chef_id: userId,
           },
         },
@@ -137,9 +137,9 @@ export async function DELETE() {
       });
 
       // 8. Delete all orders related to this kitchen
-      await tx.orders.deleteMany({
+      await tx.order.deleteMany({
         where: {
-          kitchen_id: kitchen.id,
+          kitchenId: kitchen.id,
         },
       });
 

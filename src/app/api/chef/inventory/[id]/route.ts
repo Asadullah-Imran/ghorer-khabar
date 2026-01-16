@@ -54,13 +54,14 @@ async function getOwnedItem(id: string, userId: string) {
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const auth = await getAuthenticatedChefId();
     if (auth.error) return auth.error;
 
-    const owned = await getOwnedItem(params.id, auth.userId!);
+    const owned = await getOwnedItem(id, auth.userId!);
     if (owned.error) return owned.error;
 
     return NextResponse.json({ success: true, data: owned.item });
@@ -75,13 +76,14 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const auth = await getAuthenticatedChefId();
     if (auth.error) return auth.error;
 
-    const owned = await getOwnedItem(params.id, auth.userId!);
+    const owned = await getOwnedItem(id, auth.userId!);
     if (owned.error) return owned.error;
 
     const body = await req.json();
@@ -112,7 +114,7 @@ export async function PUT(
     }
 
     const updated = await prisma.inventory_items.update({
-      where: { id: params.id },
+      where: { id },
       data,
     });
 
@@ -128,16 +130,17 @@ export async function PUT(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const { id } = await params;
     const auth = await getAuthenticatedChefId();
     if (auth.error) return auth.error;
 
-    const owned = await getOwnedItem(params.id, auth.userId!);
+    const owned = await getOwnedItem(id, auth.userId!);
     if (owned.error) return owned.error;
 
-    await prisma.inventory_items.delete({ where: { id: params.id } });
+    await prisma.inventory_items.delete({ where: { id } });
 
     return NextResponse.json({ success: true, message: "Inventory item deleted" });
   } catch (error) {

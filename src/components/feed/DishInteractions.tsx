@@ -9,7 +9,17 @@ export function AddToCartBtn({
   item,
 }: {
   minimal?: boolean;
-  item: { id: string; name: string; price: number; image?: string };
+  item: {
+    id: string;
+    name: string;
+    price: number;
+    image?: string;
+    kitchenId: string;
+    kitchenName: string;
+    kitchenLocation?: string;
+    kitchenRating?: number;
+    kitchenReviewCount?: number;
+  };
 }) {
   const { addItem } = useCart();
 
@@ -21,6 +31,11 @@ export function AddToCartBtn({
       name: item.name,
       price: item.price,
       image: item.image,
+      kitchenId: item.kitchenId,
+      kitchenName: item.kitchenName,
+      kitchenLocation: item.kitchenLocation,
+      kitchenRating: item.kitchenRating,
+      kitchenReviewCount: item.kitchenReviewCount,
     });
   };
 

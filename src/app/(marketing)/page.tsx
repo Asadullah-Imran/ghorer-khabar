@@ -6,8 +6,27 @@ import HowItWorks from "@/components/landing/HowItWorks";
 import PatternDivider from "@/components/landing/PatternDivider";
 import SellerSection from "@/components/landing/SellerSection";
 import TrustBanner from "@/components/landing/TrustBanner";
+import { getAuthUserId } from "@/lib/auth/getAuthUser";
+import { prisma } from "@/lib/prisma/prisma";
+import { redirect } from "next/navigation";
 
-export default function Landing() {
+export default async function Landing() {
+  const userId = await getAuthUserId();
+
+  if (userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true }
+    });
+
+    if (user) {
+      if (user.role === "SELLER") {
+        redirect("/chef/dashboard");
+      } else {
+        redirect("/feed");
+      }
+    }
+  }
   return (
     <>
       <Hero />

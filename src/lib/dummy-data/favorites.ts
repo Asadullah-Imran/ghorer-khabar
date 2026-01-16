@@ -7,6 +7,8 @@ export const FAVORITE_DISHES = [
     image:
       "https://images.unsplash.com/photo-1585937421612-70a008356f36?q=80&w=400&auto=format",
     kitchen: "Chef Rina's Kitchen",
+    kitchenId: "k1",
+    kitchenName: "Chef Rina's Kitchen",
     deliveryTime: "45 min",
   },
   {
@@ -17,6 +19,8 @@ export const FAVORITE_DISHES = [
     image:
       "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?q=80&w=400&auto=format",
     kitchen: "Old Dhaka Spices",
+    kitchenId: "k_old_dhaka",
+    kitchenName: "Old Dhaka Spices",
     deliveryTime: "60 min",
   },
   {
@@ -27,6 +31,8 @@ export const FAVORITE_DISHES = [
     image:
       "https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?q=80&w=400&auto=format",
     kitchen: "Bhorta House",
+    kitchenId: "k3",
+    kitchenName: "Bhorta House",
     deliveryTime: "25 min",
   },
 ];

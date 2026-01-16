@@ -1,6 +1,6 @@
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
+import { syncUserFromSupabase } from "@/lib/auth/syncUser";
 import { prisma } from "@/lib/prisma/prisma";
-import { createClient } from "@/lib/supabase/server";
 import { updateProfileSchema } from "@/lib/validation";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -19,6 +19,8 @@ import { NextRequest, NextResponse } from "next/server";
  *         description: Unauthorized
  *       500:
  *         description: Internal server error
+ *       404:
+ *         description: User not found
  */
 export async function GET() {
   try {
@@ -30,7 +32,7 @@ export async function GET() {
     }
 
     // Get user from database
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -46,56 +48,14 @@ export async function GET() {
     });
 
     if (!user) {
-      // Self-healing: Check if this is a Supabase user and sync to Prisma
-      try {
-        const supabase = await createClient();
-        const {
-          data: { user: supabaseUser },
-          error,
-        } = await supabase.auth.getUser();
+      // Self-healing: Try to sync from Supabase
+      // This handles cases where user exists in Supabase but not Prisma,
+      // or if there's an ID mismatch.
+      user = await syncUserFromSupabase(userId);
 
-        if (supabaseUser && supabaseUser.id === userId) {
-          console.log(
-            "Self-healing: Recreating missing Prisma user for",
-            userId
-          );
-
-          const newUser = await prisma.user.create({
-            data: {
-              id: userId,
-              email: supabaseUser.email!,
-              name:
-                supabaseUser.user_metadata.full_name ||
-                supabaseUser.user_metadata.name ||
-                "",
-              avatar:
-                supabaseUser.user_metadata.avatar_url ||
-                supabaseUser.user_metadata.picture,
-              authProvider: "GOOGLE", // Assuming Supabase users are mostly OAuth.
-              // Note: If using email/password via Supabase, this might be inaccurate but safer than crashing.
-              role: (supabaseUser.user_metadata.role as any) || "BUYER",
-              emailVerified: true,
-            },
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              phone: true,
-              avatar: true,
-              role: true,
-              emailVerified: true,
-              authProvider: true,
-              createdAt: true,
-            },
-          });
-
-          return NextResponse.json({ user: newUser });
-        }
-      } catch (syncError) {
-        console.error("Self-healing failed:", syncError);
+      if (!user) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
-
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({ user });

@@ -82,8 +82,14 @@ export async function GET(request: Request) {
           role
         );
 
+        // Redirect based on role
+        let redirectUrl = next;
+        if (role === "SELLER") {
+          redirectUrl = "/chef/dashboard";
+        }
+        
         // Redirect with success
-        return NextResponse.redirect(`${origin}${next}`);
+        return NextResponse.redirect(`${origin}${redirectUrl}`);
       } else {
         console.error("Session exchange failed:", error);
         return NextResponse.redirect(`${origin}/login?error=auth_failed`);

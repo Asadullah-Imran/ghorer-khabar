@@ -1,14 +1,29 @@
+import FeedGreeting from "@/components/feed/FeedGreeting";
 import DishCard from "@/components/shared/DishCard";
 import KitchenCard from "@/components/shared/KitchenCard";
-import PlanCard from "@/components/shared/PlanCard"; // 1. Import PlanCard
+import PlanCard from "@/components/shared/PlanCard";
 import SectionHeader from "@/components/shared/SectionHeader";
+import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import {
-    MONTHLY_TOP_KITCHENS
+  MONTHLY_TOP_KITCHENS
 } from "@/lib/dummy-data/feed";
-import { FEATURED_PLANS } from "@/lib/dummy-data/newSubscriptionData";
 import { prisma } from "@/lib/prisma/prisma";
 
+
 export default async function FeedPage() {
+  const userId = await getAuthUserId();
+  let userName = "Foodie";
+
+  if (userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+    if (user?.name) {
+      userName = user.name.split(" ")[0]; // Use first name
+    }
+  }
+
   const menuItems = await prisma.menu_items.findMany({
     include: {
       menu_item_images: true,
@@ -29,20 +44,52 @@ export default async function FeedPage() {
     rating: item.rating || 0,
     image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg", // Fallback image
     kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
+    kitchenId: item.users.kitchens[0]?.id || "unknown",
+    kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
+    kitchenLocation: item.users.kitchens[0]?.location || undefined, // Provide fallback? or undefined is fine
+    kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
+    kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
     deliveryTime: "30-45 min", // hardcoded for now as it's not on menu_item directly, maybe calc from kitchen?
   }));
+
+  // Fetch featured subscription plans from database
+  const subscriptionPlans = await prisma.subscription_plans.findMany({
+    where: { is_active: true },
+    include: {
+      kitchen: {
+        select: {
+          id: true,
+          name: true,
+          rating: true,
+          location: true,
+        },
+      },
+    },
+    orderBy: { subscriber_count: 'desc' }, // Show most popular first
+    take: 6, // Show top 6 featured plans
+  });
+
+  const featuredPlans = subscriptionPlans.map((plan) => ({
+    id: plan.id,
+    name: plan.name,
+    description: plan.description,
+    price: plan.price,
+    mealsPerDay: plan.meals_per_day,
+    servingsPerMeal: plan.servings_per_meal,
+    mealsPerMonth: plan.meals_per_day * 30,
+    rating: Number(plan.rating) || 0,
+    image: plan.cover_image || "/placeholder-plan.jpg",
+    kitchen: plan.kitchen?.name || "Unknown Kitchen",
+    type: plan.meals_per_day >= 3 ? "Full Day" : plan.meals_per_day >= 2 ? "Daily Plan" : "Single Meal",
+  }));
+
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* 1. Welcome Section */}
       <section className="bg-white border-b border-gray-100 py-6 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-xl md:text-2xl font-bold text-teal-900">
-            Good Afternoon, <span className="text-yellow-500">Asad!</span> 👋
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Ready to taste something homemade today?
-          </p>
+          <FeedGreeting name={userName} />
         </div>
       </section>
 
@@ -80,7 +127,7 @@ export default async function FeedPage() {
           </div>
         </section>
 
-        {/* 4. NEW: Featured Subscription Plans */}
+        {/* 4. Featured Subscription Plans */}
         <section>
           <SectionHeader
             title="Monthly Meal Plans"
@@ -88,7 +135,7 @@ export default async function FeedPage() {
             href="/explore?tab=subscriptions"
           />
           <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-4 scrollbar-hide snap-x">
-            {FEATURED_PLANS.map((plan) => (
+            {featuredPlans.map((plan) => (
               <div key={plan.id} className="snap-center min-w-[280px]">
                 <PlanCard data={plan} />
               </div>
