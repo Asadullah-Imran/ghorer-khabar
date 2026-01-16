@@ -1,4 +1,5 @@
 import { verifyToken } from "@/lib/auth/jwt";
+import { syncUserFromSupabase } from "@/lib/auth/syncUser";
 import { prisma } from "@/lib/prisma/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { chefOnboardingSchema } from "@/lib/validation";
