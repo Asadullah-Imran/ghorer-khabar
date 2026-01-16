@@ -26,6 +26,7 @@ interface KanbanColumnProps {
   color: string;
   icon?: React.ReactNode;
   onMove?: (orderId: string, newStatus: string) => void;
+  onReject?: (orderId: string) => void;
 }
 
 export default function KanbanColumn({
@@ -34,6 +35,7 @@ export default function KanbanColumn({
   color,
   icon,
   onMove,
+  onReject,
 }: KanbanColumnProps) {
   return (
     <div className="flex flex-col bg-gray-50 rounded-lg p-4 min-h-[500px] border border-gray-200">
@@ -50,7 +52,7 @@ export default function KanbanColumn({
       <div className="flex-1 overflow-y-auto space-y-3 pr-2">
         {orders.length > 0 ? (
           orders.map((order) => (
-            <OrderCard key={order.id} order={order} onMove={onMove} />
+            <OrderCard key={order.id} order={order} onMove={onMove} onReject={onReject} />
           ))
         ) : (
           <div className="flex items-center justify-center h-full text-gray-400 text-sm">

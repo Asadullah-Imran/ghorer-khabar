@@ -57,7 +57,7 @@ export default function MenuInsightsModal({
   const avgRating =
     reviews.length > 0
       ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
-      : menuItem.rating || 0;
+      : 0;
 
   const ratingDistribution = {
     5: reviews.filter((r) => r.rating === 5).length,

@@ -24,9 +24,10 @@ interface Order {
 interface OrderCardProps {
   order: Order;
   onMove?: (orderId: string, newStatus: string) => void;
+  onReject?: (orderId: string) => void;
 }
 
-export default function OrderCard({ order, onMove }: OrderCardProps) {
+export default function OrderCard({ order, onMove, onReject }: OrderCardProps) {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
       {/* Header: Order Number & Timer */}
@@ -98,7 +99,10 @@ export default function OrderCard({ order, onMove }: OrderCardProps) {
             >
               Accept
             </button>
-            <button className="py-2 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 transition">
+            <button 
+              onClick={() => onReject?.(order.id)}
+              className="py-2 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 transition"
+            >
               Reject
             </button>
           </div>

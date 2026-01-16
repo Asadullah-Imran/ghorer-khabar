@@ -46,7 +46,8 @@ export default function ReviewForm({
       return;
     }
 
-    if (!selectedOrderId) {
+    // Only require order selection when creating a new review
+    if (!existingReview && !selectedOrderId) {
       setError("Please select an order");
       return;
     }
@@ -97,9 +98,16 @@ export default function ReviewForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex items-center justify-between">
-        <h4 className="font-semibold text-gray-900">
-          {existingReview ? "Edit Your Review" : "Write Your Review"}
-        </h4>
+        <div>
+          <h4 className="font-semibold text-gray-900">
+            {existingReview ? "Edit Your Review" : "Write Your Review"}
+          </h4>
+          {existingReview && (
+            <p className="text-xs text-gray-500 mt-1">
+              Update your rating and feedback
+            </p>
+          )}
+        </div>
         <button
           type="button"
           onClick={onCancel}

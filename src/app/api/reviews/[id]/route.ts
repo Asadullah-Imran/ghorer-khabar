@@ -121,3 +121,87 @@ export async function PUT(
     );
   }
 }
+
+/**
+ * DELETE /api/reviews/[id]
+ * Delete a review
+ */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const userId = await getAuthUserId();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    // Fetch the review to verify ownership
+    const review = await prisma.review.findUnique({
+      where: { id },
+    });
+
+    if (!review) {
+      return NextResponse.json(
+        { error: "Review not found" },
+        { status: 404 }
+      );
+    }
+
+    if (review.userId !== userId) {
+      return NextResponse.json(
+        { error: "Unauthorized - You can only delete your own reviews" },
+        { status: 403 }
+      );
+    }
+
+    const menuItemId = review.menuItemId;
+
+    // Delete the review
+    await prisma.review.delete({
+      where: { id },
+    });
+
+    // Recalculate menu item rating and review count
+    const allReviews = await prisma.review.findMany({
+      where: { menuItemId },
+      select: { rating: true },
+    });
+
+    if (allReviews.length > 0) {
+      const averageRating =
+        allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
+
+      await prisma.menu_items.update({
+        where: { id: menuItemId },
+        data: {
+          rating: Math.round(averageRating * 10) / 10,
+          reviewCount: allReviews.length,
+        },
+      });
+    } else {
+      // Reset rating if no reviews left
+      await prisma.menu_items.update({
+        where: { id: menuItemId },
+        data: {
+          rating: 0,
+          reviewCount: 0,
+        },
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Review deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting review:", error);
+    return NextResponse.json(
+      { error: "Failed to delete review" },
+      { status: 500 }
+    );
+  }
+}
