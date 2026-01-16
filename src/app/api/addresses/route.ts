@@ -1,3 +1,4 @@
+import { syncUserFromSupabase } from "@/lib/auth/syncUser";
 import { prisma } from "@/lib/prisma/prisma";
 import { createClient } from "@/lib/supabase/server";
 import jwt from "jsonwebtoken";
@@ -44,32 +45,32 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if this user exists in database, if not check by email (OAuth vs email/password issue)
-    const existingUser = await prisma.user.findUnique({
+    // Check if this user exists in database
+    let existingUser = await prisma.user.findUnique({
       where: { id: userId },
     });
 
     if (!existingUser) {
-      // User doesn't exist with this OAuth ID, check by email
-      const supabase = await createClient();
-      const {
-        data: { user: supabaseUser },
-      } = await supabase.auth.getUser();
-
-      if (supabaseUser?.email) {
-        const userByEmail = await prisma.user.findUnique({
-          where: { email: supabaseUser.email },
-        });
-
-        if (userByEmail) {
-          userId = userByEmail.id;
-          console.log(
-            "GET /api/addresses - Found user by email, using database userId:",
-            userId
-          );
-        }
+      // Try to sync from Supabase (handles ID mismatch)
+      existingUser = await syncUserFromSupabase(userId);
+      
+      if (existingUser) {
+        console.log("GET /api/addresses - Synced user from Supabase");
       }
     }
+
+    if (!existingUser && userId) {
+      // If still not found but we have a userId, it might be a valid JWT user who was deleted?
+      // Or pure Supabase user creation failed.
+      // For legacy consistency, if we truly can't find them, we let flow continue or 401.
+      // The original code was returning empty addresses if no user found effectively? 
+      // Actually original code proceeded to findMany with userId. If user doesn't exist, findMany returns empty [] usually strictly speaking FK might not enforce it on find?
+      // But Prisma Address has relation to User. findMany might implicitly require user existence if we include it, but here we don't.
+      // However, if we updated the ID, we want to make sure we use the ID that is IN THE DB.
+      // syncUserFromSupabase updates the DB to use the 'userId' (Supabase ID).
+      // So 'userId' variable is correct.
+    }
+
 
     const addresses = await prisma.address.findMany({
       where: { userId },
@@ -110,46 +111,32 @@ export async function POST(req: NextRequest) {
     });
 
     if (!existingUser) {
-      const supabase = await createClient();
-      const {
-        data: { user: supabaseUser },
-      } = await supabase.auth.getUser();
+       // Try to sync from Supabase (handles ID mismatch)
+       existingUser = await syncUserFromSupabase(userId);
+       
+       if (existingUser) {
+         console.log("POST /api/addresses - Synced user from Supabase");
+         // Since syncUserFromSupabase updates userId in DB to match Supabase ID,
+         // the original userId variable (Supabase ID) is now valid and correct.
+       } else {
+          // Fallback if sync failed but we have an ID (likely JWT case or error)
+          // If it was JWT, existingUser should have been found.
+          // This block is mostly reachable if it's Supabase auth but sync failed or disconnected.
+       }
+    }
 
-      if (supabaseUser) {
-        // Check if user with this email already exists
-        const userByEmail = await prisma.user.findUnique({
-          where: { email: supabaseUser.email! },
-        });
-
-        if (userByEmail) {
-          // Use the existing user's ID instead
-          userId = userByEmail.id;
-          existingUser = userByEmail;
-        } else {
-          // Create new user
-          try {
-            existingUser = await prisma.user.create({
-              data: {
-                id: userId,
-                email: supabaseUser.email!,
-                name:
-                  supabaseUser.user_metadata?.name ||
-                  supabaseUser.email?.split("@")[0] ||
-                  null,
-                authProvider: "GOOGLE",
-                emailVerified: true,
-                avatar: supabaseUser.user_metadata?.avatar_url || null,
-              },
-            });
-          } catch (userError: any) {
-            console.log("User creation failed:", userError.message);
-            return NextResponse.json(
-              { error: "User account setup failed. Please contact support." },
-              { status: 500 }
-            );
-          }
-        }
-      }
+    if (!existingUser) {
+        // If still no user, we can't create address safely due to foreign key
+        // However, the original code proceeded?
+        // Original code tried to create a user if not found.
+        // syncUserFromSupabase DOES create a user if not found!
+        // So existingUser should be populated if sync succeeded.
+        // If existingUser is null here, something is wrong with auth or DB.
+        // We might want to return error.
+         return NextResponse.json(
+            { error: "User account verification failed. Please try logging in again." },
+            { status: 401 }
+         );
     }
 
     const body = await req.json();
