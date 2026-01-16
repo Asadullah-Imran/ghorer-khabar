@@ -11,6 +11,9 @@ export default function DishActions({
   price,
   kitchenId,
   kitchenName,
+  chefId,
+  currentUserId,
+  userRole,
 }: {
   id: string;
   name: string;
@@ -18,10 +21,17 @@ export default function DishActions({
   price: number;
   kitchenId: string;
   kitchenName: string;
+  chefId?: string;
+  currentUserId?: string | null;
+  userRole?: string | null;
 }) {
   console.log("DEBUG_DISH_ACTIONS_PROPS:", { id, kitchenId, kitchenName });
   const [qty, setQty] = useState(1);
   const { addItem } = useCart();
+
+  // Check if user is the creator of this dish
+  const isOwnDish = !!(currentUserId && chefId && currentUserId === chefId && userRole?.includes('SELLER'));
+  const canAddToCart = userRole === 'BUYER' || !isOwnDish;
 
   const increment = () => setQty((prev) => prev + 1);
   const decrement = () => setQty((prev) => (prev > 1 ? prev - 1 : 1));
@@ -58,11 +68,17 @@ export default function DishActions({
 
           {/* Add Button */}
           <button
-            className="flex-1 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-lg py-3 px-6 flex items-center justify-center gap-2 transition-transform active:scale-[0.98] shadow-md"
-            onClick={() => addItem({ id, name, image, price, kitchenId, kitchenName }, qty)}
+            className={`flex-1 font-bold rounded-lg py-3 px-6 flex items-center justify-center gap-2 transition-transform shadow-md ${
+              !canAddToCart
+                ? "bg-gray-400 cursor-not-allowed opacity-50"
+                : "bg-teal-700 hover:bg-teal-800 text-white active:scale-[0.98]"
+            }`}
+            onClick={() => canAddToCart && addItem({ id, name, image, price, kitchenId, kitchenName }, qty)}
+            disabled={!canAddToCart}
+            title={isOwnDish ? "You cannot add your own dishes to cart" : ""}
           >
             <ShoppingBag size={20} />
-            Add to Cart
+            {isOwnDish ? "Your Dish" : "Add to Cart"}
           </button>
         </div>
 
