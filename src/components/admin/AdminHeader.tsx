@@ -67,7 +67,7 @@ export default function AdminHeader({ title, description, actions }: AdminHeader
               />
               <div className="absolute right-0 mt-2 w-48 bg-surface-dark border border-border-dark rounded-lg shadow-lg z-20">
                 <div className="p-3 border-b border-border-dark">
-                  <p className="text-sm text-white font-medium">{user?.name || 'Admin'}</p>
+                  <p className="text-sm text-white font-medium">{user?.user_metadata?.name || user?.user_metadata?.full_name || 'Admin'}</p>
                   <p className="text-xs text-text-muted truncate">{user?.email}</p>
                 </div>
                 <button

@@ -80,7 +80,7 @@ export async function DELETE(req: NextRequest) {
 
     // Delete related order items first (cascade delete)
     await prisma.orderItem.deleteMany({
-      where: { menu_item_id: menuItemId },
+      where: { menuItemId },
     });
 
     // Delete related menu item images
