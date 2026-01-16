@@ -2,9 +2,7 @@
 
 import { useCart } from "@/components/cart/CartProvider";
 import { useAuth } from "@/contexts/AuthContext";
-import UserNotificationFeed from "@/components/notifications/UserNotificationFeed";
 import {
-  Bell,
   ChefHat,
   Home,
   Loader2,
@@ -24,37 +22,12 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [notificationsLoading, setNotificationsLoading] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
-  const notificationMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
   const { totalItems } = useCart();
   const { user, role, signOut } = useAuth();
-
-  // Fetch notifications
-  const fetchNotifications = async () => {
-    try {
-      setNotificationsLoading(true);
-      const response = await fetch("/api/user/notifications?limit=10", {
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success && data.data) {
-          setNotifications(data.data);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching notifications:", error);
-    } finally {
-      setNotificationsLoading(false);
-    }
-  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -65,30 +38,16 @@ export default function Navbar() {
       ) {
         setIsProfileMenuOpen(false);
       }
-
-      if (
-        notificationMenuRef.current &&
-        !notificationMenuRef.current.contains(event.target as Node)
-      ) {
-        setIsNotificationOpen(false);
-      }
     };
 
-    if (isProfileMenuOpen || isNotificationOpen) {
+    if (isProfileMenuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isProfileMenuOpen, isNotificationOpen]);
-
-  // Fetch notifications on mount and when dropdown opens
-  useEffect(() => {
-    if (isNotificationOpen) {
-      fetchNotifications();
-    }
-  }, [isNotificationOpen]);
+  }, [isProfileMenuOpen]);
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -181,36 +140,6 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
-
-            {/* Notification Dropdown */}
-            <div className="hidden md:block relative" ref={notificationMenuRef}>
-              <button
-                onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                className="relative p-2 text-gray-600 hover:text-brand-teal transition"
-                title="Notifications"
-              >
-                <Bell size={24} />
-                {notifications.filter((n) => !n.read).length > 0 && (
-                  <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                    {notifications.filter((n) => !n.read).length}
-                  </span>
-                )}
-              </button>
-
-              {/* Notification Dropdown Panel */}
-              {isNotificationOpen && (
-                <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 z-50">
-                  {notificationsLoading ? (
-                    <div className="p-8 text-center">
-                      <div className="w-8 h-8 border-4 border-gray-200 border-t-brand-teal rounded-full animate-spin mx-auto"></div>
-                      <p className="text-gray-500 mt-2 text-sm">Loading notifications...</p>
-                    </div>
-                  ) : (
-                    <UserNotificationFeed notifications={notifications} />
-                  )}
-                </div>
-              )}
-            </div>
 
             {/* Profile Dropdown */}
             <div className="hidden md:block relative" ref={profileMenuRef}>

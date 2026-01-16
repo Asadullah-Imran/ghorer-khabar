@@ -1,5 +1,5 @@
 import AuthGuard from "@/components/auth/AuthGuard";
-import Navbar from "@/components/Navigation/Navbar";
+import Navbar from "@/components/navigation/Navbar";
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
 import type { Metadata } from "next";
