@@ -1,6 +1,6 @@
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
+import { syncUserFromSupabase } from "@/lib/auth/syncUser";
 import { prisma } from "@/lib/prisma/prisma";
-import { createClient } from "@/lib/supabase/server";
 import { updateProfileSchema } from "@/lib/validation";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -19,6 +19,8 @@ import { NextRequest, NextResponse } from "next/server";
  *         description: Unauthorized
  *       500:
  *         description: Internal server error
+ *       404:
+ *         description: User not found
  */
 export async function GET() {
   try {
@@ -30,7 +32,7 @@ export async function GET() {
     }
 
     // Get user from database
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -46,100 +48,14 @@ export async function GET() {
     });
 
     if (!user) {
-      // Self-healing: Check if this is a Supabase user and sync to Prisma
-      try {
-        const supabase = await createClient();
-        const {
-          data: { user: supabaseUser },
-          error,
-        } = await supabase.auth.getUser();
+      // Self-healing: Try to sync from Supabase
+      // This handles cases where user exists in Supabase but not Prisma,
+      // or if there's an ID mismatch.
+      user = await syncUserFromSupabase(userId);
 
-        if (supabaseUser && supabaseUser.id === userId) {
-          console.log(
-            "Self-healing: Recreating missing Prisma user for",
-            userId
-          );
-
-          // Check if user exists with the same email but different ID
-          // This happens if the DB has an old record or different ID generation
-          const existingUserByEmail = await prisma.user.findUnique({
-            where: { email: supabaseUser.email! },
-            select: { id: true },
-          });
-
-          if (existingUserByEmail) {
-            console.log(
-              `User exists by email (${supabaseUser.email}) with different ID (${existingUserByEmail.id}). Syncing to Supabase ID (${userId}).`
-            );
-
-            // Update the existing user's ID to match Supabase ID
-            // We need to use update which might be tricky for ID, but Prisma allows it
-            // if we handle foreign keys. However, cascading updates usually handle this.
-            // If ID update is restricted, we might need a different strategy,
-            // but assuming standard cascade setup:
-            const updatedUser = await prisma.user.update({
-              where: { email: supabaseUser.email! },
-              data: {
-                id: userId,
-                authProvider: "GOOGLE", // Sync auth provider
-                avatar:
-                  supabaseUser.user_metadata.avatar_url ||
-                  supabaseUser.user_metadata.picture,
-                emailVerified: true,
-              },
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                avatar: true,
-                role: true,
-                emailVerified: true,
-                authProvider: true,
-                createdAt: true,
-              },
-            });
-
-            return NextResponse.json({ user: updatedUser });
-          } else {
-            console.log("Creating new user for", userId);
-            // No existing email, allow create
-            const newUser = await prisma.user.create({
-              data: {
-                id: userId,
-                email: supabaseUser.email!,
-                name:
-                  supabaseUser.user_metadata.full_name ||
-                  supabaseUser.user_metadata.name ||
-                  "",
-                avatar:
-                  supabaseUser.user_metadata.avatar_url ||
-                  supabaseUser.user_metadata.picture,
-                authProvider: "GOOGLE",
-                role: (supabaseUser.user_metadata.role as any) || "BUYER",
-                emailVerified: true,
-              },
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                avatar: true,
-                role: true,
-                emailVerified: true,
-                authProvider: true,
-                createdAt: true,
-              },
-            });
-
-            return NextResponse.json({ user: newUser });
-          }
-        }
-      } catch (syncError) {
-        console.error("Self-healing failed:", syncError);
+      if (!user) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
-
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({ user });

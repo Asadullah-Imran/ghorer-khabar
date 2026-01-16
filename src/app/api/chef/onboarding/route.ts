@@ -113,10 +113,22 @@ export async function POST(request: NextRequest) {
     const validatedData = chefOnboardingSchema.parse(body);
 
     // Check if user exists
-    const existingUser = await prisma.user.findUnique({
+    let existingUser = await prisma.user.findUnique({
       where: { id: user.id },
       include: { kitchens: true },
     });
+
+    if (!existingUser) {
+      // Try to sync from Supabase
+      const syncedUser = await syncUserFromSupabase(user.id);
+      if (syncedUser) {
+          // Re-fetch to get relations
+          existingUser = await prisma.user.findUnique({
+              where: { id: syncedUser.id },
+              include: { kitchens: true },
+          });
+      }
+    }
 
     if (!existingUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
