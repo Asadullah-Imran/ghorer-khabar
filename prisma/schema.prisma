@@ -31,6 +31,7 @@ model User {
   menu_items         menu_items[]
   notifications      Notification[]
   orders             Order[]
+  reviews            Review[]
 
   @@map("users")
 }
@@ -109,6 +110,7 @@ model menu_items {
   menu_item_images menu_item_images[]
   users            User               @relation(fields: [chef_id], references: [id], onDelete: Cascade)
   orderItems       OrderItem[]
+  reviews          Review[]
 
   @@index([chef_id])
 }
@@ -203,6 +205,7 @@ model Order {
   items     OrderItem[]
   kitchen   Kitchen     @relation(fields: [kitchenId], references: [id])
   user      User        @relation(fields: [userId], references: [id])
+  reviews   Review[]
 
   @@index([userId])
   @@index([kitchenId])
@@ -256,6 +259,26 @@ model Notification {
   @@index([kitchenId])
   @@index([read])
   @@map("notifications")
+}
+
+model Review {
+  id         String     @id @default(cuid())
+  userId     String     @map("user_id")
+  menuItemId String     @map("menu_item_id")
+  orderId    String     @map("order_id")
+  rating     Int
+  comment    String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  menuItem   menu_items @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+  order      Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, menuItemId, orderId])
+  @@index([userId])
+  @@index([menuItemId])
+  @@index([orderId])
+  @@map("reviews")
 }
 
 enum Role {

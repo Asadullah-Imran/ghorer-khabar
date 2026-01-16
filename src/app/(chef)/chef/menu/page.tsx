@@ -30,6 +30,8 @@ export default function MenuPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const [itemToDelete, setItemToDelete] = useState<MenuItem | null>(null);
   const [insightsItemId, setInsightsItemId] = useState<string | null>(null);
+  const [insightsReviews, setInsightsReviews] = useState<any[]>([]);
+  const [loadingInsights, setLoadingInsights] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -240,6 +242,28 @@ export default function MenuPage() {
     }
   };
 
+  const fetchReviewsForItem = async (menuItemId: string) => {
+    try {
+      setLoadingInsights(true);
+      const res = await fetch(`/api/chef/menu/${menuItemId}/reviews`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setInsightsReviews(data.data || []);
+      } else {
+        console.error("Failed to fetch reviews:", data.error);
+        setInsightsReviews([]);
+      }
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+      setInsightsReviews([]);
+    } finally {
+      setLoadingInsights(false);
+    }
+  };
+
   const categories = ["All", "Rice", "Beef", "Chicken", "Fish", "Vegetarian", "Seafood"];
 
   return (
@@ -354,7 +378,12 @@ export default function MenuPage() {
                   onEdit={() => handleEdit(item)}
                   onDelete={() => handleDelete(item)}
                   onToggleAvailability={() => item.id && handleToggleAvailability(item.id)}
-                  onViewInsights={() => item.id && setInsightsItemId(item.id)}
+                  onViewInsights={async () => {
+                    if (item.id) {
+                      setInsightsItemId(item.id);
+                      await fetchReviewsForItem(item.id);
+                    }
+                  }}
                 />
               ))}
             </div>
@@ -397,9 +426,13 @@ export default function MenuPage() {
           {insightsItemId && (
             <MenuInsightsModal
               menuItem={menuItems.find((item) => item.id === insightsItemId)!}
-              reviews={[]}
+              reviews={insightsReviews}
               isOpen={!!insightsItemId}
-              onClose={() => setInsightsItemId(null)}
+              loading={loadingInsights}
+              onClose={() => {
+                setInsightsItemId(null);
+                setInsightsReviews([]);
+              }}
             />
           )}
         </>

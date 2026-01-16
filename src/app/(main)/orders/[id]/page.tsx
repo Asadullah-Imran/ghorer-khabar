@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma/prisma";
 import { CheckCircle, ChevronRight, Clock, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import OrderItemReviewButton from "@/components/orders/OrderItemReviewButton";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -25,7 +26,15 @@ export default async function OrderDetailsPage({ params }: PageProps) {
             }
         },
         kitchen: true,
-        user: true
+        user: true,
+        reviews: {
+            select: {
+                id: true,
+                menuItemId: true,
+                rating: true,
+                comment: true,
+            }
+        }
     }
   });
 
@@ -89,20 +98,40 @@ export default async function OrderDetailsPage({ params }: PageProps) {
         <div className="bg-white p-6 rounded-b-xl shadow-sm">
             <h3 className="font-bold text-gray-900 mb-4">Order Items</h3>
             <div className="space-y-4">
-                {order.items.map((item) => (
-                    <div key={item.id} className="flex justify-between items-center pb-4 border-b border-gray-50 last:border-0 last:pb-0">
-                        <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded text-gray-500 font-bold text-xs">
-                                {item.quantity}x
+                {order.items.map((item) => {
+                    const review = order.reviews.find(
+                        (r) => r.menuItemId === item.menuItemId
+                    );
+                    const hasReviewed = !!review;
+                    return (
+                        <div key={item.id} className="pb-4 border-b border-gray-50 last:border-0 last:pb-0">
+                            <div className="flex justify-between items-center mb-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded text-gray-500 font-bold text-xs">
+                                        {item.quantity}x
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-gray-900">{item.menuItem.name}</p>
+                                        <p className="text-xs text-gray-500">From {order.kitchen.name}</p>
+                                    </div>
+                                </div>
+                                <p className="font-bold text-gray-900">৳{item.price * item.quantity}</p>
                             </div>
-                            <div>
-                                <p className="font-medium text-gray-900">{item.menuItem.name}</p>
-                                <p className="text-xs text-gray-500">From {order.kitchen.name}</p>
-                            </div>
+                            {order.status === "COMPLETED" && (
+                                <OrderItemReviewButton
+                                    menuItemId={item.menuItemId}
+                                    menuItemName={item.menuItem.name}
+                                    orderId={order.id}
+                                    orderDate={order.createdAt}
+                                    hasReviewed={hasReviewed}
+                                    reviewId={review?.id}
+                                    reviewRating={review?.rating}
+                                    reviewComment={review?.comment}
+                                />
+                            )}
                         </div>
-                        <p className="font-bold text-gray-900">৳{item.price * item.quantity}</p>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             <div className="mt-6 pt-4 border-t border-dashed border-gray-200">
