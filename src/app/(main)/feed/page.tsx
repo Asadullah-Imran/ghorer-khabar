@@ -1,14 +1,29 @@
+import FeedGreeting from "@/components/feed/FeedGreeting";
 import DishCard from "@/components/shared/DishCard";
 import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard"; // 1. Import PlanCard
-import SectionHeader from "@/components/shared/SectionHeader";
+import SectionHeader from "@/components/shared/SectionHeader"; // 1. Import PlanCard
+import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import {
-  MONTHLY_TOP_KITCHENS
+    MONTHLY_TOP_KITCHENS
 } from "@/lib/dummy-data/feed";
 import { FEATURED_PLANS } from "@/lib/dummy-data/newSubscriptionData";
 import { prisma } from "@/lib/prisma/prisma";
 
 export default async function FeedPage() {
+  const userId = await getAuthUserId();
+  let userName = "Foodie";
+
+  if (userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+    if (user?.name) {
+      userName = user.name.split(" ")[0]; // Use first name
+    }
+  }
+
   const menuItems = await prisma.menu_items.findMany({
     include: {
       menu_item_images: true,
@@ -42,12 +57,7 @@ export default async function FeedPage() {
       {/* 1. Welcome Section */}
       <section className="bg-white border-b border-gray-100 py-6 px-4 md:px-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-xl md:text-2xl font-bold text-teal-900">
-            Good Afternoon, <span className="text-yellow-500">Asad!</span> 👋
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Ready to taste something homemade today?
-          </p>
+          <FeedGreeting name={userName} />
         </div>
       </section>
 
