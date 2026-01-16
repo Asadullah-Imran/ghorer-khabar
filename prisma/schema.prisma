@@ -29,6 +29,7 @@ model User {
   inventory_items    inventory_items[]
   kitchens           Kitchen[]
   menu_items         menu_items[]
+  notifications      Notification[]
   orders             Order[]
 
   @@map("users")
@@ -143,6 +144,7 @@ model Kitchen {
   updatedAt           DateTime             @updatedAt
   gallery             KitchenGallery[]
   seller              User                 @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  notifications       Notification[]
   orders              Order[]
   subscription_plans  subscription_plans[]
 
@@ -238,6 +240,24 @@ model inventory_items {
   @@index([chef_id])
 }
 
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String?          @map("user_id")
+  kitchenId String?          @map("kitchen_id")
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  kitchen   Kitchen?         @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
+  user      User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([kitchenId])
+  @@index([read])
+  @@map("notifications")
+}
+
 enum Role {
   BUYER
   SELLER
@@ -273,4 +293,11 @@ enum OrderStatus {
   DELIVERING
   COMPLETED
   CANCELLED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
 }

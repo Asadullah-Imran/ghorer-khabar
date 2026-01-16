@@ -1,5 +1,24 @@
-import { Order } from "@/lib/dummy-data/chef";
 import OrderCard from "./OrderCard";
+
+interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  id: string;
+  orderNumber: string;
+  status: "new" | "cooking" | "ready" | "handover";
+  customerName: string;
+  customerPhone: string;
+  items: OrderItem[];
+  totalPrice: number;
+  specialNotes?: string;
+  createdAt: Date;
+  prepTime: number;
+  userId: string;
+}
 
 interface KanbanColumnProps {
   title: string;
