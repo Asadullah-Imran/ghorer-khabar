@@ -4,21 +4,29 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ChefHat, Loader2, LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface ChefNavbarProps {
   kitchenName?: string;
-  chefImage?: string;
 }
 
 export default function ChefNavbar({
   kitchenName = "Chef's Kitchen",
-  chefImage = "https://i.pravatar.cc/150?u=chef001",
 }: ChefNavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const router = useRouter();
+
+  // Get user avatar from Google or use default
+  const userAvatar =
+    user?.user_metadata?.avatar_url ||
+    user?.user_metadata?.picture ||
+    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      user?.email || "Chef"
+    )}&background=0D8ABC&color=fff`;
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -60,6 +68,15 @@ export default function ChefNavbar({
 
           {/* Right Section - Chef Info & Logout */}
           <div className="flex items-center gap-4">
+            {/* Switch to Buyer Button */}
+            <button
+              onClick={() => router.push("/feed")}
+              className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-teal-600 transition"
+            >
+              <ChefHat size={18} />
+              <span>Switch to Buyer</span>
+            </button>
+
             {/* Profile Button with Menu (Desktop) */}
             <div className="hidden md:flex items-center gap-3 relative">
               {/* Profile Button */}
@@ -68,7 +85,7 @@ export default function ChefNavbar({
                 className="relative w-10 h-10 bg-gray-200 rounded-full overflow-hidden border-2 border-teal-600 shadow-sm hover:border-teal-700 transition"
               >
                 <Image
-                  src={chefImage}
+                  src={userAvatar}
                   alt="Profile"
                   width={40}
                   height={40}
@@ -134,7 +151,7 @@ export default function ChefNavbar({
             <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
               <div className="w-12 h-12 bg-gray-200 rounded-full overflow-hidden border-2 border-teal-600">
                 <Image
-                  src={chefImage}
+                  src={userAvatar}
                   alt="Profile"
                   width={48}
                   height={48}
@@ -161,17 +178,12 @@ export default function ChefNavbar({
             <button
               onClick={() => {
                 setIsMobileMenuOpen(false);
-                handleLogout();
+                router.push("/feed");
               }}
-              disabled={isLoggingOut}
-              className="w-full px-4 py-3 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-4 py-3 text-sm font-medium text-teal-600 bg-teal-50 rounded-lg hover:bg-teal-100 transition flex items-center justify-center gap-2"
             >
-              {isLoggingOut ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <LogOut size={16} />
-              )}
-              {isLoggingOut ? "Logging out..." : "Logout"}
+              <ChefHat size={16} />
+              Switch to Buyer
             </button>
           </div>
         </div>
