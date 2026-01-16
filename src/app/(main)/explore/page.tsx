@@ -2,8 +2,9 @@ import FilterTabs from "@/components/explore/FilterTabs";
 import DishCard from "@/components/shared/DishCard";
 import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard";
+import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import {
-    CATEGORIES
+  CATEGORIES
 } from "@/lib/dummy-data/explore";
 import { prisma } from "@/lib/prisma/prisma";
 
@@ -163,6 +164,29 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
     }));
   }
 
+  // Fetch user's favorites once to avoid multiple API calls
+  const userId = await getAuthUserId();
+  let favoriteDishIds = new Set<string>();
+  let favoriteKitchenIds = new Set<string>();
+  let favoritePlanIds = new Set<string>();
+
+  if (userId) {
+    const userFavorites = await prisma.favorite.findMany({
+      where: { userId },
+      select: {
+        dishId: true,
+        kitchenId: true,
+        planId: true,
+      },
+    });
+
+    userFavorites.forEach((fav) => {
+      if (fav.dishId) favoriteDishIds.add(fav.dishId);
+      if (fav.kitchenId) favoriteKitchenIds.add(fav.kitchenId);
+      if (fav.planId) favoritePlanIds.add(fav.planId);
+    });
+  }
+
   // --- LEGACY FILTERING LOGIC (No longer needed) ---
 
   return (
@@ -186,7 +210,7 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
             {dishes.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {dishes.map((dish) => (
-                  <DishCard key={dish.id} data={dish} />
+                  <DishCard key={dish.id} data={dish} isFavorite={favoriteDishIds.has(dish.id)} />
                 ))}
               </div>
             ) : (
@@ -201,7 +225,7 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
             {kitchens.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {kitchens.map((kitchen) => (
-                  <KitchenCard key={kitchen.id} data={kitchen} />
+                  <KitchenCard key={kitchen.id} data={kitchen} isFavorite={favoriteKitchenIds.has(kitchen.id)} />
                 ))}
               </div>
             ) : (
@@ -216,7 +240,7 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
             {plans.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {plans.map((plan) => (
-                  <PlanCard key={plan.id} data={plan} />
+                  <PlanCard key={plan.id} data={plan} isFavorite={favoritePlanIds.has(plan.id)} />
                 ))}
               </div>
             ) : (

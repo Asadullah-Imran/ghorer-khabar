@@ -1,7 +1,8 @@
 import { Clock, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { AddToCartBtn, FavoriteBtn } from "../feed/DishInteractions";
+import { AddToCartBtn } from "../feed/DishInteractions";
+import FavoriteButton from "./FavoriteButton";
 
 interface DishProps {
   data: {
@@ -19,9 +20,10 @@ interface DishProps {
     deliveryTime: string;
   };
   featured?: boolean;
+  isFavorite?: boolean; // NEW: Pass from parent
 }
 
-export default function DishCard({ data, featured }: DishProps) {
+export default function DishCard({ data, featured, isFavorite }: DishProps) {
   return (
     <Link href={`/explore/dish/${data.id}`} className="group block h-full">
       <div
@@ -39,7 +41,7 @@ export default function DishCard({ data, featured }: DishProps) {
             className="object-cover group-hover:scale-105 transition duration-500"
           />
           <div className="absolute top-2 right-2 z-10">
-            <FavoriteBtn />
+            <FavoriteButton itemId={data.id} itemType="dish" initialIsFavorite={isFavorite} />
           </div>
         </div>
 

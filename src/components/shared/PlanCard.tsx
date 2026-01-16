@@ -1,6 +1,7 @@
 import { CalendarCheck, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import FavoriteButton from "./FavoriteButton";
 
 interface PlanProps {
   data: {
@@ -16,9 +17,10 @@ interface PlanProps {
     rating?: number;
     image: string;
   };
+  isFavorite?: boolean; // NEW: Pass from parent
 }
 
-export default function PlanCard({ data }: PlanProps) {
+export default function PlanCard({ data, isFavorite }: PlanProps) {
   // Logic to normalize data
   const kitchenName = data.kitchen || data.chef?.name || "Ghorer Chef";
   const badgeText = data.type || (data.mealsPerDay ? "Daily Plan" : "Monthly");
@@ -45,7 +47,10 @@ export default function PlanCard({ data }: PlanProps) {
             fill
             className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
-          <div className="absolute top-2 left-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-teal-800 uppercase tracking-wider">
+          <div className="absolute top-2 left-2">
+            <FavoriteButton itemId={data.id} itemType="plan" initialIsFavorite={isFavorite} />
+          </div>
+          <div className="absolute top-2 left-14 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-teal-800 uppercase tracking-wider">
             {badgeText}
           </div>
           {data.rating && (
