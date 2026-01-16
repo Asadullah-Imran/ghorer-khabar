@@ -31,6 +31,7 @@ interface MenuItem {
   isVegetarian?: boolean;
   images?: MenuImage[];
   ingredients?: Ingredient[];
+  deletedImageIds?: string[];
 }
 
 interface MenuItemFormProps {
@@ -81,6 +82,8 @@ export default function MenuItemForm({
       : []
   );
 
+  const [deletedImageIds, setDeletedImageIds] = useState<string[]>([]);
+
   const [ingredients, setIngredients] = useState<Ingredient[]>(
     item?.ingredients || []
   );
@@ -113,6 +116,7 @@ export default function MenuItemForm({
       ...formData,
       images: images,
       ingredients: ingredients,
+      deletedImageIds: deletedImageIds,
     };
 
   //  console.log("Menu item to save:", menuItem);
@@ -171,9 +175,17 @@ export default function MenuItemForm({
 
   const removeImage = (index: number) => {
     const image = images[index];
+    
+    // If this is an existing image (has an ID), track it for deletion
+    if (image.id && !image.isNew) {
+      setDeletedImageIds([...deletedImageIds, image.id]);
+    }
+    
+    // Clean up blob URL if it's a new image
     if (image.preview.startsWith("blob:")) {
       URL.revokeObjectURL(image.preview);
     }
+    
     setImages(images.filter((_, i) => i !== index));
   };
 
@@ -288,8 +300,11 @@ export default function MenuItemForm({
                 value={formData.prepTime}
                 onChange={(e) =>
                   setFormData({ ...formData, prepTime: parseInt(e.target.value) })
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                }                onFocus={(e) => {
+                  if (e.target.value === "30") {
+                    e.target.value = "";
+                  }
+                }}                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
                 min="10"
               />
             </div>
@@ -309,6 +324,11 @@ export default function MenuItemForm({
                 onChange={(e) =>
                   setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })
                 }
+                onFocus={(e) => {
+                  if (e.target.value === "0" || e.target.value === "") {
+                    e.target.value = "";
+                  }
+                }}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-gray-100"
                 min="0"
                 step="0.01"
@@ -321,6 +341,11 @@ export default function MenuItemForm({
               </label>
               <input
                 type="number"
+                onFocus={(e) => {
+                  if (e.target.value === "0" || e.target.value === "") {
+                    e.target.value = "";
+                  }
+                }}
                 disabled={uploading || isLoading}
                 value={formData.calories}
                 onChange={(e) =>
@@ -509,6 +534,11 @@ export default function MenuItemForm({
                         onChange={(e) =>
                           updateIngredient(index, "quantity", e.target.value)
                         }
+                        onFocus={(e) => {
+                          if (e.target.value === "0" || e.target.value === "") {
+                            e.target.value = "";
+                          }
+                        }}
                         className="w-full px-2 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
                         placeholder="500"
                       />
@@ -542,6 +572,11 @@ export default function MenuItemForm({
                         Cost (৳)
                       </label>
                       <input
+                        onFocus={(e) => {
+                          if (e.target.value === "0" || e.target.value === "") {
+                            e.target.value = "";
+                          }
+                        }}
                         type="number"
                         value={ingredient.cost || 0}
                         onChange={(e) =>
