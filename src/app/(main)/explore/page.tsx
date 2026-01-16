@@ -4,10 +4,10 @@ import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard";
 import {
   ALL_KITCHENS,
-  ALL_PLANS,
   CATEGORIES,
 } from "@/lib/dummy-data/explore";
 import { prisma } from "@/lib/prisma/prisma";
+
 
 // Define the type for URL search params
 interface SearchParamsProps {
@@ -80,27 +80,65 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
     }));
   }
 
-  // --- LEGACY FILTERING LOGIC (For other tabs still using dummy data) ---
+  // 2. Subscription Plans Fetching (Active only if tab is 'subscriptions')
+  let plans: any[] = [];
+  if (tab === "subscriptions") {
+    const where: any = {
+      is_active: true,
+      // Search logic
+      OR: query ? [
+        { name: { contains: query, mode: "insensitive" } },
+        { description: { contains: query, mode: "insensitive" } },
+        { kitchen: { name: { contains: query, mode: "insensitive" } } }
+      ] : undefined,
+    };
+
+    // Sorting logic
+    const orderBy: any = {};
+    if (sort === "price_asc") orderBy.price = "asc";
+    else if (sort === "price_desc") orderBy.price = "desc";
+    else if (sort === "rating") orderBy.rating = "desc";
+    else orderBy.subscriber_count = "desc"; // Default: most popular
+
+    const dbPlans = await prisma.subscription_plans.findMany({
+      where,
+      orderBy,
+      include: {
+        kitchen: {
+          select: {
+            id: true,
+            name: true,
+            rating: true,
+            location: true,
+          }
+        }
+      }
+    });
+
+    plans = dbPlans.map(p => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      mealsPerDay: p.meals_per_day,
+      servingsPerMeal: p.servings_per_meal,
+      mealsPerMonth: p.meals_per_day * 30,
+      rating: Number(p.rating) || 0,
+      image: p.cover_image || "/placeholder-plan.jpg",
+      kitchen: p.kitchen?.name || "Unknown Kitchen",
+      type: p.meals_per_day >= 3 ? "Full Day" : p.meals_per_day >= 2 ? "Daily Plan" : "Single Meal",
+    }));
+  }
+
+  // --- LEGACY FILTERING LOGIC (For kitchens tab still using dummy data) ---
 
   const filteredKitchens = ALL_KITCHENS.filter((k) =>
     k.name.toLowerCase().includes(query.toLowerCase())
   );
 
-  // PLANS Filter
-  const filteredPlans = ALL_PLANS.filter(
-    (p) =>
-      p.name.toLowerCase().includes(query.toLowerCase()) ||
-      p.kitchen.toLowerCase().includes(query.toLowerCase())
-  );
-
-  // Subscriptions logic (Sorting)
-  if (tab === "subscriptions") {
-     if (sort === "price_asc") filteredPlans.sort((a, b) => a.price - b.price);
-     if (sort === "price_desc") filteredPlans.sort((a, b) => b.price - a.price);
-     if (sort === "rating") filteredPlans.sort((a, b) => b.rating - a.rating);
-  } else {
-     // Kitchen sorting
-     if (sort === "rating") filteredKitchens.sort((a, b) => b.rating - a.rating);
+  // Kitchen sorting
+  if (tab === "kitchens") {
+    if (sort === "rating") filteredKitchens.sort((a, b) => b.rating - a.rating);
   }
 
   return (
@@ -151,9 +189,9 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
         {/* --- SUBSCRIPTIONS GRID --- */}
         {tab === "subscriptions" && (
           <>
-            {filteredPlans.length > 0 ? (
+            {plans.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {filteredPlans.map((plan) => (
+                {plans.map((plan) => (
                   <PlanCard key={plan.id} data={plan} />
                 ))}
               </div>

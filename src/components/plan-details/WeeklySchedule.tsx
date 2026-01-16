@@ -1,15 +1,18 @@
 "use client";
 
+import { ChevronLeft, ChevronRight, Moon, Sun, Sunrise } from "lucide-react";
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Sunrise, Sun, Moon } from "lucide-react";
 
 const DAYS = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
 export default function WeeklySchedule({ schedule }: { schedule: any }) {
+  console.log("🔍 WeeklySchedule - Full schedule data:", schedule);
+  
   const [activeDay, setActiveDay] = useState("Saturday");
   
   // Fallback if day data is missing in dummy data
-  const daySchedule = schedule[activeDay] || {}; 
+  const daySchedule = schedule[activeDay] || {};
+  console.log(`📅 Active day: ${activeDay}, Day schedule:`, daySchedule); 
 
   return (
     <section>
@@ -30,7 +33,10 @@ export default function WeeklySchedule({ schedule }: { schedule: any }) {
         {DAYS.map((day) => (
           <button
             key={day}
-            onClick={() => setActiveDay(day)}
+            onClick={() => {
+              console.log(`🔄 Switching to day: ${day}`);
+              setActiveDay(day);
+            }}
             className={`px-6 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-colors ${
               activeDay === day
                 ? "bg-teal-700 text-white"
@@ -46,7 +52,12 @@ export default function WeeklySchedule({ schedule }: { schedule: any }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {["breakfast", "lunch", "dinner"].map((type) => {
           const meal = daySchedule[type];
-          if (!meal) return null;
+          console.log(`🍽️ ${activeDay} - ${type}:`, meal);
+          console.log(`🖼️ ${activeDay} - ${type} image:`, meal?.image);
+          if (!meal) {
+            console.log(`⚠️ No meal data for ${activeDay} - ${type}`);
+            return null;
+          }
 
           return (
             <div key={type} className="group cursor-pointer">
