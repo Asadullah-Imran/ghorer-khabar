@@ -7,7 +7,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seed:menu": "tsx prisma/seedForAddMenuDishes.ts",
+    "seed:subscriptions": "tsx prisma/seedForSubscriptionPlans.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
