@@ -3,8 +3,7 @@ import DishCard from "@/components/shared/DishCard";
 import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard";
 import {
-  ALL_KITCHENS,
-  CATEGORIES,
+    CATEGORIES
 } from "@/lib/dummy-data/explore";
 import { prisma } from "@/lib/prisma/prisma";
 
@@ -130,16 +129,41 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
     }));
   }
 
-  // --- LEGACY FILTERING LOGIC (For kitchens tab still using dummy data) ---
-
-  const filteredKitchens = ALL_KITCHENS.filter((k) =>
-    k.name.toLowerCase().includes(query.toLowerCase())
-  );
-
-  // Kitchen sorting
+  // 3. Kitchens Fetching (Active only if tab is 'kitchens')
+  let kitchens: any[] = [];
   if (tab === "kitchens") {
-    if (sort === "rating") filteredKitchens.sort((a, b) => b.rating - a.rating);
+    const where: any = {
+      isActive: true,
+      // Search logic
+      OR: query ? [
+        { name: { contains: query, mode: "insensitive" } },
+        { location: { contains: query, mode: "insensitive" } },
+        { area: { contains: query, mode: "insensitive" } },
+        { type: { contains: query, mode: "insensitive" } }
+      ] : undefined,
+    };
+
+    // Sorting logic
+    const orderBy: any = {};
+    if (sort === "rating") orderBy.rating = "desc";
+    else orderBy.createdAt = "desc"; // Default sort
+
+    const dbKitchens = await prisma.kitchen.findMany({
+      where,
+      orderBy
+    });
+
+    kitchens = dbKitchens.map(k => ({
+      id: k.id,
+      name: k.name,
+      rating: Number(k.rating) || 0,
+      reviews: k.reviewCount,
+      image: k.coverImage || "/placeholder-kitchen.jpg",
+      specialty: k.type || "Home Kitchen"
+    }));
   }
+
+  // --- LEGACY FILTERING LOGIC (No longer needed) ---
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
@@ -174,9 +198,9 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
         {/* --- KITCHENS GRID --- */}
         {tab === "kitchens" && (
           <>
-            {filteredKitchens.length > 0 ? (
+            {kitchens.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {filteredKitchens.map((kitchen) => (
+                {kitchens.map((kitchen) => (
                   <KitchenCard key={kitchen.id} data={kitchen} />
                 ))}
               </div>
