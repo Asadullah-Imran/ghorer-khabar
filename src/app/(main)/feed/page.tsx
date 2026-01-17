@@ -28,6 +28,41 @@ export default async function FeedPage() {
   // Calculate date 7 days ago for weekly filtering
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
+  // Fetch newly uploaded dishes sorted by time
+  const newDishesData = await prisma.menu_items.findMany({
+    where: {
+      isAvailable: true,
+    },
+    include: {
+      menu_item_images: true,
+      users: {
+        include: {
+          kitchens: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',  // Newest dishes first
+    },
+    take: 10,
+  });
+
+  const newDishes = newDishesData.map((item) => ({
+    id: item.id,
+    name: item.name,
+    price: item.price,
+    rating: item.rating || 0,
+    image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
+    kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
+    kitchenId: item.users.kitchens[0]?.id || "unknown",
+    kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
+    kitchenLocation: item.users.kitchens[0]?.location || undefined,
+    kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
+    kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
+    deliveryTime: "30-45 min",
+    chefId: item.chef_id,
+  }));
+
   // Fetch dishes with orders in the last 7 days (Weekly Best)
   let weeklyBestDishes = await prisma.menu_items.findMany({
     where: {
@@ -220,7 +255,29 @@ export default async function FeedPage() {
       </section>
 
       <div className="max-w-7xl mx-auto space-y-10 py-8">
-        {/* 2. Weekly Best Dishes */}
+        {/* 2. New Dishes (Newly Uploaded) */}
+        <section>
+          <SectionHeader
+            title="New Dishes"
+            subtitle="Latest additions from your favorite kitchens"
+            href="/explore?tab=dishes&sort=newest"
+          />
+          <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-4 scrollbar-hide snap-x">
+            {newDishes.map((dish) => (
+              <div key={dish.id} className="snap-center">
+                <DishCard 
+                  data={dish} 
+                  featured={true} 
+                  isFavorite={favoriteDishIds.has(dish.id)}
+                  currentUserId={userId}
+                  userRole={userRole}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 3. Weekly Best Dishes */}
         <section>
           <SectionHeader
             title="Weekly Best Dishes"
@@ -243,7 +300,7 @@ export default async function FeedPage() {
           </div>
         </section>
 
-        {/* 3. Monthly Top Kitchens */}
+        {/* 4. Monthly Top Kitchens */}
         <section>
           <SectionHeader
             title={`Top Kitchens of ${currentMonth}`}
@@ -259,7 +316,7 @@ export default async function FeedPage() {
           </div>
         </section>
 
-        {/* 4. Featured Subscription Plans */}
+        {/* 5. Featured Subscription Plans */}
         <section>
           <SectionHeader
             title="Monthly Meal Plans"
@@ -275,7 +332,7 @@ export default async function FeedPage() {
           </div>
         </section>
 
-        {/* 5. Recommended For You (Grid) */}
+        {/* 6. Recommended For You (Grid) */}
         <section className="px-4 md:px-0">
           <SectionHeader
             title="Recommended For You"

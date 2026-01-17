@@ -2,6 +2,7 @@ import DishActions from "@/components/dish/DishActions";
 import DishGallery from "@/components/dish/DishGallery";
 import IngredientTransparency from "@/components/dish/IngredientTransparency";
 import ReviewSection from "@/components/dish/ReviewSection";
+import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
 import {
     AlertTriangle,
@@ -20,6 +21,20 @@ interface PageProps {
 export default async function SingleDishPage({ params }: PageProps) {
   // Await the params first (Next.js 15 pattern)
   const { id } = await params;
+
+  // Get current user info
+  const userId = await getAuthUserId();
+  let userRole: string | null = null;
+
+  if (userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+    if (user?.role) {
+      userRole = user.role;
+    }
+  }
 
   // Fetch data
   const dishData = await prisma.menu_items.findUnique({
@@ -195,6 +210,9 @@ export default async function SingleDishPage({ params }: PageProps) {
                 price={dish.price}
                 kitchenId={dishData.users.kitchens[0].id}
                 kitchenName={dishData.users.kitchens[0].name}
+                chefId={dishData.chef_id}
+                currentUserId={userId}
+                userRole={userRole}
                 />
             ) : (
                 <div className="bg-amber-50 rounded-xl border border-amber-200 p-6 mt-auto">
