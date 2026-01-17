@@ -47,7 +47,11 @@ import "dotenv/config";
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name, role } = await req.json();
+    let { email, password, name, role } = await req.json();
+
+    // Trim email and name to remove whitespace
+    email = email?.trim();
+    name = name?.trim();
 
     // Validate required fields
     if (!email || !password || !name) {

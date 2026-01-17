@@ -18,12 +18,19 @@ interface DishProps {
     kitchenRating?: number;
     kitchenReviewCount?: number;
     deliveryTime: string;
+    chefId?: string; // Chef/creator ID
   };
   featured?: boolean;
   isFavorite?: boolean; // NEW: Pass from parent
+  currentUserId?: string | null; // Current logged-in user ID
+  userRole?: string | null; // User's role (BUYER, SELLER, ADMIN)
 }
 
-export default function DishCard({ data, featured, isFavorite }: DishProps) {
+export default function DishCard({ data, featured, isFavorite, currentUserId, userRole }: DishProps) {
+  // Check if user is both SELLER and BUYER and is the creator of this dish
+  const isOwnDish = !!(currentUserId && data.chefId && currentUserId === data.chefId && userRole?.includes('SELLER'));
+  const isBuyerOnly = userRole === 'BUYER';
+  const canAddToCart = isBuyerOnly || !isOwnDish;
   return (
     <Link href={`/explore/dish/${data.id}`} className="group block h-full">
       <div
@@ -82,6 +89,8 @@ export default function DishCard({ data, featured, isFavorite }: DishProps) {
                 kitchenRating: data.kitchenRating,
                 kitchenReviewCount: data.kitchenReviewCount,
               }}
+              disabled={!canAddToCart}
+              isOwnDish={isOwnDish}
             />
           </div>
         </div>

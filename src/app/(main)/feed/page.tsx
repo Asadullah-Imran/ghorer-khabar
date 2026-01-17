@@ -10,14 +10,18 @@ import { prisma } from "@/lib/prisma/prisma";
 export default async function FeedPage() {
   const userId = await getAuthUserId();
   let userName = "Foodie";
+  let userRole: string | null = null;
 
   if (userId) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { name: true },
+      select: { name: true, role: true },
     });
     if (user?.name) {
       userName = user.name.split(" ")[0]; // Use first name
+    }
+    if (user?.role) {
+      userRole = user.role;
     }
   }
 
@@ -89,6 +93,7 @@ export default async function FeedPage() {
     kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
     kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
     deliveryTime: "30-45 min",
+    chefId: item.chef_id,
   }));
 
   // Fetch featured subscription plans from database
@@ -199,6 +204,7 @@ export default async function FeedPage() {
     kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
     kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
     deliveryTime: "30-45 min",
+    chefId: item.chef_id,
   }));
 
   // Calculate current month for dynamic display
@@ -225,7 +231,13 @@ export default async function FeedPage() {
              {/* Using fetched dishes for now as 'Weekly Best' */}
             {dishes.map((dish) => (
               <div key={dish.id} className="snap-center">
-                <DishCard data={dish} featured={true} isFavorite={favoriteDishIds.has(dish.id)} />
+                <DishCard 
+                  data={dish} 
+                  featured={true} 
+                  isFavorite={favoriteDishIds.has(dish.id)}
+                  currentUserId={userId}
+                  userRole={userRole}
+                />
               </div>
             ))}
           </div>
@@ -272,7 +284,13 @@ export default async function FeedPage() {
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {recommendedDishes.map((dish) => (
-              <DishCard key={dish.id} data={dish} isFavorite={favoriteDishIds.has(dish.id)} />
+              <DishCard 
+                key={dish.id} 
+                data={dish} 
+                isFavorite={favoriteDishIds.has(dish.id)}
+                currentUserId={userId}
+                userRole={userRole}
+              />
             ))}
           </div>
           <div className="mt-8 text-center">

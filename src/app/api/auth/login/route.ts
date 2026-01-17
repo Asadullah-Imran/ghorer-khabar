@@ -44,6 +44,11 @@ export async function POST(req: Request) {
     const body = await req.json();
     console.log("Login attempt with body:", body);
 
+    // Trim email to remove whitespace
+    if (body.email) {
+      body.email = body.email.trim();
+    }
+
     // Validate input with Zod
     const data = loginSchema.parse(body);
 
