@@ -21,7 +21,21 @@ export default async function FeedPage() {
     }
   }
 
-  const menuItems = await prisma.menu_items.findMany({
+  // Calculate date 7 days ago for weekly filtering
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  // Fetch dishes with orders in the last 7 days (Weekly Best)
+  let weeklyBestDishes = await prisma.menu_items.findMany({
+    where: {
+      isAvailable: true,
+      orderItems: {
+        some: {
+          order: {
+            createdAt: { gte: sevenDaysAgo }
+          }
+        }
+      }
+    },
     include: {
       menu_item_images: true,
       users: {
@@ -29,24 +43,52 @@ export default async function FeedPage() {
           kitchens: true,
         },
       },
-      // Check if ratings/reviews are on menu_items directly based on schema
     },
-    take: 10, // Limit for now
+    orderBy: [
+      { rating: 'desc' },
+      { reviewCount: 'desc' }
+    ],
+    take: 10,
   });
 
-  const dishes = menuItems.map((item) => ({
+  // Fallback: if not enough weekly dishes, supplement with top-rated overall
+  if (weeklyBestDishes.length < 10) {
+    const additionalDishes = await prisma.menu_items.findMany({
+      where: {
+        isAvailable: true,
+        id: { notIn: weeklyBestDishes.map(d => d.id) }
+      },
+      include: {
+        menu_item_images: true,
+        users: {
+          include: {
+            kitchens: true,
+          },
+        },
+      },
+      orderBy: [
+        { rating: 'desc' },
+        { reviewCount: 'desc' }
+      ],
+      take: 10 - weeklyBestDishes.length
+    });
+    
+    weeklyBestDishes = [...weeklyBestDishes, ...additionalDishes];
+  }
+
+  const dishes = weeklyBestDishes.map((item) => ({
     id: item.id,
     name: item.name,
     price: item.price,
     rating: item.rating || 0,
-    image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg", // Fallback image
+    image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
     kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
     kitchenId: item.users.kitchens[0]?.id || "unknown",
     kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
-    kitchenLocation: item.users.kitchens[0]?.location || undefined, // Provide fallback? or undefined is fine
+    kitchenLocation: item.users.kitchens[0]?.location || undefined,
     kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
     kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
-    deliveryTime: "30-45 min", // hardcoded for now as it's not on menu_item directly, maybe calc from kitchen?
+    deliveryTime: "30-45 min",
   }));
 
   // Fetch featured subscription plans from database
@@ -123,6 +165,44 @@ export default async function FeedPage() {
     });
   }
 
+  // Fetch recommended dishes (new + top-rated, excluding weekly best)
+  const recommendedDishesData = await prisma.menu_items.findMany({
+    where: {
+      isAvailable: true,
+      id: { notIn: dishes.map(d => d.id) } // Exclude weekly best dishes
+    },
+    include: {
+      menu_item_images: true,
+      users: {
+        include: {
+          kitchens: true,
+        },
+      },
+    },
+    orderBy: [
+      { createdAt: 'desc' },  // Newest dishes first
+      { rating: 'desc' },      // Then by rating
+    ],
+    take: 12
+  });
+
+  const recommendedDishes = recommendedDishesData.map((item) => ({
+    id: item.id,
+    name: item.name,
+    price: item.price,
+    rating: item.rating || 0,
+    image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
+    kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
+    kitchenId: item.users.kitchens[0]?.id || "unknown",
+    kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
+    kitchenLocation: item.users.kitchens[0]?.location || undefined,
+    kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
+    kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
+    deliveryTime: "30-45 min",
+  }));
+
+  // Calculate current month for dynamic display
+  const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long' });
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
@@ -154,7 +234,7 @@ export default async function FeedPage() {
         {/* 3. Monthly Top Kitchens */}
         <section>
           <SectionHeader
-            title="Top Kitchens of January"
+            title={`Top Kitchens of ${currentMonth}`}
             subtitle="Cleanest kitchens with 5-star ratings"
             href="/explore?tab=kitchens&sort=top_rated"
           />
@@ -187,11 +267,11 @@ export default async function FeedPage() {
         <section className="px-4 md:px-0">
           <SectionHeader
             title="Recommended For You"
-            subtitle="Based on your spice preferences"
+            subtitle="Fresh picks tailored just for you"
             href="/explore?tab=dishes&filter=recommended"
           />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {dishes.map((dish) => (
+            {recommendedDishes.map((dish) => (
               <DishCard key={dish.id} data={dish} isFavorite={favoriteDishIds.has(dish.id)} />
             ))}
           </div>
