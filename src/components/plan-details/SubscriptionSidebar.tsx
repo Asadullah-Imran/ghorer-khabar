@@ -1,5 +1,6 @@
 "use client";
 
+import SubscriptionFlowManager from "@/components/subscriptions/SubscriptionFlowManager";
 import { Check, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 
@@ -28,10 +29,17 @@ export default function SubscriptionSidebar({ plan }: { plan: any }) {
           ))}
         </div>
 
-        <button className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-4 rounded-xl text-lg transition-all shadow-md active:scale-95 mb-4">
-          Subscribe Now
-        </button>
-        <p className="text-center text-xs text-gray-400">
+        <SubscriptionFlowManager
+          planId={plan.id}
+          planName={plan.name}
+          planPrice={plan.price}
+          chefName={plan.chef.name}
+          chefQuote={plan.chef.quote}
+          kitchenArea={plan.kitchen?.area}
+          mealsPerDay={plan.mealsPerDay}
+          servingsPerMeal={plan.servingsPerMeal}
+        />
+        <p className="text-center text-xs text-gray-400 mt-4">
           Next delivery starts from Monday, 8:00 AM
         </p>
       </div>

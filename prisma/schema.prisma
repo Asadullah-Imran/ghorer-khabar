@@ -33,6 +33,7 @@ model User {
   notifications      Notification[]
   orders             Order[]
   reviews            Review[]
+  user_subscriptions user_subscriptions[]
 
   @@map("users")
 }
@@ -152,6 +153,7 @@ model Kitchen {
   notifications       Notification[]
   orders              Order[]
   subscription_plans  subscription_plans[]
+  user_subscriptions  user_subscriptions[]
 
   @@index([sellerId])
   @@map("kitchens")
@@ -192,6 +194,7 @@ model subscription_plans {
   weekly_schedule   Json       @default("{}") @map("weekly_schedule")
   favorites         Favorite[]
   kitchen           Kitchen    @relation(fields: [kitchen_id], references: [id], onDelete: Cascade)
+  user_subscriptions user_subscriptions[]
 
   @@index([kitchen_id])
   @@map("subscription_plans")
@@ -349,4 +352,42 @@ enum NotificationType {
   SUCCESS
   WARNING
   ERROR
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  PAUSED
+  CANCELLED
+  COMPLETED
+}
+
+model user_subscriptions {
+  id                    String             @id @default(cuid())
+  userId                String             @map("user_id")
+  planId                String             @map("plan_id")
+  kitchenId             String             @map("kitchen_id")
+  status                SubscriptionStatus @default(PENDING)
+  startDate             DateTime           @map("start_date")
+  endDate               DateTime?          @map("end_date")
+  deliveryInstructions  String?            @map("delivery_instructions")
+  useChefContainers     Boolean            @default(true) @map("use_chef_containers")
+  monthlyPrice          Float              @map("monthly_price")
+  deliveryFee           Float              @default(0) @map("delivery_fee")
+  discount              Float              @default(0)
+  totalAmount           Float              @map("total_amount")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
+  confirmedAt           DateTime?          @map("confirmed_at")
+  cancelledAt           DateTime?          @map("cancelled_at")
+  cancellationReason    String?            @map("cancellation_reason")
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                  subscription_plans @relation(fields: [planId], references: [id], onDelete: Cascade)
+  kitchen               Kitchen            @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([planId])
+  @@index([kitchenId])
+  @@index([status])
+  @@map("user_subscriptions")
 }
