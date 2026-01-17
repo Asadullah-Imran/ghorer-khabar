@@ -87,32 +87,32 @@ export default async function OrderTrackingPage({ params }: PageProps) {
         initialStatus={order.status}
       />
 
-      <div className="min-h-screen bg-background-light dark:bg-background-dark py-10 px-4">
+      <div className="min-h-screen bg-gray-50 py-10 px-4">
         <div className="max-w-7xl mx-auto space-y-8">
           
           {/* Page Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-gray-200 dark:border-white/10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-4 border-b border-gray-200">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-teal/10 text-brand-teal dark:text-primary dark:bg-primary/10 uppercase tracking-wide">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-700/10 text-teal-700 uppercase tracking-wide">
                   Order #{friendlyOrderId}
                 </span>
-                <span className="text-sm text-text-secondary dark:text-gray-400 flex items-center gap-1">
+                <span className="text-sm text-gray-500 flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px]">schedule</span>
                   Placed on {order.createdAt.toLocaleDateString()} at {order.createdAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                 </span>
               </div>
-              <h1 className="text-3xl md:text-4xl font-black text-brand-teal dark:text-white tracking-tight">
+              <h1 className="text-3xl md:text-4xl font-black text-teal-700 tracking-tight">
                 Track Your Meal
               </h1>
-              <p className="text-text-secondary dark:text-gray-300 mt-1 text-lg">
+              <p className="text-gray-600 mt-1 text-lg">
                 Real-time updates from {order.kitchen.name}
               </p>
             </div>
             <div className="flex gap-3">
               <Link
                 href={`/orders/${order.id}`}
-                className="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-text-main dark:text-gray-200 font-semibold text-sm hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                className="px-4 py-2 rounded-lg border border-gray-300 text-gray-900 font-semibold text-sm hover:bg-gray-50 transition-colors"
               >
                 Order Details
               </Link>
@@ -125,20 +125,20 @@ export default async function OrderTrackingPage({ params }: PageProps) {
             <div className="lg:col-span-2 space-y-6">
               
               {/* ETA Card */}
-              <div className="bg-white dark:bg-white/5 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 p-6 md:p-8">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                   <div className="text-center md:text-left">
-                    <p className="text-sm uppercase tracking-wider font-bold text-text-secondary mb-1">
+                    <p className="text-sm uppercase tracking-wider font-bold text-gray-600 mb-1">
                       {order.status === 'COMPLETED' ? 'Delivered At' : 'Estimated Delivery'}
                     </p>
-                    <h2 className="text-4xl md:text-5xl font-black text-brand-teal dark:text-primary">
+                    <h2 className="text-4xl md:text-5xl font-black text-teal-700">
                       {order.status === 'COMPLETED' 
                         ? order.updatedAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
                         : estimatedDelivery.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
                       }
                     </h2>
                     {order.status !== 'COMPLETED' && order.status !== 'CANCELLED' && (
-                      <p className="text-sm font-medium text-brand-teal/80 dark:text-gray-400 mt-2 flex items-center justify-center md:justify-start gap-1">
+                      <p className="text-sm font-medium text-teal-700 mt-2 flex items-center justify-center md:justify-start gap-1">
                         <span className="material-symbols-outlined text-[18px]">verified</span>
                         On Time
                       </p>
@@ -159,7 +159,7 @@ export default async function OrderTrackingPage({ params }: PageProps) {
               {/* Status Message */}
               <div className={`${statusInfo.color} rounded-lg p-4 border-l-4`}>
                 <div className="flex gap-3">
-                  <span className={`material-symbols-outlined ${status === 'PREPARING' ? 'animate-spin' : ''}`}>
+                  <span className={`material-symbols-outlined ${order.status === 'PREPARING' ? 'animate-spin' : ''}`}>
                     {statusInfo.icon}
                   </span>
                   <div>
@@ -181,10 +181,10 @@ export default async function OrderTrackingPage({ params }: PageProps) {
               </div>
 
               {/* Dishes Section (Replaces Map) */}
-              <div className="bg-white dark:bg-white/5 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 p-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-lg text-text-main dark:text-white">Your Order</h3>
-                  <span className="text-sm text-text-secondary dark:text-gray-400">
+                  <h3 className="font-bold text-lg text-gray-900">Your Order</h3>
+                  <span className="text-sm text-gray-500">
                     {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
                   </span>
                 </div>
@@ -208,7 +208,7 @@ export default async function OrderTrackingPage({ params }: PageProps) {
             <div className="space-y-6">
               
               {/* Chef Profile */}
-              <div className="bg-white dark:bg-white/5 rounded-xl shadow-sm border border-gray-100 dark:border-white/5 p-6">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <ChefProfileCard 
                   chef={order.kitchen.seller} 
                   kitchen={{
@@ -232,7 +232,7 @@ export default async function OrderTrackingPage({ params }: PageProps) {
               />
 
               {/* Support Card */}
-              <div className="bg-brand-teal dark:bg-brand-teal/20 rounded-xl p-5 text-white flex items-center gap-4">
+              <div className="bg-teal-700 rounded-xl p-5 text-white flex items-center gap-4">
                 <div className="bg-white/20 p-2.5 rounded-lg backdrop-blur-sm">
                   <span className="material-symbols-outlined text-[24px]">support_agent</span>
                 </div>

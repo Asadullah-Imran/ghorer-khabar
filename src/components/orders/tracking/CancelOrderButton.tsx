@@ -55,7 +55,7 @@ export default function CancelOrderButton({ orderId, canCancel }: CancelOrderBut
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="px-4 py-2 rounded-lg bg-red-50 text-red-600 font-semibold text-sm hover:bg-red-100 transition-colors dark:bg-red-900/20 dark:text-red-400"
+        className="px-4 py-2 rounded-lg bg-red-50 text-red-600 font-semibold text-sm hover:bg-red-100 transition-colors"
       >
         Cancel Order
       </button>
@@ -63,22 +63,22 @@ export default function CancelOrderButton({ orderId, canCancel }: CancelOrderBut
       {/* Modal */}
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-xl max-w-md w-full p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
               Cancel Order?
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <p className="text-sm text-gray-600 mb-4">
               Are you sure you want to cancel this order? This action cannot be undone.
             </p>
 
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Reason for cancellation
             </label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="Please tell us why you're cancelling..."
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-800 dark:text-white resize-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
               rows={3}
               disabled={isCancelling}
             />
@@ -87,7 +87,7 @@ export default function CancelOrderButton({ orderId, canCancel }: CancelOrderBut
               <button
                 onClick={() => setIsOpen(false)}
                 disabled={isCancelling}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 Keep Order
               </button>

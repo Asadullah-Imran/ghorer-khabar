@@ -24,7 +24,7 @@ export default function ContactChefButton({ kitchenId, chefName }: ContactChefBu
     <button
       onClick={handleContact}
       disabled={isContacting}
-      className="w-full py-3 rounded-lg bg-primary text-text-main font-bold hover:bg-yellow-400 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full py-3 rounded-lg bg-teal-700 text-white font-bold hover:bg-teal-800 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <span className="material-symbols-outlined">chat</span>
       {isContacting ? 'Connecting...' : `Contact ${chefName}`}
