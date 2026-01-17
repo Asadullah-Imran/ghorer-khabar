@@ -1,7 +1,7 @@
 "use client";
 
 import SubscriptionFlowManager from "@/components/subscriptions/SubscriptionFlowManager";
-import { Check, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import Image from "next/image";
 
 export default function SubscriptionSidebar({ plan }: { plan: any }) {
@@ -9,24 +9,28 @@ export default function SubscriptionSidebar({ plan }: { plan: any }) {
     <aside className="w-full lg:w-[360px] space-y-6">
       {/* Pricing Card */}
       <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-xl shadow-gray-200/50">
-        <div className="flex items-end gap-1 mb-6">
+        <div className="flex items-end gap-1 mb-2">
           <span className="text-3xl font-black text-gray-900">
             ৳{plan.price}
           </span>
           <span className="text-gray-500 mb-1">/ month</span>
         </div>
+        <p className="text-gray-500 text-xs mb-6">+ ৳300 delivery fee</p>
 
-        <div className="space-y-4 mb-8">
-          {plan.features?.map((feature: string, i: number) => (
-            <div key={i} className="flex items-center gap-3">
-              <span className="bg-green-50 text-green-600 rounded-full p-1">
-                <Check size={14} strokeWidth={3} />
-              </span>
-              <span className="text-sm font-medium text-gray-700">
-                {feature}
-              </span>
-            </div>
-          ))}
+        {/* Feature List */}
+        <div className="space-y-3 mb-8 pb-6 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-green-600 text-lg">check_circle</span>
+            <span className="text-sm text-gray-700">Eco-friendly packaging</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-green-600 text-lg">check_circle</span>
+            <span className="text-sm text-gray-700">Cancel or pause anytime</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="material-symbols-outlined text-green-600 text-lg">check_circle</span>
+            <span className="text-sm text-gray-700">Add note for chef</span>
+          </div>
         </div>
 
         <SubscriptionFlowManager

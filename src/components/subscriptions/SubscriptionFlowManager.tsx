@@ -111,10 +111,9 @@ export default function SubscriptionFlowManager({
       {/* Subscribe Button */}
       <button
         onClick={handleSubscribeClick}
-        className="w-full py-3 bg-teal-700 hover:bg-teal-800 text-white font-bold rounded-lg shadow-lg flex items-center justify-center gap-2"
+        className="w-full py-3 bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all"
       >
-        <span className="material-symbols-outlined">calendar_add</span>
-        <span>Subscribe Now</span>
+        <span>Subscribe</span>
       </button>
 
       {/* Modal Overlay */}
