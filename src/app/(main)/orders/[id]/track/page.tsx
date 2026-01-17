@@ -17,19 +17,19 @@ interface PageProps {
 function getStatusMessage(status: string): { icon: string; color: string; message: string } {
   switch (status) {
     case 'PENDING':
-      return { icon: 'schedule', color: 'bg-yellow-50 dark:bg-yellow-900/10 border-yellow-500 text-yellow-700 dark:text-yellow-300', message: 'Your order has been placed and is waiting to be confirmed by the chef.' };
+      return { icon: 'schedule', color: 'bg-yellow-50 border-yellow-500 text-yellow-800', message: 'Your order has been placed and is waiting to be confirmed by the chef.' };
     case 'CONFIRMED':
-      return { icon: 'check_circle', color: 'bg-green-50 dark:bg-green-900/10 border-green-500 text-green-700 dark:text-green-300', message: 'Chef has accepted your order and will start preparing soon!' };
+      return { icon: 'check_circle', color: 'bg-green-50 border-green-500 text-green-800', message: 'Chef has accepted your order and will start preparing soon!' };
     case 'PREPARING':
-      return { icon: 'soup_kitchen', color: 'bg-blue-50 dark:bg-blue-900/10 border-blue-500 text-blue-700 dark:text-blue-300', message: `${status === 'PREPARING' ? 'is currently preparing' : 'has started preparing'} your delicious meal.` };
+      return { icon: 'soup_kitchen', color: 'bg-blue-50 border-blue-500 text-blue-800', message: `${status === 'PREPARING' ? 'is currently preparing' : 'has started preparing'} your delicious meal.` };
     case 'DELIVERING':
-      return { icon: 'check_circle', color: 'bg-teal-50 dark:bg-teal-900/10 border-teal-500 text-teal-700 dark:text-teal-300', message: 'Your order is packed and ready! Our delivery partner will pick it up shortly.' };
+      return { icon: 'check_circle', color: 'bg-teal-50 border-teal-500 text-teal-800', message: 'Your order is packed and ready! Our delivery partner will pick it up shortly.' };
     case 'COMPLETED':
-      return { icon: 'celebration', color: 'bg-green-50 dark:bg-green-900/10 border-green-500 text-green-700 dark:text-green-300', message: 'Your order has been delivered! Enjoy your meal!' };
+      return { icon: 'celebration', color: 'bg-green-50 border-green-500 text-green-800', message: 'Your order has been delivered! Enjoy your meal!' };
     case 'CANCELLED':
-      return { icon: 'cancel', color: 'bg-red-50 dark:bg-red-900/10 border-red-500 text-red-700 dark:text-red-300', message: 'This order has been cancelled.' };
+      return { icon: 'cancel', color: 'bg-red-50 border-red-500 text-red-800', message: 'This order has been cancelled.' };
     default:
-      return { icon: 'info', color: 'bg-gray-50 dark:bg-gray-900/10 border-gray-500 text-gray-700 dark:text-gray-300', message: 'Processing your order...' };
+      return { icon: 'info', color: 'bg-gray-100 border-gray-500 text-gray-800', message: 'Processing your order...' };
   }
 }
 
@@ -228,7 +228,7 @@ export default async function OrderTrackingPage({ params }: PageProps) {
               <OrderBillDetails
                 items={order.items}
                 total={order.total}
-                paymentMethod="bKash"
+                paymentMethod="Cash on Delivery"
               />
 
               {/* Support Card */}
