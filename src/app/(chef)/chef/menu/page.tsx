@@ -20,6 +20,7 @@ interface MenuItem {
   isAvailable?: boolean;
   images?: Array<{ id?: string; imageUrl?: string; order?: number }>;
   ingredients?: Array<{ id?: string; name: string; quantity: number; unit: string; cost?: number }>;
+  deletedImageIds?: string[];
 }
 
 export default function MenuPage() {
@@ -114,6 +115,12 @@ export default function MenuPage() {
       formData.append("isVegetarian", (formItem.isVegetarian || false).toString());
       formData.append("ingredients", JSON.stringify(formItem.ingredients || []));
       console.log("Ingredients being sent:", formItem.ingredients || []);
+      
+      // Send deleted image IDs
+      if (formItem.deletedImageIds && formItem.deletedImageIds.length > 0) {
+        formItem.deletedImageIds.forEach(id => formData.append("deleteImages", id));
+        console.log("Deleted image IDs:", formItem.deletedImageIds);
+      }
 
       // Handle images (prefer the File object from the form; fallback to preview blob)
       let newImagesCount = 0;

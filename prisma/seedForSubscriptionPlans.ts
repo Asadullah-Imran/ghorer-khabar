@@ -24,35 +24,53 @@ const prisma = new PrismaClient({ adapter })
 async function main() {
   console.log('🌱 Seeding subscription meal plans...')
 
-  // REPLACE THIS WITH YOUR ACTUAL KITCHEN ID
-  // You can find this by querying: SELECT id FROM kitchens LIMIT 1;
-  const KITCHEN_ID = process.env.TEMP_KITCHEN_ID || "cmkgtg8ow0001h495l0q1hquu"
+  // REPLACE THIS WITH YOUR ACTUAL SELLER/USER ID
+  // You can find this by querying: SELECT id FROM users WHERE role = 'SELLER' LIMIT 1;
+  const SELLER_ID = process.env.TEMP_Seller_ID || "cmkgtg8ow0001h495l0q1hquu"
 
-  // Verify kitchen exists
-  const kitchen = await prisma.kitchen.findUnique({
-    where: { id: KITCHEN_ID },
+  // Verify seller exists
+  const seller = await prisma.user.findUnique({
+    where: { id: SELLER_ID },
     select: { 
       id: true, 
       name: true, 
-      sellerId: true 
+      role: true 
+    },
+  })
+
+  if (!seller) {
+    console.error(`❌ Seller/User with ID ${SELLER_ID} not found!`)
+    console.log('Please update SELLER_ID in the seed file or set TEMP_Seller_ID env variable')
+    process.exit(1)
+  }
+
+  console.log(`✅ Found seller: ${seller.name} (ID: ${seller.id})`)
+
+  // Get kitchen for this seller
+  const kitchen = await prisma.kitchen.findFirst({
+    where: { sellerId: SELLER_ID },
+    select: { 
+      id: true, 
+      name: true 
     },
   })
 
   if (!kitchen) {
-    console.error(`❌ Kitchen with ID ${KITCHEN_ID} not found!`)
-    console.log('Please update KITCHEN_ID in the seed file or set TEMP_KITCHEN_ID env variable')
+    console.error(`❌ No kitchen found for seller ${SELLER_ID}!`)
+    console.log('Please create a kitchen for this seller first')
     process.exit(1)
   }
 
   console.log(`✅ Found kitchen: ${kitchen.name} (ID: ${kitchen.id})`)
 
-  // Get existing menu items for this kitchen's chef
+  // Get existing menu items for this seller with calories data
   const menuItems = await prisma.menu_items.findMany({
-    where: { chef_id: kitchen.sellerId },
+    where: { chef_id: SELLER_ID },
     select: { 
       id: true, 
       name: true, 
       category: true,
+      calories: true,
       isVegetarian: true 
     },
     orderBy: { createdAt: 'desc' },
@@ -90,6 +108,55 @@ async function main() {
     return menuItems.slice(0, count).map(d => d.id)
   }
 
+  // Helper function to calculate nutritional data from dishes
+  const calculateNutritionFromDishes = (dishIds: string[]): { calories: number; protein: string; carbs: string; fats: string } => {
+    let totalCalories = 0
+    let totalProtein = 0
+    let totalCarbs = 0
+    let totalFats = 0
+
+    dishIds.forEach(dishId => {
+      const dish = menuItems.find(d => d.id === dishId)
+      if (dish) {
+        totalCalories += dish.calories || 0
+        // Estimate macros based on calories (typical distribution)
+        // Protein: ~25% of calories (4 cal/g), Carbs: ~50% (4 cal/g), Fats: ~25% (9 cal/g)
+        totalProtein += (dish.calories || 0) * 0.25 / 4
+        totalCarbs += (dish.calories || 0) * 0.50 / 4
+        totalFats += (dish.calories || 0) * 0.25 / 9
+      }
+    })
+
+    return {
+      calories: Math.round(totalCalories),
+      protein: Math.round(totalProtein) + 'g',
+      carbs: Math.round(totalCarbs) + 'g',
+      fats: Math.round(totalFats) + 'g',
+    }
+  }
+
+  // Helper function to calculate daily nutrition from entire schedule
+  const calculateDailyNutrition = (schedule: any): { calories: number; protein: string; carbs: string; fats: string } => {
+    let allDishIds: string[] = []
+
+    // Collect all dish IDs from the weekly schedule
+    Object.values(schedule).forEach((daySchedule: any) => {
+      if (daySchedule && typeof daySchedule === 'object') {
+        ['breakfast', 'lunch', 'snacks', 'dinner'].forEach(mealType => {
+          if (daySchedule[mealType]?.dishIds) {
+            allDishIds.push(...daySchedule[mealType].dishIds)
+          }
+        })
+      }
+    })
+
+    // Remove duplicates and calculate nutrition
+    const uniqueDishIds = [...new Set(allDishIds)]
+    const nutrition = calculateNutritionFromDishes(uniqueDishIds)
+
+    return nutrition
+  }
+
   // Define subscription plans
   const subscriptionPlans = [
     {
@@ -99,10 +166,6 @@ async function main() {
       servingsPerMeal: 1,
       isActive: true,
       coverImage: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format",
-      calories: 2100,
-      protein: "65g",
-      carbs: "180g",
-      fats: "45g",
       chefQuote: "I believe food is a language of love. This plan is designed to make you feel like you're eating at home.",
       weeklySchedule: {
         SATURDAY: {
@@ -212,10 +275,6 @@ async function main() {
       servingsPerMeal: 4,
       isActive: true,
       coverImage: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format",
-      calories: 1800,
-      protein: "50g",
-      carbs: "200g",
-      fats: "40g",
       chefQuote: "Healthy meals for happy families. Made with love, served with care.",
       weeklySchedule: {
         SATURDAY: {
@@ -305,10 +364,6 @@ async function main() {
       servingsPerMeal: 1,
       isActive: true,
       coverImage: "https://images.unsplash.com/photo-1562059390-a761a084768e?q=80&w=800&auto=format",
-      calories: 650,
-      protein: "35g",
-      carbs: "70g",
-      fats: "20g",
       chefQuote: "Quick, nutritious, and delicious - perfect for busy professionals.",
       weeklySchedule: {
         SATURDAY: {
@@ -356,10 +411,6 @@ async function main() {
       servingsPerMeal: 2,
       isActive: true,
       coverImage: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=800&auto=format",
-      calories: 2400,
-      protein: "80g",
-      carbs: "220g",
-      fats: "55g",
       chefQuote: "Everything you need for a healthy, balanced diet. Leave the cooking to us.",
       weeklySchedule: {
         SATURDAY: {
@@ -469,10 +520,6 @@ async function main() {
       servingsPerMeal: 1,
       isActive: true,
       coverImage: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format",
-      calories: 1600,
-      protein: "45g",
-      carbs: "160g",
-      fats: "35g",
       chefQuote: "Delicious vegetarian meals that celebrate the bounty of nature.",
       weeklySchedule: {
         SATURDAY: {
@@ -534,10 +581,6 @@ async function main() {
       servingsPerMeal: 3,
       isActive: false, // Not currently active
       coverImage: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format",
-      calories: 1500,
-      protein: "45g",
-      carbs: "150g",
-      fats: "35g",
       chefQuote: "Weekend meals should be special and memorable. We make that happen.",
       weeklySchedule: {
         SATURDAY: {
@@ -578,10 +621,11 @@ async function main() {
   for (const planData of subscriptionPlans) {
     try {
       const mealsPerDay = calculateMealsPerDay(planData.weeklySchedule)
+      const nutrition = calculateDailyNutrition(planData.weeklySchedule)
 
       const plan = await prisma.subscription_plans.create({
         data: {
-          kitchen_id: KITCHEN_ID,
+          kitchen_id: kitchen.id,
           name: planData.name,
           description: planData.description,
           price: planData.price,
@@ -589,10 +633,10 @@ async function main() {
           servings_per_meal: planData.servingsPerMeal,
           is_active: planData.isActive,
           cover_image: planData.coverImage,
-          calories: planData.calories,
-          protein: planData.protein,
-          carbs: planData.carbs,
-          fats: planData.fats,
+          calories: nutrition.calories,
+          protein: nutrition.protein,
+          carbs: nutrition.carbs,
+          fats: nutrition.fats,
           chef_quote: planData.chefQuote,
           weekly_schedule: planData.weeklySchedule,
           subscriber_count: Math.floor(Math.random() * 50), // Random subscriber count for demo
@@ -606,6 +650,7 @@ async function main() {
       console.log(`   - Price: ৳${plan.price}`)
       console.log(`   - Meals per day: ${plan.meals_per_day}`)
       console.log(`   - Servings per meal: ${plan.servings_per_meal}`)
+      console.log(`   - Nutrition: ${plan.calories} cal | Protein: ${plan.protein} | Carbs: ${plan.carbs} | Fats: ${plan.fats}`)
       console.log(`   - Status: ${plan.is_active ? 'Active' : 'Inactive'}`)
       console.log(`   - ID: ${plan.id}\n`)
     } catch (error) {
@@ -615,7 +660,8 @@ async function main() {
 
   console.log(`\n🎉 Seeding completed!`)
   console.log(`   - Total plans created: ${createdCount}/${subscriptionPlans.length}`)
-  console.log(`   - Kitchen ID: ${KITCHEN_ID}`)
+  console.log(`   - Kitchen ID: ${kitchen.id}`)
+  console.log(`   - Seller ID: ${SELLER_ID}`)
   console.log(`\n💡 Next steps:`)
   console.log(`   - View plans in your app`)
   console.log(`   - Test the subscription flow`)
