@@ -1,19 +1,20 @@
+import BecomeSellerButton from "@/components/profile/BecomeSellerButton";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SubscriptionActions } from "@/components/profile/ProfileInteractions";
 import {
-  ACTIVE_SUBSCRIPTION,
-  USER_PROFILE
+    ACTIVE_SUBSCRIPTION,
+    USER_PROFILE
 } from "@/lib/dummy-data/profile";
 import {
-  CalendarCheck,
-  ChevronRight,
-  Heart,
-  MapPin,
-  Phone,
-  Settings,
-  ShoppingBag,
-  Users,
-  Utensils
+    CalendarCheck,
+    ChevronRight,
+    Heart,
+    MapPin,
+    Phone,
+    Settings,
+    ShoppingBag,
+    Users,
+    Utensils
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -23,6 +24,13 @@ import { prisma } from "@/lib/prisma/prisma";
 
 export default async function ProfilePage() {
   const userId = await getAuthUserId();
+  
+  // Fetch user role to conditionally show "Become a Seller" button
+  const user = userId ? await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true }
+  }) : null;
+  
   const recentOrders = userId ? await prisma.order.findMany({
     where: { userId },
     take: 3,
@@ -259,6 +267,9 @@ export default async function ProfilePage() {
 
           {/* Right: Quick Actions */}
           <div className="xl:col-span-1">
+            {/* Become a Seller Button - Only show for BUYER users */}
+            {user?.role === "BUYER" && <BecomeSellerButton />}
+            
             <h2 className="text-2xl font-bold text-gray-900 mb-5">
               Quick Actions
             </h2>
