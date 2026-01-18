@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -28,6 +29,7 @@ export default function SubscriptionFlowManager({
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const toast = useToast();
 
   // Form state
   const [startDate, setStartDate] = useState<Date | null>(null);
@@ -58,11 +60,11 @@ export default function SubscriptionFlowManager({
 
   const handleStepOneContinue = () => {
     if (!startDate) {
-      alert("Please select a start date");
+      toast.warning("Date Required", "Please select a start date");
       return;
     }
     if (!agreedToPolicy) {
-      alert("Please agree to the allergen policy");
+      toast.warning("Policy Agreement Required", "Please agree to the allergen policy");
       return;
     }
     setCurrentStep(2);
@@ -94,14 +96,15 @@ export default function SubscriptionFlowManager({
 
       if (response.ok && data.success) {
         handleClose();
+        toast.success("Subscription Created!", "Redirecting to confirmation page...");
         router.push(data.redirectUrl);
       } else {
-        alert(data.error || "Failed to create subscription");
+        toast.error("Subscription Failed", data.error || "Failed to create subscription");
         setIsSubmitting(false);
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to create subscription. Please try again.");
+      toast.error("Network Error", "Failed to create subscription. Please try again.");
       setIsSubmitting(false);
     }
   };

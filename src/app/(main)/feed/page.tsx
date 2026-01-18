@@ -32,6 +32,15 @@ export default async function FeedPage() {
   const newDishesData = await prisma.menu_items.findMany({
     where: {
       isAvailable: true,
+      users: {
+        kitchens: {
+          some: {
+            isActive: true,
+            isOpen: true,
+            isVerified: true,
+          },
+        },
+      },
     },
     include: {
       menu_item_images: true,
@@ -73,7 +82,16 @@ export default async function FeedPage() {
             createdAt: { gte: sevenDaysAgo }
           }
         }
-      }
+      },
+      users: {
+        kitchens: {
+          some: {
+            isActive: true,
+            isOpen: true,
+            isVerified: true,
+          },
+        },
+      },
     },
     include: {
       menu_item_images: true,
@@ -95,7 +113,16 @@ export default async function FeedPage() {
     const additionalDishes = await prisma.menu_items.findMany({
       where: {
         isAvailable: true,
-        id: { notIn: weeklyBestDishes.map(d => d.id) }
+        id: { notIn: weeklyBestDishes.map(d => d.id) },
+        users: {
+          kitchens: {
+            some: {
+              isActive: true,
+              isOpen: true,
+              isVerified: true,
+            },
+          },
+        },
       },
       include: {
         menu_item_images: true,
@@ -133,7 +160,14 @@ export default async function FeedPage() {
 
   // Fetch featured subscription plans from database
   const subscriptionPlans = await prisma.subscription_plans.findMany({
-    where: { is_active: true },
+    where: { 
+      is_active: true,
+      kitchen: {
+        isActive: true,
+        isOpen: true,
+        isVerified: true,
+      },
+    },
     include: {
       kitchen: {
         select: {
@@ -180,7 +214,8 @@ export default async function FeedPage() {
     rating: Number(kitchen.rating) || 0,
     reviews: kitchen.reviewCount,
     image: kitchen.coverImage || "/placeholder-kitchen.jpg",
-    specialty: kitchen.type || "Home Kitchen"
+    specialty: kitchen.type || "Home Kitchen",
+    isOpen: kitchen.isOpen,
   }));
 
   // Fetch user's favorites once to avoid multiple API calls
@@ -209,7 +244,16 @@ export default async function FeedPage() {
   const recommendedDishesData = await prisma.menu_items.findMany({
     where: {
       isAvailable: true,
-      id: { notIn: dishes.map(d => d.id) } // Exclude weekly best dishes
+      id: { notIn: dishes.map(d => d.id) }, // Exclude weekly best dishes
+      users: {
+        kitchens: {
+          some: {
+            isActive: true,
+            isOpen: true,
+            isVerified: true,
+          },
+        },
+      },
     },
     include: {
       menu_item_images: true,
