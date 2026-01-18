@@ -93,6 +93,8 @@ export default async function KitchenProfilePage({
     rating: Number(kitchen.rating) || 0,
     reviewCount: kitchen.reviewCount,
     kriScore: kitchen.kriScore,
+    isOpen: kitchen.isOpen,
+    isActive: kitchen.isActive,
     stats: {
       orders: kitchen.totalOrders.toString(),
       satisfaction: `${Number(kitchen.satisfactionRate) || 90}%`
@@ -113,6 +115,15 @@ export default async function KitchenProfilePage({
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
       
+      {/* Closed Kitchen Banner */}
+      {!kitchen.isOpen && (
+        <div className="bg-red-500 text-white py-3 px-4 text-center">
+          <p className="font-semibold">
+            🔒 This kitchen is currently closed and not accepting orders
+          </p>
+        </div>
+      )}
+
       {/* 1. Header Section */}
       <KitchenHeader kitchen={data} />
 

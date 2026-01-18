@@ -68,6 +68,9 @@ export async function POST(req: NextRequest) {
             id: true,
             name: true,
             area: true,
+            isActive: true,
+            isOpen: true,
+            isVerified: true,
           },
         },
       },
@@ -89,7 +92,40 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log("[Subscription API] Plan found and active");
+    // Check if kitchen is active and open
+    if (!plan.kitchen) {
+      console.log("[Subscription API] Kitchen not found for plan");
+      return NextResponse.json(
+        { error: "Kitchen not found" },
+        { status: 404 }
+      );
+    }
+
+    if (!plan.kitchen.isActive) {
+      console.log("[Subscription API] Kitchen is not active (admin suspended)");
+      return NextResponse.json(
+        { error: "This kitchen is currently not accepting orders" },
+        { status: 400 }
+      );
+    }
+
+    if (!plan.kitchen.isOpen) {
+      console.log("[Subscription API] Kitchen is closed");
+      return NextResponse.json(
+        { error: "This kitchen is temporarily closed and not accepting new subscriptions" },
+        { status: 400 }
+      );
+    }
+
+    if (!plan.kitchen.isVerified) {
+      console.log("[Subscription API] Kitchen is not verified");
+      return NextResponse.json(
+        { error: "This kitchen is not verified yet" },
+        { status: 400 }
+      );
+    }
+
+    console.log("[Subscription API] Plan found, active, and kitchen is open");
 
     // Calculate pricing
     const monthlyPrice = plan.price;
