@@ -52,6 +52,41 @@ export async function middleware(request: NextRequest) {
 
   // Check for custom JWT cookie
   const authToken = request.cookies.get("auth_token")?.value;
+  const { pathname } = request.nextUrl;
+
+  // Protect Admin Routes - require authentication and ADMIN role
+  if (pathname.startsWith("/admin") && !pathname.startsWith("/admin-login")) {
+    // If no auth token, redirect to admin login
+    if (!authToken && !user) {
+      return NextResponse.redirect(new URL("/admin-login", request.url));
+    }
+
+    // Verify admin role - fetch user data from API
+    try {
+      const apiUrl = new URL("/api/auth/me", request.url);
+      const meResponse = await fetch(apiUrl.toString(), {
+        headers: {
+          Cookie: `auth_token=${authToken}`,
+        },
+      });
+
+      if (meResponse.ok) {
+        const { user: dbUser } = await meResponse.json();
+        if (dbUser.role !== "ADMIN") {
+          // Not an admin, redirect to home
+          return NextResponse.redirect(new URL("/", request.url));
+        }
+      } else if (!user) {
+        // No valid JWT and no Supabase user
+        return NextResponse.redirect(new URL("/admin-login", request.url));
+      }
+    } catch (error) {
+      console.error("Error verifying admin:", error);
+      if (!user) {
+        return NextResponse.redirect(new URL("/admin-login", request.url));
+      }
+    }
+  }
 
   // Protect Auth Routes (Login/Register)
   // If user is already logged in (Supabase OR JWT), redirect to /feed
@@ -59,7 +94,6 @@ export async function middleware(request: NextRequest) {
     user || // Supabase User
     authToken // Email/Password User
   ) {
-    const { pathname } = request.nextUrl;
     if (pathname === "/login" || pathname === "/register") {
       const redirectUrl = request.nextUrl.searchParams.get("redirect") || "/auth/redirect";
       const url = request.nextUrl.clone();
@@ -70,6 +104,27 @@ export async function middleware(request: NextRequest) {
       // But typically clone() keeps origin.
       // Reset logic:
       return NextResponse.redirect(new URL(redirectUrl, request.url));
+    }
+
+    // If admin is already logged in and tries to access admin-login, redirect to dashboard
+    if (pathname === "/admin-login") {
+      try {
+        const apiUrl = new URL("/api/auth/me", request.url);
+        const meResponse = await fetch(apiUrl.toString(), {
+          headers: {
+            Cookie: `auth_token=${authToken}`,
+          },
+        });
+
+        if (meResponse.ok) {
+          const { user: dbUser } = await meResponse.json();
+          if (dbUser.role === "ADMIN") {
+            return NextResponse.redirect(new URL("/admin/dashboard", request.url));
+          }
+        }
+      } catch (error) {
+        console.error("Error checking admin status:", error);
+      }
     }
   }
 

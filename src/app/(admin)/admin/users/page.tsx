@@ -1,162 +1,326 @@
 "use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import {
-  Search, Filter, ChevronDown, Download, Plus,
-  MoreVertical, CheckCircle2, Trash2, Archive
-} from 'lucide-react';
-import AdminSidebar from '@/components/admin/AdminSidebar';
+import React, { useEffect, useState } from "react";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminHeader from "@/components/admin/AdminHeader";
+import { Search, Eye, Trash2, Shield, Mail } from "lucide-react";
 
-import { USER_STATS, USERS_LIST } from '@/lib/dummy-data/admin/userData';
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  createdAt: string;
+  emailVerified: boolean;
+  phone: string;
+}
 
-export default function UserManagement() {
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+export default function UsersPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("ALL");
+  const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch("/api/admin/users");
+      const data = await res.json();
+      setUsers(data.users);
+      setFilteredUsers(data.users);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    applyFilters(value, roleFilter);
+  };
+
+  const handleRoleFilter = (role: string) => {
+    setRoleFilter(role);
+    applyFilters(search, role);
+  };
+
+  const applyFilters = (searchValue: string, role: string) => {
+    let filtered = users;
+
+    if (searchValue) {
+      filtered = filtered.filter(
+        (u) =>
+          u.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+          u.email.toLowerCase().includes(searchValue.toLowerCase())
+      );
+    }
+
+    if (role !== "ALL") {
+      filtered = filtered.filter((u) => u.role === role);
+    }
+
+    setFilteredUsers(filtered);
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (confirm("Are you sure you want to delete this user?")) {
+      try {
+        const res = await fetch(`/api/admin/users?id=${userId}`, {
+          method: "DELETE",
+        });
+
+        if (res.ok) {
+          setUsers(users.filter((u) => u.id !== userId));
+          setFilteredUsers(filteredUsers.filter((u) => u.id !== userId));
+          setSelectedUser(null);
+        }
+      } catch (error) {
+        console.error("Failed to delete user:", error);
+      }
+    }
+  };
+
+  const getRoleBadgeColor = (role: string) => {
+    switch (role) {
+      case "ADMIN":
+        return "bg-red-500/20 text-red-400";
+      case "SELLER":
+        return "bg-purple-500/20 text-purple-400";
+      case "BUYER":
+        return "bg-blue-500/20 text-blue-400";
+      default:
+        return "bg-gray-500/20 text-gray-400";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full bg-background-dark">
+        <AdminSidebar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-primary mx-auto mb-4"></div>
+            <p className="text-text-muted">Loading users...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-screen bg-background-dark text-white font-display overflow-hidden">
+    <div className="flex h-screen w-full overflow-hidden bg-background-dark text-white">
       <AdminSidebar />
 
-      {/* Main Content */}
       <main className="flex-1 overflow-y-auto flex flex-col">
-        
+        <AdminHeader title="Users Management" />
 
-        {/* Page Content */}
-        <div className="p-8 space-y-8 flex-1">
-          {/* Page Title */}
-          <div className="flex justify-between items-end">
-            <div>
-              <h2 className="text-3xl font-bold">All Users</h2>
-              <p className="text-text-muted text-sm mt-1">Manage buyers, sellers, and administrators across the platform.</p>
-            </div>
-            <div className="flex gap-3">
-              <button className="flex items-center gap-2 px-4 py-2 bg-surface-dark border border-border-dark rounded-lg text-sm hover:bg-border-dark transition-colors">
-                <Download size={16} /> Export CSV
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-primary text-background-dark font-bold rounded-lg text-sm hover:bg-primary/90 transition-colors shadow-[0_0_15px_rgba(17,212,180,0.3)]">
-                <Plus size={16} /> Add New User
-              </button>
-            </div>
+        <div className="p-8 space-y-6">
+          {/* Header */}
+          <div>
+            <h2 className="text-3xl font-bold mb-2">User Management</h2>
+            <p className="text-text-muted">
+              Manage all platform users - buyers, sellers, and staff
+            </p>
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {USER_STATS.map((stat, i) => (
-              <div key={i} className="bg-surface-dark border border-border-dark p-5 rounded-xl">
-                <p className="text-sm text-text-muted mb-2">{stat.label}</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold">{stat.value}</span>
-                  <span className={`text-xs ${
-                    stat.trend === 'up' ? 'text-primary' : stat.trend === 'down' ? 'text-red-400' : 'text-orange-400'
-                  }`}>
-                    {stat.change}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Filter Bar */}
-          <div className="bg-surface-dark border border-border-dark p-4 rounded-xl flex gap-4 flex-wrap">
-            <div className="flex-1 min-w-[200px] relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
-              <input className="w-full bg-background-dark border-none rounded-lg pl-10 py-2 text-sm focus:ring-1 focus:ring-primary outline-none text-white" placeholder="Search by name, email, or phone..." />
+          {/* Filters */}
+          <div className="flex flex-col lg:flex-row gap-4">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+              <input
+                type="text"
+                placeholder="Search by name or email..."
+                value={search}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="w-full bg-surface-dark border border-border-dark rounded-lg pl-12 pr-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none text-white"
+              />
             </div>
-            <FilterSelect label="Role" />
-            <FilterSelect label="Status" />
-            <button className="p-2 bg-background-dark rounded-lg hover:bg-border-dark transition-colors">
-              <Filter size={18} />
-            </button>
+
+            {/* Role Filter */}
+            <select
+              value={roleFilter}
+              onChange={(e) => handleRoleFilter(e.target.value)}
+              className="bg-surface-dark border border-border-dark rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none text-white"
+            >
+              <option value="ALL">All Roles</option>
+              <option value="BUYER">Buyers</option>
+              <option value="SELLER">Sellers</option>
+              <option value="ADMIN">Admins</option>
+            </select>
           </div>
 
           {/* Users Table */}
           <div className="bg-surface-dark border border-border-dark rounded-xl overflow-hidden">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-surface-darker text-text-muted text-xs uppercase border-b border-border-dark">
-                <tr>
-                  <th className="px-6 py-4"><input type="checkbox" className="rounded bg-background-dark border border-border-dark" /></th>
-                  <th className="px-6 py-4">User Info</th>
-                  <th className="px-6 py-4">Role</th>
-                  <th className="px-6 py-4">Contact</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Join Date</th>
-                  <th className="px-6 py-4">Orders</th>
-                  <th className="px-6 py-4"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border-dark">
-                {USERS_LIST.map((user) => (
-                  <tr key={user.id} className="hover:bg-surface-darker/50 transition-colors">
-                    <td className="px-6 py-4"><input type="checkbox" className="rounded bg-background-dark border border-border-dark" /></td>
-                    <td className="px-6 py-4">
-                      <Link href={`/admin/userDetails?id=${user.id}`}>
-                        <div className="flex items-center gap-3 cursor-pointer group">
-                          <div className="w-10 h-10 bg-border-dark rounded-full" />
-                          <div>
-                            <p className="font-bold group-hover:text-primary transition-colors">{user.name}</p>
-                            <p className="text-xs text-text-muted">ID: {user.id}</p>
-                          </div>
-                        </div>
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-lg text-xs font-medium flex items-center gap-1 w-fit ${
-                        user.role === 'Seller'
-                          ? 'bg-secondary/10 text-secondary'
-                          : 'bg-primary/10 text-primary'
-                      }`}>
-                        {user.role === 'Seller' ? '💼' : '👤'} {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="text-xs">{user.email}</p>
-                      <p className="text-xs text-text-muted">{user.phone}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`flex items-center gap-1.5 text-xs ${
-                        user.status === 'Active' ? 'text-primary' : 'text-red-400'
-                      }`}>
-                        <span className={`w-2 h-2 rounded-full ${
-                          user.status === 'Active' ? 'bg-primary' : 'bg-red-400'
-                        }`} />
-                        {user.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-xs text-text-muted">{user.joinDate}</td>
-                    <td className="px-6 py-4">
-                      <p className="font-bold">{user.orders}</p>
-                      <p className="text-xs text-text-muted">{user.revenue}</p>
-                    </td>
-                    <td className="px-6 py-4"><MoreVertical size={16} className="text-text-muted cursor-pointer hover:text-white transition-colors" /></td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-background-dark text-text-muted text-xs uppercase border-b border-border-dark">
+                  <tr>
+                    <th className="px-6 py-4">Name</th>
+                    <th className="px-6 py-4">Email</th>
+                    <th className="px-6 py-4">Role</th>
+                    <th className="px-6 py-4">Phone</th>
+                    <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Joined</th>
+                    <th className="px-6 py-4">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Selection Toolbar */}
-          <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-surface-dark border border-border-dark px-6 py-3 rounded-full flex items-center gap-6 shadow-2xl">
-            <div className="flex items-center gap-2">
-              <span className="bg-primary text-background-dark px-2 py-0.5 rounded-full text-xs font-bold">2</span>
-              <span className="text-sm font-medium">Selected</span>
+                </thead>
+                <tbody className="divide-y divide-border-dark">
+                  {filteredUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center text-text-muted">
+                        No users found
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredUsers.map((user) => (
+                      <tr
+                        key={user.id}
+                        className="hover:bg-background-dark/50 transition-colors"
+                      >
+                        <td className="px-6 py-4 font-medium">{user.name}</td>
+                        <td className="px-6 py-4 text-text-muted">{user.email}</td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-bold ${getRoleBadgeColor(
+                              user.role
+                            )}`}
+                          >
+                            {user.role}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">{user.phone || "N/A"}</td>
+                        <td className="px-6 py-4">
+                          {user.emailVerified ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-bold bg-green-500/20 text-green-400">
+                              <Mail size={12} /> Verified
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-bold bg-yellow-500/20 text-yellow-400">
+                              <Mail size={12} /> Unverified
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-text-muted">
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => setSelectedUser(user)}
+                            className="text-primary hover:text-primary/80 transition-colors"
+                          >
+                            <Eye size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
-            <div className="h-6 w-px bg-border-dark" />
-            <button className="flex items-center gap-2 text-sm text-text-muted hover:text-white transition-colors"><CheckCircle2 size={16}/> Verify</button>
-            <button className="flex items-center gap-2 text-sm text-text-muted hover:text-white transition-colors"><Archive size={16}/> Archive</button>
-            <button className="flex items-center gap-2 text-sm text-red-400 hover:text-red-500 transition-colors"><Trash2 size={16}/> Delete</button>
           </div>
         </div>
-      </main>
-    </div>
-  );
-}
 
-// Sub-components
-function FilterSelect({ label }: { label: string }) {
-  return (
-    <div className="bg-background-dark px-4 py-2 rounded-lg flex items-center gap-2 cursor-pointer text-sm border border-border-dark hover:border-text-muted transition-colors">
-      <span className="font-medium">{label}</span>
-      <ChevronDown size={14} className="text-text-muted" />
+        {/* Detail Modal */}
+        {selectedUser && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-surface-dark border border-border-dark rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="p-8 space-y-6">
+                {/* Header */}
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h2 className="text-2xl font-bold mb-1">{selectedUser.name}</h2>
+                    <p className="text-text-muted">{selectedUser.email}</p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedUser(null)}
+                    className="text-text-muted hover:text-white text-2xl"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* User Information */}
+                <div className="bg-background-dark rounded-lg p-4 space-y-3">
+                  <h3 className="font-bold text-lg">User Information</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-text-muted text-sm">Name</p>
+                      <p className="font-medium">{selectedUser.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-text-muted text-sm">Email</p>
+                      <p className="font-medium">{selectedUser.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-text-muted text-sm">Phone</p>
+                      <p className="font-medium">{selectedUser.phone || "Not provided"}</p>
+                    </div>
+                    <div>
+                      <p className="text-text-muted text-sm">Role</p>
+                      <span
+                        className={`inline-block px-2 py-1 rounded text-xs font-bold ${getRoleBadgeColor(
+                          selectedUser.role
+                        )}`}
+                      >
+                        {selectedUser.role}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Information */}
+                <div className="bg-background-dark rounded-lg p-4 space-y-3">
+                  <h3 className="font-bold text-lg">Status</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-text-muted">Email Verified</span>
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-bold ${
+                          selectedUser.emailVerified
+                            ? "bg-green-500/20 text-green-400"
+                            : "bg-yellow-500/20 text-yellow-400"
+                        }`}
+                      >
+                        {selectedUser.emailVerified ? "Yes" : "No"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-text-muted">Account Created</span>
+                      <span className="font-medium">
+                        {new Date(selectedUser.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4 border-t border-border-dark">
+                  {selectedUser.role === "SELLER" && (
+                    <button className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors font-bold">
+                      <Shield size={18} /> View Kitchen
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      handleDeleteUser(selectedUser.id);
+                    }}
+                    className="flex-1 px-4 py-3 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg font-bold transition-colors"
+                  >
+                    Delete User
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
