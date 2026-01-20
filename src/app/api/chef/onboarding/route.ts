@@ -151,19 +151,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Normalize phone numbers for comparison (remove +, ensure 880 prefix)
+    // Normalize phone numbers for comparison (ensure 01XXXXXXXXX format)
     const normalizePhone = (phone: string | null | undefined): string | null => {
       if (!phone) return null;
       // Remove all non-digits
       let normalized = phone.replace(/\D/g, "");
-      // Ensure it starts with 880 (Bangladesh country code)
-      if (!normalized.startsWith("880")) {
-        // If it starts with 0, remove it
-        if (normalized.startsWith("0")) {
-          normalized = normalized.slice(1);
+      // Remove 880 prefix if present (old format)
+      if (normalized.startsWith("880")) {
+        normalized = normalized.slice(3);
+      }
+      // Ensure it starts with 01 (Bangladesh format)
+      if (!normalized.startsWith("01")) {
+        // If it starts with 1, add 0 prefix
+        if (normalized.startsWith("1")) {
+          normalized = "0" + normalized;
+        } else if (!normalized.startsWith("0")) {
+          // If doesn't start with 0, add 01 prefix
+          normalized = "01" + normalized;
         }
-        // Add 880 prefix
-        normalized = "880" + normalized;
+      }
+      // Ensure it's exactly 11 digits
+      if (normalized.length > 11) {
+        normalized = normalized.slice(0, 11);
       }
       return normalized;
     };

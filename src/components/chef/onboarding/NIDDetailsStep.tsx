@@ -78,25 +78,24 @@ export default function NIDDetailsStep({
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
               <Phone size={18} />
             </div>
+            <div className="absolute left-10 top-1/2 -translate-y-1/2 text-gray-700 font-semibold pointer-events-none">
+              01
+            </div>
             <input
               type="tel"
               id="phone"
               value={phone}
               onChange={(e) => {
                 if (phoneFromProfile) return; // Prevent changes if from profile
-                let value = e.target.value.replace(/\D/g, ""); // Remove non-digits
-                if (value.startsWith("880")) {
-                  value = value.slice(3);
-                }
-                if (value.startsWith("0")) {
-                  value = value.slice(1);
-                }
+                // Remove all non-digits and limit to 9 digits (after "01")
+                let value = e.target.value.replace(/\D/g, "").slice(0, 9);
                 onPhoneChange(value);
               }}
               disabled={phoneFromProfile}
-              placeholder="1XXXXXXXXX"
+              placeholder="XXXXXXXXX"
+              maxLength={9}
               className={`
-                w-full pl-10 pr-4 py-3 rounded-lg border-2 transition-colors
+                w-full pl-16 pr-4 py-3 rounded-lg border-2 transition-colors
                 focus:outline-none focus:ring-2 focus:ring-[#477e77]/20
                 ${
                   phoneFromProfile
@@ -115,7 +114,7 @@ export default function NIDDetailsStep({
             </p>
           ) : (
             <p className="text-xs text-gray-500">
-              Format: 1XXXXXXXXX (11 digits starting with 1)
+              Please enter 11 digits (01 is already included)
             </p>
           )}
           {errors?.phone && (
