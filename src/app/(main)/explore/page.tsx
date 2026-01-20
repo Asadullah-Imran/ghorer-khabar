@@ -31,35 +31,43 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
   // 1. Dishes Fetching (Active only if tab is 'dishes')
   let dishes: any[] = [];
   if (tab === "dishes") {
+    // Build the where clause carefully
     const where: any = {
       isAvailable: true,
-      // Search logic
-      OR: query ? [
-        { name: { contains: query, mode: "insensitive" } },
-        { users: { kitchens: { some: { name: { contains: query, mode: "insensitive" } } } } }
-      ] : undefined,
-      // Kitchen status filter
-      users: {
-        kitchens: {
-          some: {
-            isActive: true,
-            isOpen: true,
-            isVerified: true,
-            // Zone filter logic
-            ...(zone && {
-              address: {
-                zone: zone,
-              },
-            }),
-          },
-        },
-      },
     };
 
-    // Category logic
+    // Category filter
     if (category !== "All") {
       where.category = category;
     }
+
+    // Search logic
+    if (query) {
+      where.OR = [
+        { name: { contains: query, mode: "insensitive" } },
+        { users: { kitchens: { some: { name: { contains: query, mode: "insensitive" } } } } }
+      ];
+    }
+
+    // Kitchen status filter with zone
+    const kitchenFilters: any = {
+      isActive: true,
+      isOpen: true,
+      isVerified: true,
+    };
+
+    // Add zone filter if specified
+    if (zone) {
+      kitchenFilters.address = {
+        zone: zone,
+      };
+    }
+
+    where.users = {
+      kitchens: {
+        some: kitchenFilters,
+      },
+    };
 
     // Sorting logic
     const orderBy: any = {};
@@ -68,20 +76,22 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
     else if (sort === "rating") orderBy.rating = "desc";
     else orderBy.createdAt = "desc"; // Default sort
 
-    const dbDishes = await prisma.menu_items.findMany({
-      where,
-      orderBy,
-      include: {
-        menu_item_images: true,
-        users: {
-          include: {
-            kitchens: true,
+    try {
+      const dbDishes = await prisma.menu_items.findMany({
+        where,
+        orderBy,
+        take: 50, // Limit results for performance
+        include: {
+          menu_item_images: true,
+          users: {
+            include: {
+              kitchens: true,
+            }
           }
         }
-      }
-    });
+      });
 
-    dishes = dbDishes.map(d => ({
+      dishes = dbDishes.map(d => ({
         id: d.id,
         name: d.name,
         price: d.price,
@@ -94,7 +104,10 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
         kitchenRating: Number(d.users.kitchens[0]?.rating) || 0,
         kitchenReviewCount: d.users.kitchens[0]?.reviewCount || 0,
         deliveryTime: "30-45 min" // Placeholder as it's not in schema currently
-    }));
+      }));
+    } catch (error) {
+      console.error("Error fetching dishes:", error);
+    }
   }
 
   // 2. Subscription Plans Fetching (Active only if tab is 'subscriptions')
@@ -108,13 +121,16 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
         isOpen: true,
         isVerified: true,
       },
-      // Search logic
-      OR: query ? [
+    };
+
+    // Search logic
+    if (query) {
+      where.OR = [
         { name: { contains: query, mode: "insensitive" } },
         { description: { contains: query, mode: "insensitive" } },
         { kitchen: { name: { contains: query, mode: "insensitive" } } }
-      ] : undefined,
-    };
+      ];
+    }
 
     // Sorting logic
     const orderBy: any = {};
@@ -123,34 +139,39 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
     else if (sort === "rating") orderBy.rating = "desc";
     else orderBy.subscriber_count = "desc"; // Default: most popular
 
-    const dbPlans = await prisma.subscription_plans.findMany({
-      where,
-      orderBy,
-      include: {
-        kitchen: {
-          select: {
-            id: true,
-            name: true,
-            rating: true,
-            location: true,
+    try {
+      const dbPlans = await prisma.subscription_plans.findMany({
+        where,
+        orderBy,
+        take: 50,
+        include: {
+          kitchen: {
+            select: {
+              id: true,
+              name: true,
+              rating: true,
+              location: true,
+            }
           }
         }
-      }
-    });
+      });
 
-    plans = dbPlans.map(p => ({
-      id: p.id,
-      name: p.name,
-      description: p.description,
-      price: p.price,
-      mealsPerDay: p.meals_per_day,
-      servingsPerMeal: p.servings_per_meal,
-      mealsPerMonth: p.meals_per_day * 30,
-      rating: Number(p.rating) || 0,
-      image: p.cover_image || "/placeholder-plan.jpg",
-      kitchen: p.kitchen?.name || "Unknown Kitchen",
-      type: p.meals_per_day >= 3 ? "Full Day" : p.meals_per_day >= 2 ? "Daily Plan" : "Single Meal",
-    }));
+      plans = dbPlans.map(p => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        price: p.price,
+        mealsPerDay: p.meals_per_day,
+        servingsPerMeal: p.servings_per_meal,
+        mealsPerMonth: p.meals_per_day * 30,
+        rating: Number(p.rating) || 0,
+        image: p.cover_image || "/placeholder-plan.jpg",
+        kitchen: p.kitchen?.name || "Unknown Kitchen",
+        type: p.meals_per_day >= 3 ? "Full Day" : p.meals_per_day >= 2 ? "Daily Plan" : "Single Meal",
+      }));
+    } catch (error) {
+      console.error("Error fetching subscription plans:", error);
+    }
   }
 
   // 3. Kitchens Fetching (Active only if tab is 'kitchens')
@@ -159,34 +180,42 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
     const where: any = {
       isActive: true,
       isVerified: true,
-      // Search logic
-      OR: query ? [
+    };
+
+    // Search logic
+    if (query) {
+      where.OR = [
         { name: { contains: query, mode: "insensitive" } },
         { location: { contains: query, mode: "insensitive" } },
         { area: { contains: query, mode: "insensitive" } },
         { type: { contains: query, mode: "insensitive" } }
-      ] : undefined,
-    };
+      ];
+    }
 
     // Sorting logic
     const orderBy: any = {};
     if (sort === "rating") orderBy.rating = "desc";
     else orderBy.createdAt = "desc"; // Default sort
 
-    const dbKitchens = await prisma.kitchen.findMany({
-      where,
-      orderBy
-    });
+    try {
+      const dbKitchens = await prisma.kitchen.findMany({
+        where,
+        orderBy,
+        take: 50,
+      });
 
-    kitchens = dbKitchens.map(k => ({
-      id: k.id,
-      name: k.name,
-      rating: Number(k.rating) || 0,
-      reviews: k.reviewCount,
-      image: k.coverImage || "/placeholder-kitchen.jpg",
-      specialty: k.type || "Home Kitchen",
-      isOpen: k.isOpen,
-    }));
+      kitchens = dbKitchens.map(k => ({
+        id: k.id,
+        name: k.name,
+        rating: Number(k.rating) || 0,
+        reviews: k.reviewCount,
+        image: k.coverImage || "/placeholder-kitchen.jpg",
+        specialty: k.type || "Home Kitchen",
+        isOpen: k.isOpen,
+      }));
+    } catch (error) {
+      console.error("Error fetching kitchens:", error);
+    }
   }
 
   // Fetch user's favorites once to avoid multiple API calls
