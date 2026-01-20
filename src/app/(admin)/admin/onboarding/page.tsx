@@ -7,7 +7,8 @@ import {
   CheckCircle,
   Eye,
   Search,
-  XCircle
+  XCircle,
+  Download,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -249,6 +250,25 @@ export default function SellerOnboarding() {
     }
   };
 
+  const handleExportSellerOrders = async (kitchenId: string, sellerName: string) => {
+    try {
+      const res = await fetch(`/api/admin/export/seller?sellerId=${kitchenId}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `seller-orders-${sellerName.replace(/\s+/g, "-")}-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Export completed", "Seller orders downloaded successfully");
+    } catch (error) {
+      console.error("Failed to export seller orders:", error);
+      toast.error("Failed to export orders");
+    }
+  };
+
   if (loading) {
     return (
       <main className="flex-1 flex items-center justify-center">
@@ -376,12 +396,23 @@ export default function SellerOnboarding() {
                   <h2 className="text-2xl font-bold mb-1">{selectedKitchen.name}</h2>
                   <p className="text-text-muted">{selectedKitchen.seller.email}</p>
                 </div>
-                <button
-                  onClick={() => setSelectedKitchen(null)}
-                  className="text-text-muted hover:text-white text-2xl"
-                >
-                  ✕
-                </button>
+                <div className="flex items-center gap-3">
+                  {selectedKitchen.isVerified && (
+                    <button
+                      onClick={() => handleExportSellerOrders(selectedKitchen.id, selectedKitchen.seller.name)}
+                      className="flex items-center gap-2 px-3 py-2 bg-primary/20 text-primary rounded-lg hover:bg-primary/30 transition-colors font-medium text-sm"
+                      title="Export this seller's orders"
+                    >
+                      <Download size={16} /> Export Orders
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setSelectedKitchen(null)}
+                    className="text-text-muted hover:text-white text-2xl"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
               {/* Seller Information */}

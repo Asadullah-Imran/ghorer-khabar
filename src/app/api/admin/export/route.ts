@@ -18,96 +18,260 @@ export async function GET(request: NextRequest) {
       return new NextResponse("Forbidden - Admin access required", { status: 403 });
     }
 
-    // Fetch dashboard data for export
-    const [totalUsers, totalSellers, totalOrders, orders, kitchens] = await Promise.all([
-      prisma.user.count({
-        where: { role: "BUYER" },
+    // Get date range parameter
+    const { searchParams } = new URL(request.url);
+    const dateRange = searchParams.get("dateRange") || "1month"; // 1week or 1month
+    
+    let dateFilter = {};
+    const now = new Date();
+    
+    if (dateRange === "1week") {
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      dateFilter = { gte: weekAgo, lte: now };
+    } else {
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      dateFilter = { gte: monthAgo, lte: now };
+    }
+
+    // Fetch comprehensive dashboard data for export
+    const [
+      totalUsers,
+      totalSellers,
+      activeSellers,
+      totalOrders,
+      totalRevenueData,
+      pendingOnboarding,
+      orderStatusBreakdown,
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.user.count({ where: { role: "SELLER" } }),
+      prisma.kitchen.count({ where: { isVerified: true, onboardingCompleted: true } }),
+      prisma.order.count({ where: { createdAt: dateFilter } }),
+      prisma.order.aggregate({
+        _sum: { total: true },
+        where: { status: "COMPLETED", createdAt: dateFilter },
       }),
-      prisma.user.count({
-        where: { role: "SELLER" },
-      }),
-      prisma.order.count(),
-      prisma.order.findMany({
-        select: {
-          id: true,
-          total: true,
-          status: true,
-          createdAt: true,
-        },
-        orderBy: { createdAt: "desc" },
-        take: 100,
-      }),
-      prisma.kitchen.findMany({
-        select: {
-          id: true,
-          name: true,
-          totalOrders: true,
-          totalRevenue: true,
-          rating: true,
-        },
-        orderBy: { totalRevenue: "desc" },
-        take: 50,
+      prisma.kitchen.count({ where: { isVerified: false } }),
+      prisma.order.groupBy({
+        by: ["status"],
+        _count: true,
+        where: { createdAt: dateFilter },
       }),
     ]);
 
-    // Calculate stats
-    const totalRevenue = orders.reduce((sum: number, order: any) => sum + order.total, 0);
-    const orderStatusCounts = {
-      PENDING: orders.filter((o: any) => o.status === "PENDING").length,
-      CONFIRMED: orders.filter((o: any) => o.status === "CONFIRMED").length,
-      PREPARING: orders.filter((o: any) => o.status === "PREPARING").length,
-      DELIVERING: orders.filter((o: any) => o.status === "DELIVERING").length,
-      COMPLETED: orders.filter((o: any) => o.status === "COMPLETED").length,
-      CANCELLED: orders.filter((o: any) => o.status === "CANCELLED").length,
-    };
+    // Get top kitchens
+    const kitchens = await prisma.kitchen.findMany({
+      select: {
+        id: true,
+        name: true,
+        rating: true,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 15,
+    });
 
-    // Build CSV content
+    // Calculate kitchen revenue
+    const kitchensWithRevenue = await Promise.all(
+      kitchens.map(async (kitchen) => {
+        const [revenue, totalOrdersCount] = await Promise.all([
+          prisma.order.aggregate({
+            _sum: { total: true },
+            where: {
+              kitchenId: kitchen.id,
+              status: "COMPLETED",
+            },
+          }),
+          prisma.order.count({
+            where: { kitchenId: kitchen.id },
+          }),
+        ]);
+
+        return {
+          ...kitchen,
+          totalRevenue: revenue._sum?.total || 0,
+          totalOrders: totalOrdersCount,
+        };
+      })
+    );
+
+    // Get top menu items
+    const topMenuItems = await prisma.menu_items.findMany({
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        rating: true,
+        reviewCount: true,
+        users: { select: { name: true } },
+      },
+      orderBy: { reviewCount: "desc" },
+      take: 15,
+    });
+
+    // Get recent orders
+    const recentOrders = await prisma.order.findMany({
+      take: 30,
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { name: true, email: true } },
+        kitchen: { select: { name: true } },
+      },
+    });
+
+    // Calculate metrics
+    const totalRevenue = totalRevenueData._sum.total || 0;
+    const completedOrders =
+      orderStatusBreakdown.find((item) => item.status === "COMPLETED")?._count || 0;
+    const completionRate = totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0;
+    const avgOrderValue = completedOrders > 0 ? totalRevenue / completedOrders : 0;
+    const avgKitchenRevenue = activeSellers > 0 ? totalRevenue / activeSellers : 0;
+    const sellerGrowthValue = totalSellers > 0 ? (activeSellers / totalSellers) * 100 : 0;
+
+    // Build professional CSV content
     const csvRows: string[] = [];
 
-    // Header section
-    csvRows.push("ADMIN DASHBOARD REPORT");
-    csvRows.push(`Generated: ${new Date().toLocaleString()}`);
+    // Report Header
+    csvRows.push("");
+    csvRows.push("╔════════════════════════════════════════════════════════════════════════════════╗");
+    csvRows.push("║                     GHORER KHABAR PLATFORM                                     ║");
+    csvRows.push("║                    COMPREHENSIVE DASHBOARD REPORT                             ║");
+    csvRows.push("╚════════════════════════════════════════════════════════════════════════════════╝");
+    csvRows.push("");
+    csvRows.push(`Report Generated: ${new Date().toLocaleString()}`);
+    csvRows.push(`Report Period: Last 30 days`);
+    csvRows.push(`Prepared by: Admin Dashboard`);
+    csvRows.push("");
+    csvRows.push("═".repeat(80));
     csvRows.push("");
 
-    // Summary Statistics
-    csvRows.push("SUMMARY STATISTICS");
-    csvRows.push("Metric,Value");
-    csvRows.push(`Total Users,${totalUsers}`);
-    csvRows.push(`Total Sellers,${totalSellers}`);
-    csvRows.push(`Total Orders,${totalOrders}`);
-    csvRows.push(`Total Revenue,৳ ${totalRevenue.toFixed(2)}`);
-    csvRows.push(`Average Order Value,৳ ${(totalRevenue / Math.max(totalOrders, 1)).toFixed(2)}`);
+    // EXECUTIVE SUMMARY SECTION
+    csvRows.push("📊 EXECUTIVE SUMMARY");
+    csvRows.push("─".repeat(80));
+    csvRows.push("Key Performance Indicators,Value");
+    csvRows.push(`Total Platform Users,${totalUsers}`);
+    csvRows.push(`Total Registered Sellers,${totalSellers}`);
+    csvRows.push(`Active Sellers (Verified & Approved),${activeSellers}`);
+    csvRows.push(`Seller Onboarding Rate,${activeSellers > 0 ? ((activeSellers / totalSellers) * 100).toFixed(2) : 0}%`);
+    csvRows.push(`Pending Seller Approvals,${pendingOnboarding}`);
+    csvRows.push(`Total Orders (All Time),${totalOrders}`);
+    csvRows.push(`Completed Orders,${completedOrders}`);
+    csvRows.push(`Order Completion Rate,${completionRate.toFixed(2)}%`);
+    csvRows.push(`Total Revenue (৳),${totalRevenue.toLocaleString()}`);
+    csvRows.push(`Average Order Value (৳),${avgOrderValue.toFixed(2)}`);
+    csvRows.push(`Average Revenue per Kitchen (৳),${avgKitchenRevenue.toFixed(2)}`);
     csvRows.push("");
 
-    // Order Status Breakdown
-    csvRows.push("ORDER STATUS BREAKDOWN");
+    // ORDER STATUS BREAKDOWN
+    csvRows.push("📈 ORDER STATUS DISTRIBUTION");
+    csvRows.push("─".repeat(80));
     csvRows.push("Status,Count,Percentage");
-    Object.entries(orderStatusCounts).forEach(([status, count]) => {
-      const percentage = ((count / totalOrders) * 100).toFixed(2);
-      csvRows.push(`${status},${count},${percentage}%`);
+    const statusSummary = {
+      PENDING: 0,
+      CONFIRMED: 0,
+      PREPARING: 0,
+      DELIVERING: 0,
+      COMPLETED: 0,
+      CANCELLED: 0,
+    };
+
+    orderStatusBreakdown.forEach((item) => {
+      const percentage = totalOrders > 0 ? ((item._count / totalOrders) * 100).toFixed(2) : 0;
+      csvRows.push(`${item.status},${item._count},${percentage}%`);
+      if (item.status in statusSummary) {
+        statusSummary[item.status as keyof typeof statusSummary] = item._count;
+      }
     });
     csvRows.push("");
 
-    // Top Kitchens
-    csvRows.push("TOP KITCHENS BY REVENUE");
-    csvRows.push("Kitchen Name,Total Orders,Total Revenue,Average Rating");
-    kitchens.forEach((kitchen: any) => {
+    // TOP PERFORMING KITCHENS
+    csvRows.push("🏆 TOP PERFORMING KITCHENS (By Revenue)");
+    csvRows.push("─".repeat(80));
+    csvRows.push("Rank,Kitchen Name,Total Revenue (৳),Total Orders,Avg Rating,Revenue Share");
+    const sortedKitchens = kitchensWithRevenue.sort((a, b) => b.totalRevenue - a.totalRevenue);
+    sortedKitchens.slice(0, 15).forEach((kitchen, index) => {
+      const revenueShare =
+        totalRevenue > 0 ? ((kitchen.totalRevenue / totalRevenue) * 100).toFixed(2) : 0;
       csvRows.push(
-        `"${kitchen.name}",${kitchen.totalOrders},৳ ${kitchen.totalRevenue.toFixed(2)},${kitchen.rating.toFixed(1)} ★`
+        `${index + 1},"${kitchen.name}",${kitchen.totalRevenue.toLocaleString()},${kitchen.totalOrders},${(kitchen.rating || 0).toFixed(1)},${revenueShare}%`
       );
     });
     csvRows.push("");
 
-    // Recent Orders (last 20)
-    csvRows.push("RECENT ORDERS");
-    csvRows.push("Order ID,Amount,Status,Date");
-    orders
-      .slice(0, 20)
-      .forEach((order: any) => {
-        csvRows.push(
-          `${order.id},৳ ${order.total.toFixed(2)},${order.status},${new Date(order.createdAt).toLocaleString()}`
-        );
-      });
+    // TOP MENU ITEMS
+    csvRows.push("⭐ TOP SELLING MENU ITEMS");
+    csvRows.push("─".repeat(80));
+    csvRows.push("Rank,Menu Item,Chef,Price (৳),Rating,Review Count");
+    topMenuItems.slice(0, 15).forEach((item, index) => {
+      csvRows.push(
+        `${index + 1},"${item.name}","${item.users.name}",${item.price},${(item.rating || 0).toFixed(1)},${item.reviewCount}`
+      );
+    });
+    csvRows.push("");
+
+    // RECENT TRANSACTIONS
+    csvRows.push("💰 RECENT TRANSACTIONS (Last 30 Orders)");
+    csvRows.push("─".repeat(80));
+    csvRows.push("Order ID,Kitchen,Customer,Amount (৳),Status,Date,Time");
+    recentOrders.slice(0, 30).forEach((order) => {
+      const date = new Date(order.createdAt);
+      const dateStr = date.toLocaleDateString();
+      const timeStr = date.toLocaleTimeString();
+      csvRows.push(
+        `"${order.id}","${order.kitchen.name}","${order.user.name}",${order.total},"${order.status}","${dateStr}","${timeStr}"`
+      );
+    });
+    csvRows.push("");
+
+    // FINANCIAL SUMMARY
+    csvRows.push("💵 FINANCIAL SUMMARY");
+    csvRows.push("─".repeat(80));
+    csvRows.push("Financial Metric,Amount (৳)");
+    csvRows.push(`Total Revenue (Completed Orders),${totalRevenue.toLocaleString()}`);
+    csvRows.push(`Average Transaction Value,${avgOrderValue.toFixed(2)}`);
+    csvRows.push(`Revenue per Active Seller,${avgKitchenRevenue.toFixed(2)}`);
+    csvRows.push(`Highest Kitchen Revenue,${sortedKitchens[0]?.totalRevenue.toLocaleString() || 0}`);
+    csvRows.push("");
+
+    // GROWTH METRICS
+    csvRows.push("📊 PLATFORM HEALTH INDICATORS");
+    csvRows.push("─".repeat(80));
+    csvRows.push("Metric,Value,Status");
+    csvRows.push(
+      `Active Seller Ratio,${sellerGrowthValue.toFixed(2)}%,${sellerGrowthValue > 70 ? "Excellent" : sellerGrowthValue > 50 ? "Good" : "Needs Attention"}`
+    );
+    csvRows.push(
+      `Order Completion Rate,${completionRate.toFixed(2)}%,${completionRate > 90 ? "Excellent" : completionRate > 75 ? "Good" : "Needs Attention"}`
+    );
+    const avgOrdersPerSeller = activeSellers > 0 ? (totalOrders / activeSellers).toFixed(2) : "0";
+    csvRows.push(`Average Orders per Seller,${avgOrdersPerSeller},${parseFloat(avgOrdersPerSeller) > 50 ? "Excellent" : parseFloat(avgOrdersPerSeller) > 20 ? "Good" : "Needs Attention"}`);
+    csvRows.push("");
+
+    // RECOMMENDATIONS
+    csvRows.push("💡 SYSTEM RECOMMENDATIONS");
+    csvRows.push("─".repeat(80));
+    if (pendingOnboarding > 5) {
+      csvRows.push("⚠️  High number of pending seller approvals - Consider reviewing onboarding queue");
+    }
+    if (completionRate < 80) {
+      csvRows.push("⚠️  Order completion rate below target - Investigate order fulfillment issues");
+    }
+    if (sellerGrowthValue < 60) {
+      csvRows.push("⚠️  Low active seller ratio - Increase seller onboarding efforts");
+    }
+    if (completionRate >= 90 && sellerGrowthValue > 70) {
+      csvRows.push("✓ Platform performing excellently across all key metrics");
+    }
+    csvRows.push("");
+
+    // Footer
+    csvRows.push("═".repeat(80));
+    csvRows.push("Report Information:");
+    csvRows.push("• This report contains sensitive business information - Confidential");
+    csvRows.push("• Data accurate as of report generation time");
+    csvRows.push("• For questions or data verification, contact: admin@ghorerkhabar.com");
+    csvRows.push("• Platform: Ghorer Khabar - Food Delivery Management System");
+    csvRows.push("═".repeat(80));
+    csvRows.push("");
 
     const csvContent = csvRows.join("\n");
 
@@ -116,7 +280,7 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="admin-report-${new Date().toISOString().split("T")[0]}.csv"`,
+        "Content-Disposition": `attachment; filename="ghorer-khabar-report-${new Date().toISOString().split("T")[0]}.csv"`,
       },
     });
   } catch (error) {
