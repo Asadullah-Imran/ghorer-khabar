@@ -96,6 +96,151 @@ export async function sendVerificationEmail(
 }
 
 /**
+ * Send seller approval/activation email
+ */
+export async function sendSellerApprovalEmail(
+  email: string,
+  sellerName: string,
+  kitchenName: string
+) {
+  const mailOptions = {
+    from: `"Ghorer Khabar" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: "Your kitchen is approved and active",
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937; }
+            .container { max-width: 640px; margin: 0 auto; padding: 24px; background: #f8fafc; border-radius: 12px; border: 1px solid #e5e7eb; }
+            .header { text-align: center; padding: 12px 0 4px; }
+            .pill { display: inline-block; padding: 6px 12px; background: #ecfdf3; color: #16a34a; font-weight: 700; border-radius: 9999px; font-size: 12px; letter-spacing: .02em; }
+            .btn { display: inline-block; padding: 12px 18px; background: #0ea5e9; color: white; text-decoration: none; border-radius: 8px; font-weight: 700; margin-top: 12px; }
+            .card { background: white; padding: 18px; border-radius: 10px; border: 1px solid #e5e7eb; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h2>Hi ${sellerName || "there"},</h2>
+              <div class="pill">Approved & Active</div>
+            </div>
+            <p>Great news! Your kitchen <strong>${kitchenName}</strong> has been approved and activated. You can now start receiving orders.</p>
+            <div class="card">
+              <p style="margin:0 0 8px 0; font-weight:700;">What to do next?</p>
+              <ul style="margin:0; padding-left:18px; color:#4b5563;">
+                <li>Review your menu items and pricing</li>
+                <li>Ensure NID and documents stay up to date</li>
+                <li>Keep your kitchen availability toggled appropriately</li>
+              </ul>
+            </div>
+            <p>If you have any questions, reply to this email and our team will help.</p>
+            <p style="margin-top:16px; color:#6b7280; font-size:12px;">Thanks for partnering with Ghorer Khabar!</p>
+          </div>
+        </body>
+      </html>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
+/**
+ * Send seller rejection email
+ */
+export async function sendSellerRejectionEmail(
+  email: string,
+  sellerName: string,
+  kitchenName: string,
+  reason: string
+) {
+  const mailOptions = {
+    from: `"Ghorer Khabar" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: "Application Rejected - Ghorer Khabar",
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937; }
+            .container { max-width: 640px; margin: 0 auto; padding: 24px; background: #f8fafc; border-radius: 12px; border: 1px solid #e5e7eb; }
+            .header { text-align: center; padding: 12px 0 4px; }
+            .pill { display: inline-block; padding: 6px 12px; background: #fee2e2; color: #dc2626; font-weight: 700; border-radius: 9999px; font-size: 12px; letter-spacing: .02em; }
+            .card { background: white; padding: 18px; border-radius: 10px; border: 1px solid #e5e7eb; margin: 16px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h2>Hi ${sellerName || "there"},</h2>
+              <div class="pill">Application Rejected</div>
+            </div>
+            <p>We regret to inform you that your kitchen application for <strong>${kitchenName}</strong> has been rejected.</p>
+            <div class="card">
+              <p style="margin:0 0 8px 0; font-weight:700;">Reason for rejection:</p>
+              <p style="margin:0; color:#4b5563; padding: 12px; background: #f9fafb; border-left: 3px solid #dc2626; border-radius: 4px;">${reason}</p>
+            </div>
+            <p>If you believe this was a mistake or would like to reapply after addressing the concerns, please contact our support team.</p>
+            <p style="margin-top:16px; color:#6b7280; font-size:12px;">Ghorer Khabar Support Team</p>
+          </div>
+        </body>
+      </html>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
+/**
+ * Send seller suspension email
+ */
+export async function sendSellerSuspensionEmail(
+  email: string,
+  sellerName: string,
+  kitchenName: string,
+  reason: string
+) {
+  const mailOptions = {
+    from: `"Ghorer Khabar" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: "Account Suspended - Ghorer Khabar",
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #1f2937; }
+            .container { max-width: 640px; margin: 0 auto; padding: 24px; background: #f8fafc; border-radius: 12px; border: 1px solid #e5e7eb; }
+            .header { text-align: center; padding: 12px 0 4px; }
+            .pill { display: inline-block; padding: 6px 12px; background: #fef3c7; color: #d97706; font-weight: 700; border-radius: 9999px; font-size: 12px; letter-spacing: .02em; }
+            .card { background: white; padding: 18px; border-radius: 10px; border: 1px solid #e5e7eb; margin: 16px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h2>Hi ${sellerName || "there"},</h2>
+              <div class="pill">Account Suspended</div>
+            </div>
+            <p>Your seller account and kitchen <strong>${kitchenName}</strong> have been temporarily suspended.</p>
+            <div class="card">
+              <p style="margin:0 0 8px 0; font-weight:700;">Reason for suspension:</p>
+              <p style="margin:0; color:#4b5563; padding: 12px; background: #f9fafb; border-left: 3px solid #d97706; border-radius: 4px;">${reason}</p>
+            </div>
+            <p>During this period, you will not be able to accept new orders. Please contact our support team immediately to resolve this matter and restore your account.</p>
+            <p style="margin-top:16px; color:#6b7280; font-size:12px;">Ghorer Khabar Support Team</p>
+          </div>
+        </body>
+      </html>
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
+
+/**
  * Generate a 6-digit OTP code
  */
 export function generateOTP(): string {

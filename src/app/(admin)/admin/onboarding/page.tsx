@@ -14,8 +14,11 @@ interface Kitchen {
   id: string;
   name: string;
   nidName: string;
+  nidFrontImage?: string | null;
+  nidBackImage?: string | null;
   isVerified: boolean;
   onboardingCompleted: boolean;
+  isActive?: boolean;
   seller: {
     id: string;
     name: string;
@@ -33,6 +36,11 @@ export default function SellerOnboarding() {
   const [loading, setLoading] = useState(true);
   const [selectedKitchen, setSelectedKitchen] = useState<Kitchen | null>(null);
   const [isRejecting, setIsRejecting] = useState(false);
+  const [isTogglingActive, setIsTogglingActive] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [suspensionReason, setSuspensionReason] = useState("");
+  const [showRejectInput, setShowRejectInput] = useState(false);
+  const [showSuspendInput, setShowSuspendInput] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -99,6 +107,11 @@ export default function SellerOnboarding() {
   };
 
   const handleReject = async (kitchenId: string) => {
+    if (!rejectionReason.trim()) {
+      toast.error("Please provide a reason for rejection");
+      return;
+    }
+
     setIsRejecting(true);
     try {
       const res = await fetch("/api/admin/kitchens", {
@@ -108,21 +121,95 @@ export default function SellerOnboarding() {
           kitchenId,
           isVerified: false,
           onboardingCompleted: false,
+          action: "reject",
+          reason: rejectionReason,
         }),
       });
 
       if (res.ok) {
-        toast.success("Kitchen rejected", "The seller kitchen has been rejected");
-        // Remove from list or mark as rejected
+        toast.success("Kitchen rejected", "The seller has been notified via email");
         setKitchens(kitchens.filter((k) => k.id !== kitchenId));
         setFilteredKitchens(filteredKitchens.filter((k) => k.id !== kitchenId));
         setSelectedKitchen(null);
+        setRejectionReason("");
+        setShowRejectInput(false);
       }
     } catch (error) {
       console.error("Failed to reject kitchen:", error);
       toast.error("Failed to reject kitchen");
     } finally {
       setIsRejecting(false);
+    }
+  };
+
+  const handleToggleActive = async (kitchenId: string, nextActive: boolean) => {
+    setIsTogglingActive(true);
+    try {
+      const res = await fetch("/api/admin/kitchens", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kitchenId,
+          isActive: nextActive,
+        }),
+      });
+
+      if (res.ok) {
+        setKitchens((prev) => prev.map((k) => (k.id === kitchenId ? { ...k, isActive: nextActive } : k)));
+        setFilteredKitchens((prev) => prev.map((k) => (k.id === kitchenId ? { ...k, isActive: nextActive } : k)));
+        setSelectedKitchen((prev) => (prev && prev.id === kitchenId ? { ...prev, isActive: nextActive } : prev));
+        toast.success(
+          nextActive ? "Kitchen activated" : "Kitchen deactivated",
+          nextActive ? "Seller can now accept orders" : "Seller access has been paused"
+        );
+      } else {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to update kitchen status");
+      }
+    } catch (error) {
+      console.error("Failed to toggle kitchen active state:", error);
+      toast.error("Failed to update status", error instanceof Error ? error.message : "");
+    } finally {
+      setIsTogglingActive(false);
+    }
+  };
+
+  const handleSuspendSeller = async (kitchenId: string) => {
+    if (!suspensionReason.trim()) {
+      toast.error("Please provide a reason for suspension");
+      return;
+    }
+
+    setIsTogglingActive(true);
+    try {
+      const res = await fetch("/api/admin/kitchens", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kitchenId,
+          isActive: false,
+          isVerified: false,
+          action: "suspend",
+          reason: suspensionReason,
+        }),
+      });
+
+      if (res.ok) {
+        setKitchens((prev) => prev.map((k) => (k.id === kitchenId ? { ...k, isActive: false, isVerified: false } : k)));
+        setFilteredKitchens((prev) => prev.map((k) => (k.id === kitchenId ? { ...k, isActive: false, isVerified: false } : k)));
+        setSelectedKitchen((prev) => (prev && prev.id === kitchenId ? { ...prev, isActive: false, isVerified: false } : prev));
+        toast.success("Seller suspended", "The seller has been notified via email");
+        setSuspensionReason("");
+        setShowSuspendInput(false);
+      } else {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to suspend seller");
+      }
+    } catch (error) {
+      console.error("Failed to suspend seller:", error);
+      toast.error("Failed to suspend seller", error instanceof Error ? error.message : "");
+    } finally {
+      setIsTogglingActive(false);
     }
   };
 
@@ -285,39 +372,163 @@ export default function SellerOnboarding() {
               {/* Documents Section */}
               <div className="bg-background-dark rounded-lg p-4 space-y-3">
                 <h3 className="font-bold text-lg">Documents</h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {selectedKitchen.nidName && (
                     <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg">
                       <span className="text-sm">NID Documents Submitted</span>
                       <CheckCircle size={18} className="text-green-400" />
                     </div>
                   )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="bg-background-dark border border-border-dark rounded-lg overflow-hidden">
+                      <div className="px-3 py-2 text-xs uppercase text-text-muted">NID Front</div>
+                      <div className="aspect-video bg-background-dark flex items-center justify-center">
+                        {selectedKitchen.nidFrontImage ? (
+                          <img
+                            src={selectedKitchen.nidFrontImage}
+                            alt="NID Front"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <p className="text-text-muted text-xs">Not uploaded</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="bg-background-dark border border-border-dark rounded-lg overflow-hidden">
+                      <div className="px-3 py-2 text-xs uppercase text-text-muted">NID Back</div>
+                      <div className="aspect-video bg-background-dark flex items-center justify-center">
+                        {selectedKitchen.nidBackImage ? (
+                          <img
+                            src={selectedKitchen.nidBackImage}
+                            alt="NID Back"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <p className="text-text-muted text-xs">Not uploaded</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              {!selectedKitchen.isVerified && (
-                <div className="flex gap-3 pt-4 border-t border-border-dark">
-                  <button
-                    onClick={() => handleReject(selectedKitchen.id)}
-                    disabled={isRejecting}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors font-bold disabled:opacity-50"
-                  >
-                    <XCircle size={18} /> Reject Application
-                  </button>
-                  <button
-                    onClick={() => handleApprove(selectedKitchen.id)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-500/10 text-green-400 rounded-lg hover:bg-green-500/20 transition-colors font-bold"
-                  >
-                    <CheckCircle size={18} /> Approve & Activate
-                  </button>
+              <div className="space-y-3 pt-4 border-t border-border-dark">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {!selectedKitchen.isVerified ? (
+                    <>
+                      <button
+                        onClick={() => setShowRejectInput(!showRejectInput)}
+                        disabled={isRejecting}
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors font-bold disabled:opacity-50"
+                      >
+                        <XCircle size={18} /> Reject Application
+                      </button>
+                      <button
+                        onClick={() => handleApprove(selectedKitchen.id)}
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-green-500/10 text-green-400 rounded-lg hover:bg-green-500/20 transition-colors font-bold"
+                      >
+                        <CheckCircle size={18} /> Approve & Activate
+                      </button>
+                    </>
+                  ) : (
+                    <div className="md:col-span-2 text-center p-4 bg-green-500/10 rounded-lg">
+                      <p className="text-green-400 font-medium">This kitchen has been approved and activated</p>
+                    </div>
+                  )}
                 </div>
-              )}
-              {selectedKitchen.isVerified && (
-                <div className="text-center p-4 bg-green-500/10 rounded-lg">
-                  <p className="text-green-400 font-medium">This kitchen has been approved and activated</p>
-                </div>
-              )}
+
+                {/* Rejection Reason Input */}
+                {showRejectInput && !selectedKitchen.isVerified && (
+                  <div className="bg-background-dark border border-border-dark rounded-lg p-4 space-y-3">
+                    <label className="block text-sm font-medium text-text-muted">
+                      Rejection Reason
+                    </label>
+                    <textarea
+                      value={rejectionReason}
+                      onChange={(e) => setRejectionReason(e.target.value)}
+                      placeholder="Please provide a detailed reason for rejection..."
+                      className="w-full px-3 py-2 bg-neutral-900 border border-border-dark rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-primary resize-none"
+                      rows={4}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleReject(selectedKitchen.id)}
+                        disabled={isRejecting || !rejectionReason.trim()}
+                        className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isRejecting ? "Sending..." : "Confirm Rejection"}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowRejectInput(false);
+                          setRejectionReason("");
+                        }}
+                        className="px-4 py-2 bg-surface-dark border border-border-dark text-text-primary rounded-lg hover:border-primary transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {selectedKitchen.isVerified && (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <button
+                        onClick={() => handleToggleActive(selectedKitchen.id, !(selectedKitchen.isActive ?? true))}
+                        disabled={isTogglingActive}
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-surface-dark border border-border-dark rounded-lg hover:border-primary transition-colors font-bold disabled:opacity-50"
+                      >
+                        {selectedKitchen.isActive === false ? "Activate Kitchen" : "Deactivate Kitchen"}
+                      </button>
+
+                      <button
+                        onClick={() => setShowSuspendInput(!showSuspendInput)}
+                        disabled={isTogglingActive}
+                        className="flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition-colors font-bold disabled:opacity-50"
+                      >
+                        Stop Seller Account
+                      </button>
+                    </div>
+
+                    {/* Suspension Reason Input */}
+                    {showSuspendInput && (
+                      <div className="bg-background-dark border border-border-dark rounded-lg p-4 space-y-3">
+                        <label className="block text-sm font-medium text-text-muted">
+                          Suspension Reason
+                        </label>
+                        <textarea
+                          value={suspensionReason}
+                          onChange={(e) => setSuspensionReason(e.target.value)}
+                          placeholder="Please provide a detailed reason for suspension..."
+                          className="w-full px-3 py-2 bg-neutral-900 border border-border-dark rounded-lg text-text-primary placeholder-text-muted focus:outline-none focus:border-primary resize-none"
+                          rows={4}
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleSuspendSeller(selectedKitchen.id)}
+                            disabled={isTogglingActive || !suspensionReason.trim()}
+                            className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isTogglingActive ? "Suspending..." : "Confirm Suspension"}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowSuspendInput(false);
+                              setSuspensionReason("");
+                            }}
+                            className="px-4 py-2 bg-surface-dark border border-border-dark text-text-primary rounded-lg hover:border-primary transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
