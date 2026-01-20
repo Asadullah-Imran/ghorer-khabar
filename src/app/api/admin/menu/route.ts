@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
     const chefId = searchParams.get("chefId");
     const category = searchParams.get("category");
     const sortBy = searchParams.get("sortBy") || "createdAt";
+    const includeStats = searchParams.get("includeStats") === "true";
 
     const where: any = {};
     if (search) {
@@ -46,14 +47,15 @@ export async function GET(req: NextRequest) {
 
     // Determine sorting based on sortBy parameter
     let orderBy: any = { createdAt: "desc" };
-    
+
     if (sortBy === "rating") {
       orderBy = { rating: "desc" };
     } else if (sortBy === "reviewCount") {
       orderBy = { reviewCount: "desc" };
     }
 
-    const [menuItems, total] = await Promise.all([
+    // Base query promises
+    const queryPromises: any[] = [
       prisma.menu_items.findMany({
         where,
         skip,
@@ -76,17 +78,80 @@ export async function GET(req: NextRequest) {
         orderBy,
       }),
       prisma.menu_items.count({ where }),
-    ]);
+    ];
+
+    // If stats are requested, add them to the promise array
+    if (includeStats) {
+      // 1. Total items count (global)
+      queryPromises.push(prisma.menu_items.count());
+
+      // 2. Total available items (global)
+      queryPromises.push(prisma.menu_items.count({ where: { isAvailable: true } }));
+
+      // 3. All unique categories (global)
+      queryPromises.push(prisma.menu_items.findMany({
+        select: { category: true },
+        distinct: ['category'],
+        orderBy: { category: 'asc' }
+      }));
+
+      // 4. All unique chefs (global) - we need users who have menu items
+      queryPromises.push(prisma.menu_items.findMany({
+        select: {
+          users: {
+            select: {
+              id: true,
+              name: true,
+            }
+          }
+        },
+        distinct: ['chef_id'],
+      }));
+    }
+
+    const results = await Promise.all(queryPromises);
+
+    const menuItems = results[0];
+    const total = results[1];
+
+    // Process stats if included
+    let stats = null;
+    let filters = null;
+
+    if (includeStats) {
+      const totalItems = results[2];
+      const totalAvailable = results[3];
+      const uniqueCategories = results[4].map((item: any) => item.category);
+      const uniqueChefs = results[5].map((item: any) => item.users);
+
+      stats = {
+        totalItems,
+        totalAvailable,
+        totalCategories: uniqueCategories.length,
+        activeChefs: uniqueChefs.length
+      };
+
+      filters = {
+        categories: uniqueCategories,
+        chefs: uniqueChefs
+      };
+    }
 
     // Sort by sales or favorites if requested (client-side sorting for aggregated counts)
     let sortedMenuItems = menuItems;
     if (sortBy === "sales") {
-      sortedMenuItems = menuItems.sort((a, b) => (b._count?.orderItems || 0) - (a._count?.orderItems || 0));
+      sortedMenuItems = menuItems.sort((a: any, b: any) => (b._count?.orderItems || 0) - (a._count?.orderItems || 0));
     } else if (sortBy === "favorites") {
-      sortedMenuItems = menuItems.sort((a, b) => (b._count?.favorites || 0) - (a._count?.favorites || 0));
+      sortedMenuItems = menuItems.sort((a: any, b: any) => (b._count?.favorites || 0) - (a._count?.favorites || 0));
     }
 
-    return NextResponse.json({ menuItems: sortedMenuItems, total, hasMore: skip + take < total });
+    return NextResponse.json({
+      menuItems: sortedMenuItems,
+      total,
+      hasMore: skip + take < total,
+      ...(stats && { stats }),
+      ...(filters && { filters })
+    });
   } catch (error) {
     console.error("Error fetching menu items:", error);
     return NextResponse.json(
@@ -135,24 +200,24 @@ export async function PATCH(req: NextRequest) {
     // Update only the isAvailable field
     const menuItem = await prisma.menu_items.update({
       where: { id: menuItemId },
-      data: { 
+      data: {
         isAvailable,
         updatedAt: new Date()
       },
-      include: { 
+      include: {
         users: {
           select: {
             id: true,
             name: true,
           }
-        }, 
-        menu_item_images: true 
+        },
+        menu_item_images: true
       },
     });
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      menuItem 
+      menuItem
     });
   } catch (error) {
     console.error("Error updating menu item:", error);

@@ -4,16 +4,16 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { useToast } from "@/contexts/ToastContext";
 import {
-    DollarSign,
-    Eye,
-    Filter,
-    Heart,
-    Search,
-    Shield,
-    ShoppingCart,
-    Star,
-    Trash2,
-    TrendingUp
+  DollarSign,
+  Eye,
+  Filter,
+  Heart,
+  Search,
+  Shield,
+  ShoppingCart,
+  Star,
+  Trash2,
+  TrendingUp
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -54,6 +54,12 @@ export default function MenuManagement() {
   const [sortBy, setSortBy] = useState<string>("all");
   const [chefs, setChefs] = useState<Array<{ id: string; name: string }>>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [stats, setStats] = useState({
+    totalItems: 0,
+    activeChefs: 0,
+    totalCategories: 0,
+    totalAvailable: 0
+  });
   const [skip, setSkip] = useState(0);
   const [hasMore, setHasMore] = useState(false);
 
@@ -61,27 +67,30 @@ export default function MenuManagement() {
     setSkip(0);
     setMenuItems([]);
     setFilteredItems([]);
-    fetchMenuItems(0);
+    // Only fetch stats on initial load if we don't have them yet or if it's the very first render
+    const isFirstLoad = chefs.length === 0 && categories.length === 0;
+    fetchMenuItems(0, isFirstLoad);
   }, [selectedChef, selectedCategory, sortBy]);
 
-  const fetchMenuItems = async (skipValue: number = 0) => {
+  const fetchMenuItems = async (skipValue: number = 0, fetchStats: boolean = false) => {
     try {
       skipValue === 0 ? setLoading(true) : setLoadingMore(true);
-      
+
       const params = new URLSearchParams();
       params.append("skip", skipValue.toString());
       params.append("take", "10");
       if (selectedChef) params.append("chefId", selectedChef);
       if (selectedCategory) params.append("category", selectedCategory);
       if (sortBy !== "all") params.append("sortBy", sortBy);
-      
+      if (fetchStats) params.append("includeStats", "true");
+
       const res = await fetch(`/api/admin/menu?${params.toString()}`);
       if (!res.ok) {
         const error = await res.json();
         throw new Error(error.error || "Failed to fetch menu items");
       }
       const data = await res.json();
-      
+
       if (skipValue === 0) {
         setMenuItems(data.menuItems);
         setFilteredItems(data.menuItems);
@@ -89,21 +98,18 @@ export default function MenuManagement() {
         setMenuItems((prev) => [...prev, ...data.menuItems]);
         setFilteredItems((prev) => [...prev, ...data.menuItems]);
       }
-      
+
       setHasMore(data.hasMore);
       setSkip(skipValue + 10);
-      
-      // Extract unique chefs and categories only on first load
-      if (skipValue === 0) {
-        const uniqueChefs = Array.from(
-          new Map(data.menuItems.map((item: MenuItem) => [item.users.id, item.users])).values()
-        );
-        setChefs(uniqueChefs as Array<{ id: string; name: string }>);
-        
-        const uniqueCategories = Array.from(
-          new Set(data.menuItems.map((item: MenuItem) => item.category))
-        ).sort();
-        setCategories(uniqueCategories as string[]);
+
+      // Update global stats and filters if provided
+      if (data.stats) {
+        setStats(data.stats);
+      }
+
+      if (data.filters) {
+        setChefs(data.filters.chefs);
+        setCategories(data.filters.categories);
       }
     } catch (error) {
       console.error("Failed to fetch menu items:", error);
@@ -175,11 +181,11 @@ export default function MenuManagement() {
       }
 
       const data = await res.json();
-      
+
       if (data.success) {
         // Update local state with the new availability
         const updatedAvailability = !currentStatus;
-        
+
         setMenuItems(
           menuItems.map((item) =>
             item.id === itemId
@@ -349,20 +355,20 @@ export default function MenuManagement() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-surface-dark border border-border-dark rounded-lg p-4">
             <p className="text-text-muted text-xs mb-1">Total Items</p>
-            <p className="text-2xl font-bold text-white">{filteredItems.length}</p>
+            <p className="text-2xl font-bold text-white">{stats.totalItems || filteredItems.length}</p>
           </div>
           <div className="bg-surface-dark border border-border-dark rounded-lg p-4">
             <p className="text-text-muted text-xs mb-1">Active Chefs</p>
-            <p className="text-2xl font-bold text-primary">{chefs.length}</p>
+            <p className="text-2xl font-bold text-primary">{stats.activeChefs || chefs.length}</p>
           </div>
           <div className="bg-surface-dark border border-border-dark rounded-lg p-4">
             <p className="text-text-muted text-xs mb-1">Categories</p>
-            <p className="text-2xl font-bold text-green-400">{categories.length}</p>
+            <p className="text-2xl font-bold text-green-400">{stats.totalCategories || categories.length}</p>
           </div>
           <div className="bg-surface-dark border border-border-dark rounded-lg p-4">
             <p className="text-text-muted text-xs mb-1">Available</p>
             <p className="text-2xl font-bold text-yellow-400">
-              {filteredItems.filter(item => item.isAvailable).length}
+              {stats.totalAvailable || filteredItems.filter(item => item.isAvailable).length}
             </p>
           </div>
         </div>
@@ -396,11 +402,10 @@ export default function MenuManagement() {
                     />
                     <div className="absolute top-2 right-2 flex gap-2">
                       <span
-                        className={`px-2 py-1 rounded text-xs font-bold ${
-                          item.isAvailable
+                        className={`px-2 py-1 rounded text-xs font-bold ${item.isAvailable
                             ? "bg-green-500/20 text-green-400"
                             : "bg-red-500/20 text-red-400"
-                        }`}
+                          }`}
                       >
                         {item.isAvailable ? "Available" : "Unavailable"}
                       </span>
@@ -476,11 +481,10 @@ export default function MenuManagement() {
                     </button>
                     <button
                       onClick={() => toggleAvailability(item.id, item.isAvailable)}
-                      className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded transition-colors font-medium text-sm ${
-                        item.isAvailable
+                      className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded transition-colors font-medium text-sm ${item.isAvailable
                           ? "bg-red-500/10 text-red-400 hover:bg-red-500/20"
                           : "bg-green-500/10 text-green-400 hover:bg-green-500/20"
-                      }`}
+                        }`}
                     >
                       <Shield size={16} />{" "}
                       {item.isAvailable ? "Disable" : "Enable"}
@@ -553,11 +557,10 @@ export default function MenuManagement() {
                 <div className="bg-background-dark rounded-lg p-4">
                   <p className="text-text-muted text-sm mb-1">Status</p>
                   <p
-                    className={`font-bold ${
-                      selectedItem.isAvailable
+                    className={`font-bold ${selectedItem.isAvailable
                         ? "text-green-400"
                         : "text-red-400"
-                    }`}
+                      }`}
                   >
                     {selectedItem.isAvailable ? "Available" : "Unavailable"}
                   </p>
@@ -612,11 +615,10 @@ export default function MenuManagement() {
                       selectedItem.isAvailable
                     );
                   }}
-                  className={`flex-1 px-4 py-3 rounded-lg font-bold transition-colors ${
-                    selectedItem.isAvailable
+                  className={`flex-1 px-4 py-3 rounded-lg font-bold transition-colors ${selectedItem.isAvailable
                       ? "bg-red-500/10 text-red-400 hover:bg-red-500/20"
                       : "bg-green-500/10 text-green-400 hover:bg-green-500/20"
-                  }`}
+                    }`}
                 >
                   {selectedItem.isAvailable ? "Disable Item" : "Enable Item"}
                 </button>
