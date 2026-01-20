@@ -75,7 +75,9 @@ export async function GET(req: NextRequest) {
           gte: startDate,
         },
       },
-      include: {
+      select: {
+        total: true,
+        status: true,
         reviews: {
           select: {
             rating: true,
@@ -96,14 +98,22 @@ export async function GET(req: NextRequest) {
           lt: startDate,
         },
       },
+      select: {
+        total: true,
+        status: true,
+      },
     });
 
+    // Filter for completed orders only (for revenue and avg order value)
+    const completedOrders = orders.filter((o: any) => o.status === 'COMPLETED');
+    const previousCompletedOrders = previousOrders.filter((o: any) => o.status === 'COMPLETED');
+
     // Calculate metrics
-    const totalRevenue = orders.reduce((sum: number, order: any) => sum + order.total, 0);
-    const previousRevenue = previousOrders.reduce((sum: number, order: any) => sum + order.total, 0);
+    const totalRevenue = completedOrders.reduce((sum: number, order: any) => sum + order.total, 0);
+    const previousRevenue = previousCompletedOrders.reduce((sum: number, order: any) => sum + order.total, 0);
     
-    const totalOrders = orders.length;
-    const previousOrderCount = previousOrders.length;
+    const totalOrders = completedOrders.length;
+    const previousOrderCount = previousCompletedOrders.length;
 
     const revenueGrowth = previousRevenue > 0 
       ? Math.round(((totalRevenue - previousRevenue) / previousRevenue) * 100) 
@@ -123,6 +133,31 @@ export async function GET(req: NextRequest) {
       ? parseFloat((allReviews.reduce((sum: number, r: any) => sum + r.rating, 0) / allReviews.length).toFixed(1))
       : 0;
 
+    // Calculate customer retention
+    const previousPeriodOrders = await prisma.order.findMany({
+      where: {
+        kitchenId: kitchen.id,
+        createdAt: {
+          gte: previousStartDate,
+          lt: startDate,
+        },
+      },
+      select: { userId: true },
+    });
+
+    const currentCustomers = new Set(orders.map((o: any) => o.userId));
+    const previousCustomers = new Set(previousPeriodOrders.map((o: any) => o.userId));
+    const returningCustomers = new Set([...currentCustomers].filter(id => previousCustomers.has(id)));
+    
+    const customerRetention = currentCustomers.size > 0 
+      ? Math.round((returningCustomers.size / currentCustomers.size) * 100)
+      : 0;
+
+    // Calculate fulfillment rate (completed / total orders)
+    const fulfillmentRate = orders.length > 0 
+      ? Math.round((completedOrders.length / orders.length) * 100)
+      : 0;
+
     return NextResponse.json({
       totalRevenue: Math.round(totalRevenue),
       revenueGrowth,
@@ -132,6 +167,11 @@ export async function GET(req: NextRequest) {
       ordersGrowth,
       avgRating,
       maxRating: 5.0,
+      additionalStats: {
+        customerRetention,
+        avgOrderValue: totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0,
+        fulfillmentRate,
+      },
     });
   } catch (error) {
     console.error("Error fetching KPIs:", error);
