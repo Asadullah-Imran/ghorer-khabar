@@ -1,8 +1,10 @@
 /**
  * Proxy API route for dish recommendations
  * Calls the ML service and returns recommendations
+ * Falls back to popular dishes if ML service is unavailable
  */
 import { NextRequest, NextResponse } from 'next/server';
+import { getFallbackDishRecommendations } from '@/lib/services/fallbackRecommendations';
 
 const ML_SERVICE_URL = process.env.ML_SERVICE_URL || 'http://localhost:8000';
 const ML_SERVICE_API_KEY = process.env.ML_SERVICE_API_KEY;
@@ -29,16 +31,21 @@ export async function GET(
     
     // Check if ML service is configured
     if (!ML_SERVICE_URL || !ML_SERVICE_API_KEY) {
-      console.error('ML Service not configured. ML_SERVICE_URL or ML_SERVICE_API_KEY missing.');
+      console.warn('ML Service not configured. Using fallback recommendations.');
+      const fallbackRecs = await getFallbackDishRecommendations(
+        parseInt(limit || '12'),
+        excludeIds ? excludeIds.split(',') : []
+      );
+      
       return NextResponse.json({
         user_id: userId,
-        recommendations: [],
+        recommendations: fallbackRecs,
         metadata: {
-          algorithm: 'fallback',
+          algorithm: 'fallback_popular',
           cold_start: true,
           generated_at: new Date().toISOString(),
-          total_candidates: 0,
-          error: 'ML Service not configured'
+          total_candidates: fallbackRecs.length,
+          note: 'ML Service not configured - showing popular dishes'
         }
       });
     }
@@ -60,18 +67,23 @@ export async function GET(
     } catch (fetchError: any) {
       console.error('Error connecting to ML service:', fetchError);
       
-      // If ML service is not available, return empty recommendations instead of error
+      // If ML service is not available, use fallback recommendations
       if (fetchError.name === 'AbortError' || fetchError.message?.includes('ECONNREFUSED')) {
-        console.warn('ML service unavailable, returning empty recommendations');
+        console.warn('ML service unavailable, using fallback recommendations');
+        const fallbackRecs = await getFallbackDishRecommendations(
+          parseInt(limit || '12'),
+          excludeIds ? excludeIds.split(',') : []
+        );
+        
         return NextResponse.json({
           user_id: userId,
-          recommendations: [],
+          recommendations: fallbackRecs,
           metadata: {
-            algorithm: 'fallback',
+            algorithm: 'fallback_popular',
             cold_start: true,
             generated_at: new Date().toISOString(),
-            total_candidates: 0,
-            error: 'ML service unavailable'
+            total_candidates: fallbackRecs.length,
+            note: 'ML service unavailable - showing popular dishes'
           }
         });
       }
@@ -83,37 +95,87 @@ export async function GET(
       const errorText = await response.text().catch(() => 'Unknown error');
       console.error(`ML Service error ${response.status}:`, errorText);
       
-      // Return empty recommendations instead of error
+      // Use fallback recommendations when ML service returns error
+      const fallbackRecs = await getFallbackDishRecommendations(
+        parseInt(limit || '12'),
+        excludeIds ? excludeIds.split(',') : []
+      );
+      
       return NextResponse.json({
         user_id: userId,
-        recommendations: [],
+        recommendations: fallbackRecs,
         metadata: {
-          algorithm: 'fallback',
+          algorithm: 'fallback_popular',
           cold_start: true,
           generated_at: new Date().toISOString(),
-          total_candidates: 0,
-          error: `ML service returned ${response.status}`
+          total_candidates: fallbackRecs.length,
+          note: `ML service error ${response.status} - showing popular dishes`
         }
       });
     }
     
     const data = await response.json();
     
+    // If ML service returns empty recommendations, use fallback
+    if (!data.recommendations || data.recommendations.length === 0) {
+      console.warn('ML service returned empty recommendations, using fallback');
+      const fallbackRecs = await getFallbackDishRecommendations(
+        parseInt(limit || '12'),
+        excludeIds ? excludeIds.split(',') : []
+      );
+      
+      return NextResponse.json({
+        user_id: userId,
+        recommendations: fallbackRecs,
+        metadata: {
+          algorithm: 'fallback_popular',
+          cold_start: true,
+          generated_at: new Date().toISOString(),
+          total_candidates: fallbackRecs.length,
+          note: 'ML service returned empty results - showing popular dishes'
+        }
+      });
+    }
+    
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('Error fetching dish recommendations:', error);
     
-    // Return empty recommendations instead of error to prevent UI breakage
-    return NextResponse.json({
-      user_id: userId || 'unknown',
-      recommendations: [],
-      metadata: {
-        algorithm: 'fallback',
-        cold_start: true,
-        generated_at: new Date().toISOString(),
-        total_candidates: 0,
-        error: error.message || 'Unknown error'
-      }
-    });
+    // Use fallback recommendations on any error
+    try {
+      const { searchParams } = new URL(request.url);
+      const limit = searchParams.get('limit');
+      const excludeIds = searchParams.get('excludeIds');
+      
+      const fallbackRecs = await getFallbackDishRecommendations(
+        parseInt(limit || '12'),
+        excludeIds ? excludeIds.split(',') : []
+      );
+      
+      return NextResponse.json({
+        user_id: userId || 'unknown',
+        recommendations: fallbackRecs,
+        metadata: {
+          algorithm: 'fallback_popular',
+          cold_start: true,
+          generated_at: new Date().toISOString(),
+          total_candidates: fallbackRecs.length,
+          note: 'Error occurred - showing popular dishes'
+        }
+      });
+    } catch (fallbackError) {
+      // If fallback also fails, return empty array
+      return NextResponse.json({
+        user_id: userId || 'unknown',
+        recommendations: [],
+        metadata: {
+          algorithm: 'fallback',
+          cold_start: true,
+          generated_at: new Date().toISOString(),
+          total_candidates: 0,
+          error: error.message || 'Unknown error'
+        }
+      });
+    }
   }
 }
