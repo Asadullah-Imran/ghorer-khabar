@@ -8,8 +8,15 @@ export async function GET(req: NextRequest) {
     const skip = parseInt(searchParams.get("skip") || "0");
     const take = parseInt(searchParams.get("take") || "10");
     const search = searchParams.get("search");
+    const isVerifiedFilter = searchParams.get("isVerified");
 
     const where: any = { seller: { role: "SELLER" } };
+    
+    // Apply verification filter if specified
+    if (isVerifiedFilter !== null) {
+      where.isVerified = isVerifiedFilter === "true";
+    }
+    
     if (search) {
       where.OR = [
         { name: { contains: search, mode: "insensitive" } },
@@ -37,7 +44,7 @@ export async function GET(req: NextRequest) {
       prisma.kitchen.count({ where }),
     ]);
 
-    return NextResponse.json({ kitchens, total });
+    return NextResponse.json({ kitchens, total, hasMore: skip + take < total });
   } catch (error) {
     console.error("Error fetching kitchens:", error);
     return NextResponse.json(

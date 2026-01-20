@@ -41,23 +41,49 @@ export default function SellerOnboarding() {
   const [suspensionReason, setSuspensionReason] = useState("");
   const [showRejectInput, setShowRejectInput] = useState(false);
   const [showSuspendInput, setShowSuspendInput] = useState(false);
+  const [verificationFilter, setVerificationFilter] = useState<"pending" | "verified" | "all">("pending");
+  const [skip, setSkip] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
-    fetchKitchens();
-  }, []);
+    setSkip(0);
+    setKitchens([]);
+    setFilteredKitchens([]);
+    fetchKitchens(0);
+  }, [verificationFilter]);
 
-  const fetchKitchens = async () => {
+  const fetchKitchens = async (skipValue: number = 0) => {
     try {
-      const res = await fetch("/api/admin/kitchens?onboardingCompleted=false");
+      skipValue === 0 ? setLoading(true) : setLoadingMore(true);
+      
+      const isVerifiedParam = verificationFilter === "pending" ? "false" : verificationFilter === "verified" ? "true" : null;
+      const query = new URLSearchParams({
+        skip: skipValue.toString(),
+        take: "10",
+        ...(isVerifiedParam !== null && { isVerified: isVerifiedParam }),
+      });
+
+      const res = await fetch(`/api/admin/kitchens?${query}`);
       const data = await res.json();
-      setKitchens(data.kitchens);
-      setFilteredKitchens(data.kitchens);
+      
+      if (skipValue === 0) {
+        setKitchens(data.kitchens);
+        setFilteredKitchens(data.kitchens);
+      } else {
+        setKitchens((prev) => [...prev, ...data.kitchens]);
+        setFilteredKitchens((prev) => [...prev, ...data.kitchens]);
+      }
+      
+      setHasMore(data.hasMore);
+      setSkip(skipValue + 10);
     } catch (error) {
       console.error("Failed to fetch kitchens:", error);
       toast.error("Failed to load kitchens");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -237,16 +263,30 @@ export default function SellerOnboarding() {
           </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
-          <input
-            type="text"
-            placeholder="Search by kitchen name or seller email..."
-            value={search}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="w-full bg-surface-dark bg-neutral-900 border border-border-dark rounded-lg pl-12 pr-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none text-white"
-          />
+        {/* Filter and Search */}
+        <div className="flex gap-4 flex-col sm:flex-row sm:items-center">
+          {/* Filter */}
+          <select
+            value={verificationFilter}
+            onChange={(e) => setVerificationFilter(e.target.value as "pending" | "verified" | "all")}
+            className="bg-neutral-900 border border-border-dark rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none text-white"
+          >
+            <option value="pending">Pending Verification</option>
+            <option value="verified">Verified</option>
+            <option value="all">See All</option>
+          </select>
+
+          {/* Search Bar */}
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+            <input
+              type="text"
+              placeholder="Search by kitchen name or seller email..."
+              value={search}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full bg-surface-dark bg-neutral-900 border border-border-dark rounded-lg pl-12 pr-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none text-white"
+            />
+          </div>
         </div>
 
         {/* Kitchen Requests Grid */}
@@ -300,6 +340,19 @@ export default function SellerOnboarding() {
             ))
           )}
         </div>
+
+        {/* Load More Button */}
+        {hasMore && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={() => fetchKitchens(skip)}
+              disabled={loadingMore}
+              className="px-8 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loadingMore ? "Loading..." : `Load More (${filteredKitchens.length} loaded)`}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Detail Modal */}
