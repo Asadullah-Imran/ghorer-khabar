@@ -103,7 +103,8 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
         kitchenLocation: d.users.kitchens[0]?.location || undefined,
         kitchenRating: Number(d.users.kitchens[0]?.rating) || 0,
         kitchenReviewCount: d.users.kitchens[0]?.reviewCount || 0,
-        deliveryTime: "30-45 min" // Placeholder as it's not in schema currently
+        deliveryTime: "30-45 min", // Placeholder as it's not in schema currently
+        chefId: d.chef_id // Chef/creator ID for permission checking
       }));
     } catch (error) {
       console.error("Error fetching dishes:", error);
@@ -220,11 +221,19 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
 
   // Fetch user's favorites once to avoid multiple API calls
   const userId = await getAuthUserId();
+  let userRole: string | null = null;
   let favoriteDishIds = new Set<string>();
   let favoriteKitchenIds = new Set<string>();
   let favoritePlanIds = new Set<string>();
 
   if (userId) {
+    // Get user role for permission checking
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+    userRole = user?.role || null;
+
     const userFavorites = await prisma.favorite.findMany({
       where: { userId },
       select: {
@@ -264,7 +273,13 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
             {dishes.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {dishes.map((dish) => (
-                  <DishCard key={dish.id} data={dish} isFavorite={favoriteDishIds.has(dish.id)} />
+                  <DishCard 
+                    key={dish.id} 
+                    data={dish} 
+                    isFavorite={favoriteDishIds.has(dish.id)}
+                    currentUserId={userId}
+                    userRole={userRole}
+                  />
                 ))}
               </div>
             ) : (
