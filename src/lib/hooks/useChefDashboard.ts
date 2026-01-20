@@ -29,7 +29,7 @@ interface UseChefDashboardReturn {
   loadingMetrics: boolean; // Metrics-specific loading
   loadingNotifications: boolean; // Notifications-specific loading
   error: string | null;
-  kitchenOpen: boolean;
+  kitchenOpen: boolean | null;
   refetch: () => Promise<void>;
   updateKitchenStatus: (status: boolean) => Promise<void>;
 }
@@ -47,7 +47,7 @@ export function useChefDashboard(): UseChefDashboardReturn {
   const [loadingMetrics, setLoadingMetrics] = useState(!dashboardCache);
   const [loadingNotifications, setLoadingNotifications] = useState(!notificationsCache);
   const [error, setError] = useState<string | null>(null);
-  const [kitchenOpen, setKitchenOpen] = useState(true);
+  const [kitchenOpen, setKitchenOpen] = useState<boolean | null>(dashboardCache?.kitchenOpen ?? null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(true);
 
@@ -59,6 +59,7 @@ export function useChefDashboard(): UseChefDashboardReturn {
     if (useCache) {
       setDashboardData(dashboardCache);
       setNotifications(notificationsCache);
+      setKitchenOpen(dashboardCache.kitchenOpen);
       setLoading(false);
       setLoadingMetrics(false);
       setLoadingNotifications(false);
