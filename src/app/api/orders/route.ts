@@ -233,6 +233,22 @@ export async function POST(req: Request) {
       },
     });
 
+    // 6. Create notification for the chef/seller
+    try {
+      await prisma.notification.create({
+        data: {
+          kitchenId: kitchenId,
+          type: "INFO",
+          title: "New Order Received",
+          message: `You have a new order #${order.id.slice(-6)} for ৳${finalTotal.toFixed(2)}`,
+          read: false,
+          actionUrl: "/chef/orders",
+        },
+      });
+    } catch (notifError) {
+      console.error("Failed to create chef notification (non-critical):", notifError);
+    }
+
     return NextResponse.json({ success: true, orderId: order.id });
   } catch (error: any) {
     console.error("Order creation error:", error);
