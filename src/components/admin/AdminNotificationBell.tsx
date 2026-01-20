@@ -44,7 +44,7 @@ export default function AdminNotificationBell() {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-surface-dark border border-border-dark rounded-lg shadow-xl z-50">
+        <div className="absolute right-0 mt-2 w-96 bg-background-dark border border-border-dark rounded-lg shadow-xl z-50">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-border-dark">
             <div>
@@ -78,7 +78,7 @@ export default function AdminNotificationBell() {
                       handleNotificationClick(notification.id);
                       setIsOpen(false);
                     }}
-                    className={`p-4 border-b border-border-dark cursor-pointer transition-colors hover:bg-background-dark/50 ${
+                    className={`p-4 border-b border-border-dark cursor-pointer transition-colors hover:bg-background-dark/60 ${
                       !notification.read ? "bg-primary/5" : ""
                     }`}
                   >
@@ -125,7 +125,7 @@ export default function AdminNotificationBell() {
             <Link href="/admin/support">
               <div
                 onClick={() => setIsOpen(false)}
-                className="p-3 text-center border-t border-border-dark text-primary text-sm font-medium hover:bg-surface-dark/50 cursor-pointer transition-colors"
+                className="p-3 text-center border-t border-border-dark text-primary text-sm font-medium hover:bg-background-dark/70 cursor-pointer transition-colors"
               >
                 View all support tickets
               </div>

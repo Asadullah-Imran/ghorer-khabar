@@ -46,18 +46,26 @@ export function AdminNotificationProvider({ children }: { children: React.ReactN
 
   // Mark notification as read
   const markAsRead = useCallback(async (notificationId: string) => {
-    try {
-      const res = await fetch(`/api/admin/notifications/${notificationId}/read`, {
-        method: "PATCH",
+    // Optimistically mark as read so UI updates even before the API returns.
+    setNotifications((prev) => {
+      let wasUnread = false;
+      const updated = prev.map((n) => {
+        if (n.id === notificationId && !n.read) {
+          wasUnread = true;
+          return { ...n, read: true };
+        }
+        return n;
       });
-      if (res.ok) {
-        setNotifications((prev) =>
-          prev.map((n) =>
-            n.id === notificationId ? { ...n, read: true } : n
-          )
-        );
+      if (wasUnread) {
         setUnreadCount((prev) => Math.max(0, prev - 1));
       }
+      return updated;
+    });
+
+    try {
+      await fetch(`/api/admin/notifications/${notificationId}`, {
+        method: "PATCH",
+      });
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
     }
