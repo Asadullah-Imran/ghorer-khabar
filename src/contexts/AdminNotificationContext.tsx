@@ -9,6 +9,7 @@ interface AdminNotification {
   title: string;
   message: string;
   read: boolean;
+  type: "SUPPORT_TICKET" | "SELLER_APPROVAL";
   createdAt: string;
 }
 

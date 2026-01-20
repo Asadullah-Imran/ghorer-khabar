@@ -72,7 +72,10 @@ export default function AdminNotificationBell() {
               </div>
             ) : (
               notifications.map((notification) => (
-                <Link key={notification.id} href="/admin/support">
+                <Link 
+                  key={notification.id} 
+                  href={notification.type === "SELLER_APPROVAL" ? "/admin/onboarding" : "/admin/support"}
+                >
                   <div
                     onClick={() => {
                       handleNotificationClick(notification.id);

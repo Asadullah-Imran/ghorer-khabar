@@ -378,15 +378,17 @@ model SupportTicket {
 }
 
 model AdminNotification {
-  id              String   @id @default(cuid())
-  supportTicketId String   @map("support_ticket_id")
+  id              String                  @id @default(cuid())
+  supportTicketId String                  @map("support_ticket_id")
   title           String
   message         String
-  read            Boolean  @default(false)
-  createdAt       DateTime @default(now())
+  read            Boolean                 @default(false)
+  type            AdminNotificationType   @default(SUPPORT_TICKET)
+  createdAt       DateTime                @default(now())
 
   @@index([read])
   @@index([createdAt])
+  @@index([type])
   @@map("admin_notifications")
 }
 
@@ -447,4 +449,9 @@ enum SupportTicketStatus {
   IN_PROGRESS
   RESOLVED
   CLOSED
+}
+
+enum AdminNotificationType {
+  SUPPORT_TICKET
+  SELLER_APPROVAL
 }
