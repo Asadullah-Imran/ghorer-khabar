@@ -115,8 +115,8 @@ export async function GET() {
 
       // Format delivery time
       let deliveryTimeDisplay = "Not set";
-      if (order.deliveryDate && order.deliveryTimeSlot) {
-        const deliveryDate = new Date(order.deliveryDate);
+      if (order.delivery_date && order.delivery_time_slot) {
+        const deliveryDate = new Date(order.delivery_date);
         const dateStr = deliveryDate.toLocaleDateString("en-US", {
           weekday: "short",
           month: "short",
@@ -128,7 +128,7 @@ export async function GET() {
           SNACKS: "Snacks",
           DINNER: "Dinner",
         };
-        const slotName = timeSlotNames[order.deliveryTimeSlot] || order.deliveryTimeSlot;
+        const slotName = timeSlotNames[order.delivery_time_slot] || order.delivery_time_slot;
         deliveryTimeDisplay = `${dateStr}, ${slotName}`;
       }
 
@@ -147,8 +147,8 @@ export async function GET() {
         specialNotes: order.notes || undefined,
         createdAt: order.createdAt,
         prepTime: maxPrepTime, // in minutes
-        deliveryDate: order.deliveryDate ? new Date(order.deliveryDate).toISOString() : null,
-        deliveryTimeSlot: order.deliveryTimeSlot,
+        deliveryDate: order.delivery_date ? new Date(order.delivery_date).toISOString() : null,
+        deliveryTimeSlot: order.delivery_time_slot,
         deliveryTimeDisplay,
         userId: order.userId,
       };
