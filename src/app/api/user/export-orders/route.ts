@@ -64,8 +64,10 @@ export async function GET(request: NextRequest) {
 
     // Generate CSV
     const headers = [
+      "Order Number",
       "Order ID",
       "Restaurant/Seller Name",
+      "Kitchen Location",
       "Chef Name",
       "Chef Email",
       "Chef Phone",
@@ -80,7 +82,7 @@ export async function GET(request: NextRequest) {
 
     let csv = headers.join(",") + "\n";
 
-    enrichedOrders.forEach((order: any) => {
+    enrichedOrders.forEach((order: any, index: number) => {
       const orderDate = new Date(order.createdAt).toLocaleDateString();
       const orderTime = new Date(order.createdAt).toLocaleTimeString();
 
@@ -89,8 +91,10 @@ export async function GET(request: NextRequest) {
       }, 0) || 0;
 
       csv += [
+        index + 1,
         `"${order.id}"`,
         `"${order.kitchen?.name || "N/A"}"`,
+        `"${order.kitchen?.location || "N/A"}"`,
         `"${order.sellerInfo.name}"`,
         `"${order.sellerInfo.email}"`,
         `"${order.sellerInfo.phone}"`,
