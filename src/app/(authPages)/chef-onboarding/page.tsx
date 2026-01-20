@@ -36,6 +36,38 @@ export default function ChefOnboardingPage() {
     nidBackImage: null as string | null,
     kitchenImages: [] as string[],
   });
+  const [phoneFromProfile, setPhoneFromProfile] = useState(false);
+
+  // Fetch user profile to auto-fill phone number
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch("/api/user/profile");
+        if (response.ok) {
+          const data = await response.json();
+          if (data.user?.phone) {
+            // Remove country code (880) if present, keep only 11 digits
+            let phoneNumber = data.user.phone.replace(/^880/, "");
+            // Remove leading 0 if present
+            if (phoneNumber.startsWith("0")) {
+              phoneNumber = phoneNumber.slice(1);
+            }
+            // Update form data with phone number
+            setFormData((prev) => ({
+              ...prev,
+              phone: phoneNumber,
+            }));
+            // Mark that phone is from profile
+            setPhoneFromProfile(true);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
 
   // Load saved progress from localStorage
   useEffect(() => {
@@ -43,7 +75,13 @@ export default function ChefOnboardingPage() {
     if (saved) {
       try {
         const data = JSON.parse(saved);
-        setFormData(data.formData || formData);
+        // Only load saved data if phone is not already set from profile
+        const savedFormData = data.formData || {};
+        setFormData((prev) => ({
+          ...savedFormData,
+          // Keep phone from profile if it exists, otherwise use saved
+          phone: prev.phone || savedFormData.phone || "",
+        }));
         setCurrentStep(data.currentStep || 1);
       } catch (error) {
         console.error("Failed to load saved progress:", error);
@@ -176,8 +214,8 @@ export default function ChefOnboardingPage() {
       // Clear saved progress
       localStorage.removeItem(STORAGE_KEY);
 
-      // Force hard reload to update auth context with new kitchen status
-      window.location.href = "/chef/dashboard";
+      // Redirect to waiting approval page
+      window.location.href = "/chef/waiting-approval";
     } catch (error) {
       console.error("Submission error:", error);
       if (error instanceof z.ZodError) {
@@ -266,6 +304,7 @@ export default function ChefOnboardingPage() {
                   setFormData({ ...formData, phone: value })
                 }
                 errors={errors}
+                phoneFromProfile={phoneFromProfile}
               />
             )}
 
