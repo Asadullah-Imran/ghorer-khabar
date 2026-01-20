@@ -18,7 +18,7 @@ async function main() {
   console.log('Seeding database...')
 
   // Placeholder User ID - REPLACE THIS WITH A REAL USER ID FROM YOUR DATABASE
-  const SELLER_ID = process.env.TEMP_Seller_ID || "ad5f641d-5ac2-46d9-88f9-80a4acf5c73b"
+  const SELLER_ID = process.env.TEMP_Seller_ID || "ceefbe0d-738c-4424-bf93-3a18fd5042a9"
 
   const menuItems = [
     {
