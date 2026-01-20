@@ -3,24 +3,25 @@ import { prisma } from "@/lib/prisma/prisma";
 /**
  * Revenue Calculation Service
  * 
- * Revenue Model:
- * - Chef Revenue = Items Total - Platform Fee (৳10) OR Items Total - Commission %
- * - Platform Revenue = Delivery Fee + Platform Fee (৳10) + Commission (if any)
+ * Revenue Model (per REVENUE_CALCULATION_GUIDE.md):
+ * - Order Total = Items Total + Delivery Fee + Platform Fee - Discount
+ * - Chef Revenue = Items Total + Delivery Fee - Discount (for subscriptions)
+ * - Platform Revenue = Platform Fee + Commission (optional)
  * 
- * Note: Delivery Fee is operational cost and goes to platform, NOT to chef
+ * Note: Delivery Fee goes to the chef; Platform revenue is platform fee + optional commission.
  * 
  * This service calculates revenue on-the-fly from order data.
  * No database fields needed - we calculate from existing order.items and order.total
  */
 
-// Platform fee per order (fixed)
-export const PLATFORM_FEE_PER_ORDER = 10;
+// Platform fee per order (fixed) — set to 0 when using percentage commission only
+export const PLATFORM_FEE_PER_ORDER = 0;
 
 // Platform commission percentage (0% = no commission, only platform fee)
 // Can be changed to a percentage (e.g., 0.05 for 5%)
 // If using commission, chef revenue = itemsTotal - (itemsTotal * commission)
 // If not using commission, chef revenue = itemsTotal - platformFee
-export const PLATFORM_COMMISSION_PERCENT = 0; // Currently 0% (only platform fee)
+export const PLATFORM_COMMISSION_PERCENT = 0.05; // 5% commission per completed sale
 
 export interface OrderRevenueBreakdown {
   itemsTotal: number;
@@ -34,12 +35,11 @@ export interface OrderRevenueBreakdown {
 }
 
 /**
- * Calculate revenue breakdown for a regular order
+ * Calculate revenue breakdown for an order
  * 
  * @param itemsTotal - Sum of (menu item price × quantity)
- * @param deliveryFee - Delivery charge (goes to platform)
+ * @param deliveryFee - Delivery charge
  * @param discount - Optional discount (for subscriptions)
- * @returns Revenue breakdown
  */
 export function calculateOrderRevenue(
   itemsTotal: number,
@@ -48,18 +48,16 @@ export function calculateOrderRevenue(
 ): OrderRevenueBreakdown {
   const platformFee = PLATFORM_FEE_PER_ORDER;
   const commission = itemsTotal * PLATFORM_COMMISSION_PERCENT;
-  
-  // Chef receives: items total - platform fee (or - commission if using percentage)
-  const chefRevenue = PLATFORM_COMMISSION_PERCENT > 0
-    ? itemsTotal - commission // If using commission percentage
-    : itemsTotal - platformFee; // If using fixed platform fee
-  
-  // Platform receives: delivery fee + platform fee + commission
-  const platformRevenue = deliveryFee + platformFee + commission;
-  
-  // Order total = items + delivery + platform fee - discount
+
+  // Chef receives items + delivery - discount
+  const chefRevenue = Math.max(0, itemsTotal + deliveryFee - discount);
+
+  // Platform receives platform fee + commission
+  const platformRevenue = platformFee + commission;
+
+  // Order total
   const orderTotal = itemsTotal + deliveryFee + platformFee - discount;
-  
+
   return {
     itemsTotal,
     deliveryFee,
@@ -111,20 +109,9 @@ export async function calculateChefRevenue(
   let totalChefRevenue = 0;
 
   for (const order of orders) {
-    // Calculate items total from order items
-    const itemsTotal = order.items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-
-    // Chef revenue = items total - platform fee (৳10)
-    // OR items total - commission % if using percentage
-    // Note: Delivery fee does NOT go to chef (it's operational cost for platform)
-    const chefRevenue = PLATFORM_COMMISSION_PERCENT > 0
-      ? itemsTotal - (itemsTotal * PLATFORM_COMMISSION_PERCENT)
-      : itemsTotal - PLATFORM_FEE_PER_ORDER;
-
-    totalChefRevenue += Math.max(0, chefRevenue); // Ensure non-negative
+    // Chef revenue = order total - platform fee
+    const chefRevenue = order.total - PLATFORM_FEE_PER_ORDER;
+    totalChefRevenue += Math.max(0, chefRevenue);
   }
 
   return totalChefRevenue;
@@ -166,22 +153,15 @@ export async function calculatePlatformRevenue(
   let totalPlatformRevenue = 0;
 
   for (const order of orders) {
-    // Calculate items total from order items
+    // Items total for commission calculation
     const itemsTotal = order.items.reduce(
       (sum, item) => sum + item.price * item.quantity,
       0
     );
-
-    // Calculate delivery fee: order.total - itemsTotal - platformFee
-    // Since we don't store deliveryFee separately, we derive it from order.total
     const platformFee = PLATFORM_FEE_PER_ORDER;
-    const deliveryFee = order.total - itemsTotal - platformFee;
-
-    // Platform revenue = delivery fee (operational cost) + platform fee + commission
     const commission = itemsTotal * PLATFORM_COMMISSION_PERCENT;
-    const platformRevenue = deliveryFee + platformFee + commission;
-
-    totalPlatformRevenue += Math.max(0, platformRevenue); // Ensure non-negative
+    const platformRevenue = platformFee + commission;
+    totalPlatformRevenue += Math.max(0, platformRevenue);
   }
 
   return totalPlatformRevenue;
@@ -209,19 +189,9 @@ export async function calculateChefRevenueForOrder(orderId: string): Promise<num
     throw new Error("Order not found");
   }
 
-  // Calculate items total from order items
-  const itemsTotal = order.items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
-  // Chef revenue = items total - platform fee (or - commission if using percentage)
-  // Note: Delivery fee does NOT go to chef
-  const chefRevenue = PLATFORM_COMMISSION_PERCENT > 0
-    ? itemsTotal - (itemsTotal * PLATFORM_COMMISSION_PERCENT)
-    : itemsTotal - PLATFORM_FEE_PER_ORDER;
-
-  return Math.max(0, chefRevenue); // Ensure non-negative
+  // Chef revenue = order total - platform fee
+  const chefRevenue = order.total - PLATFORM_FEE_PER_ORDER;
+  return Math.max(0, chefRevenue);
 }
 
 /**
@@ -245,21 +215,15 @@ export async function calculatePlatformRevenueForOrder(orderId: string): Promise
     throw new Error("Order not found");
   }
 
-  // Calculate items total from order items
+  // Items total for commission
   const itemsTotal = order.items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-
-  // Calculate delivery fee: order.total - itemsTotal - platformFee
   const platformFee = PLATFORM_FEE_PER_ORDER;
-  const deliveryFee = order.total - itemsTotal - platformFee;
-
-  // Platform revenue = delivery fee (operational cost) + platform fee + commission
   const commission = itemsTotal * PLATFORM_COMMISSION_PERCENT;
-  const platformRevenue = deliveryFee + platformFee + commission;
-
-  return Math.max(0, platformRevenue); // Ensure non-negative
+  const platformRevenue = platformFee + commission;
+  return Math.max(0, platformRevenue);
 }
 
 /**

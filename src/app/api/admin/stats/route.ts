@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma/prisma";
+import { calculatePlatformRevenue } from "@/lib/services/revenueCalculation";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -8,16 +9,12 @@ export async function GET(req: NextRequest) {
     const fourWeeksAgo = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000);
     
     // Get overall statistics - revenue only from COMPLETED orders
-    const [totalUsers, totalSellers, activeSellers, totalOrders, totalRevenue, pendingOnboarding] =
+    const [totalUsers, totalSellers, activeSellers, totalOrders, pendingOnboarding] =
       await Promise.all([
         prisma.user.count(),
         prisma.user.count({ where: { role: "SELLER" } }),
         prisma.kitchen.count({ where: { isVerified: true, onboardingCompleted: true } }),
         prisma.order.count(),
-        prisma.order.aggregate({
-          _sum: { total: true },
-          where: { status: "COMPLETED" },
-        }),
         prisma.kitchen.count({ where: { isVerified: false } }),
       ]);
 
@@ -27,7 +24,7 @@ export async function GET(req: NextRequest) {
       const weekStart = new Date(now.getTime() - (week + 1) * 7 * 24 * 60 * 60 * 1000);
       const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
       
-      const [weekUsers, weekOrders, weekRevenue, completedOrders] = await Promise.all([
+      const [weekUsers, weekOrders, completedOrders] = await Promise.all([
         prisma.user.count({
           where: {
             createdAt: { gte: weekStart, lt: weekEnd },
@@ -36,13 +33,6 @@ export async function GET(req: NextRequest) {
         }),
         prisma.order.count({
           where: { createdAt: { gte: weekStart, lt: weekEnd } }
-        }),
-        prisma.order.aggregate({
-          _sum: { total: true },
-          where: {
-            createdAt: { gte: weekStart, lt: weekEnd },
-            status: "COMPLETED"
-          }
         }),
         prisma.order.count({
           where: {
@@ -53,12 +43,14 @@ export async function GET(req: NextRequest) {
       ]);
 
       const weekNumber = 4 - week;
+      // Company revenue for the week (platform revenue)
+      const weekPlatformRevenue = await calculatePlatformRevenue(weekStart, weekEnd);
       weeklyData.push({
         name: `Week ${weekNumber}`,
         users: weekUsers,
         orders: weekOrders,
         completedOrders,
-        revenue: weekRevenue._sum.total || 0
+        revenue: weekPlatformRevenue || 0
       });
     }
     
@@ -129,12 +121,15 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    // Company revenue total (platform revenue) across all completed orders
+    const companyTotalRevenue = await calculatePlatformRevenue();
+
     return NextResponse.json({
       totalUsers,
       totalSellers,
       activeSellers,
       totalOrders,
-      totalRevenue: totalRevenue._sum.total || 0,
+      totalRevenue: companyTotalRevenue || 0,
       pendingOnboarding,
       orderStatusBreakdown,
       kitchenRevenue: kitchenRevenueWithData.sort((a, b) => b.totalRevenue - a.totalRevenue),
