@@ -209,21 +209,24 @@ model subscription_plans {
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  userId    String      @map("user_id")
-  kitchenId String      @map("kitchen_id")
-  total     Float
-  status    OrderStatus @default(PENDING)
-  notes     String?
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  items     OrderItem[]
-  kitchen   Kitchen     @relation(fields: [kitchenId], references: [id])
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reviews   Review[]
+  id                 String              @id @default(cuid())
+  userId             String              @map("user_id")
+  kitchenId          String              @map("kitchen_id")
+  total              Float
+  status             OrderStatus         @default(PENDING)
+  notes              String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  subscription_id    String?
+  items              OrderItem[]
+  kitchen            Kitchen             @relation(fields: [kitchenId], references: [id])
+  user_subscriptions user_subscriptions? @relation(fields: [subscription_id], references: [id])
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews            Review[]
 
   @@index([userId])
   @@index([kitchenId])
+  @@index([subscription_id])
   @@map("orders")
 }
 
@@ -337,6 +340,7 @@ model user_subscriptions {
   confirmedAt          DateTime?          @map("confirmed_at")
   cancelledAt          DateTime?          @map("cancelled_at")
   cancellationReason   String?            @map("cancellation_reason")
+  orders               Order[]
   kitchen              Kitchen            @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
   plan                 subscription_plans @relation(fields: [planId], references: [id], onDelete: Cascade)
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
