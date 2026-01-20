@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
+import { useRouter } from "next/navigation";
 import {
   Users,
   TrendingUp,
@@ -31,6 +32,7 @@ import {
 interface DashboardStats {
   totalUsers: number;
   totalSellers: number;
+  activeSellers: number;
   totalOrders: number;
   totalRevenue: number;
   pendingOnboarding: number;
@@ -67,6 +69,7 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -108,14 +111,16 @@ export default function AdminDashboard() {
     value,
     trend,
     color,
+    onClick,
   }: {
     icon: React.ReactNode;
     label: string;
     value: string | number;
     trend?: number;
     color: string;
+    onClick?: () => void;
   }) => (
-    <div className="bg-surface-dark border border-border-dark p-6 rounded-xl">
+    <div className={`bg-surface-dark border border-border-dark p-6 rounded-xl ${onClick ? "cursor-pointer hover:border-primary transition-colors" : ""}`} onClick={onClick}>
       <div className="flex justify-between items-start mb-4">
         <span className="text-text-muted text-sm font-medium">{label}</span>
         <div className={`p-2 rounded-lg ${color}`}>{icon}</div>
@@ -183,13 +188,15 @@ export default function AdminDashboard() {
             value={stats?.totalUsers || 0}
             trend={12}
             color="bg-blue-500/10 text-blue-400"
+            onClick={() => router.push("/admin/users")}
           />
           <StatCard
             icon={<Package size={20} />}
             label="Active Sellers"
-            value={stats?.totalSellers || 0}
+            value={stats?.activeSellers || 0}
             trend={8}
             color="bg-purple-500/10 text-purple-400"
+            onClick={() => router.push("/admin/onboarding?filter=verified")}
           />
           <StatCard
             icon={<ShoppingCart size={20} />}
@@ -197,6 +204,7 @@ export default function AdminDashboard() {
             value={stats?.totalOrders || 0}
             trend={15}
             color="bg-green-500/10 text-green-400"
+            onClick={() => router.push("/admin/orders")}
           />
           <StatCard
             icon={<BarChart3 size={20} />}
@@ -210,15 +218,16 @@ export default function AdminDashboard() {
             label="Pending Approvals"
             value={stats?.pendingOnboarding || 0}
             color="bg-red-500/10 text-red-400"
+            onClick={() => router.push("/admin/onboarding?filter=pending")}
           />
         </div>
 
         {/* Pending Approvals Section */}
         {stats && stats.pendingOnboarding > 0 && (
-          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6">
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 cursor-pointer hover:border-red-500/50 transition-colors" onClick={() => router.push("/admin/onboarding?filter=pending")}>
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <AlertCircle size={24} className="text-red-400" />
+              <div className="flex items-center gap-3 flex-1">
+                <AlertCircle size={24} className="text-red-400 flex-shrink-0" />
                 <div>
                   <h3 className="font-bold text-lg text-red-400">Pending Seller Approvals</h3>
                   <p className="text-text-muted text-sm">
@@ -226,12 +235,7 @@ export default function AdminDashboard() {
                   </p>
                 </div>
               </div>
-              <a
-                href="/admin/onboarding"
-                className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg transition-colors"
-              >
-                Review Now
-              </a>
+              <div className="text-red-400 font-bold hover:text-red-300">Review Now →</div>
             </div>
           </div>
         )}

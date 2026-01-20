@@ -340,7 +340,6 @@ model user_subscriptions {
   confirmedAt          DateTime?          @map("confirmed_at")
   cancelledAt          DateTime?          @map("cancelled_at")
   cancellationReason   String?            @map("cancellation_reason")
-  orders               Order[]
   kitchen              Kitchen            @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
   plan                 subscription_plans @relation(fields: [planId], references: [id], onDelete: Cascade)
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)

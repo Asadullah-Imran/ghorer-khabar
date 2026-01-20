@@ -8,16 +8,17 @@ export async function GET(req: NextRequest) {
     const fourWeeksAgo = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000);
     
     // Get overall statistics - revenue only from COMPLETED orders
-    const [totalUsers, totalSellers, totalOrders, totalRevenue, pendingOnboarding] =
+    const [totalUsers, totalSellers, activeSellers, totalOrders, totalRevenue, pendingOnboarding] =
       await Promise.all([
         prisma.user.count(),
         prisma.user.count({ where: { role: "SELLER" } }),
+        prisma.kitchen.count({ where: { isVerified: true, onboardingCompleted: true } }),
         prisma.order.count(),
         prisma.order.aggregate({
           _sum: { total: true },
           where: { status: "COMPLETED" },
         }),
-        prisma.kitchen.count({ where: { onboardingCompleted: false } }),
+        prisma.kitchen.count({ where: { isVerified: false } }),
       ]);
 
     // Get weekly performance data (last 4 weeks)
@@ -131,6 +132,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       totalUsers,
       totalSellers,
+      activeSellers,
       totalOrders,
       totalRevenue: totalRevenue._sum.total || 0,
       pendingOnboarding,
