@@ -57,15 +57,53 @@ export function FAQSection({ data }: { data: any[] }) {
 export function ContactForm() {
   const [isSending, setIsSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [topic, setTopic] = useState("Order Issue");
+  const [orderNumber, setOrderNumber] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    
+    if (topic === "Order Issue" && !orderNumber.trim()) {
+      setError("Please enter your order number");
+      return;
+    }
+    
+    if (!message.trim()) {
+      setError("Please enter your message");
+      return;
+    }
+    
     setIsSending(true);
-    // Simulate API
-    setTimeout(() => {
-      setIsSending(false);
+    
+    try {
+      const res = await fetch("/api/support/ticket", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic,
+          orderNumber: topic === "Order Issue" ? orderNumber : null,
+          message,
+        }),
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to send message");
+      }
+      
       setSent(true);
-    }, 1500);
+      setTopic("Order Issue");
+      setOrderNumber("");
+      setMessage("");
+    } catch (err: any) {
+      setError(err.message || "Failed to send message. Please try again.");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   if (sent) {
@@ -97,9 +135,19 @@ export function ContactForm() {
         Send us a message
       </h3>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+          {error}
+        </div>
+      )}
+
       <label className="block space-y-1">
         <span className="text-xs font-bold text-gray-500 uppercase">Topic</span>
-        <select className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-teal-500 outline-none">
+        <select 
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          className="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-teal-500 outline-none"
+        >
           <option>Order Issue</option>
           <option>Payment Issue</option>
           <option>Feedback</option>
@@ -107,14 +155,34 @@ export function ContactForm() {
         </select>
       </label>
 
+      {topic === "Order Issue" && (
+        <label className="block space-y-1">
+          <span className="text-xs font-bold text-gray-500 uppercase">
+            Order Number <span className="text-red-500">*</span>
+          </span>
+          <input
+            type="text"
+            value={orderNumber}
+            onChange={(e) => setOrderNumber(e.target.value)}
+            placeholder="e.g., cm4vg3h5w0000..."
+            className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-teal-500 outline-none"
+          />
+          <p className="text-xs text-gray-500 mt-1">
+            You can find your order number in the order confirmation or 'My Orders' page.
+          </p>
+        </label>
+      )}
+
       <label className="block space-y-1">
         <span className="text-xs font-bold text-gray-500 uppercase">
-          Message
+          Message <span className="text-red-500">*</span>
         </span>
         <textarea
           required
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
           rows={4}
-          placeholder="Describe your issue..."
+          placeholder="Describe your issue in detail..."
           className="w-full px-3 py-2 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-teal-500 outline-none resize-none"
         ></textarea>
       </label>
