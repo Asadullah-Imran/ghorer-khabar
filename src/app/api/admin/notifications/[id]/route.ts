@@ -3,10 +3,10 @@ import { prisma } from "@/lib/prisma/prisma";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Mark notification as read
     const notification = await prisma.adminNotification.update({
@@ -26,10 +26,10 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
 
     // Delete notification
     await prisma.adminNotification.delete({
