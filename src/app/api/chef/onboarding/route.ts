@@ -151,26 +151,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create address for kitchen location
-    const address = await prisma.address.create({
-      data: {
+    // Check if user has a default address
+    const hasDefaultAddress = await prisma.address.findFirst({
+      where: {
         userId: user.id,
-        label: "Kitchen Location",
-        address: validatedData.address,
-        zone: validatedData.zone,
-        latitude: validatedData.latitude,
-        longitude: validatedData.longitude,
         isDefault: true,
       },
     });
 
-    // Create kitchen
+    // Create address for kitchen location
+    // If user has no default address, make this their default
+    const address = await prisma.address.create({
+      data: {
+        userId: user.id,
+        label: `Kitchen: ${validatedData.kitchenName}`,
+        address: validatedData.address,
+        zone: validatedData.zone,
+        latitude: validatedData.latitude,
+        longitude: validatedData.longitude,
+        isDefault: !hasDefaultAddress, // Set as default if user has no default address
+        isKitchenAddress: true, // Mark as kitchen address
+      },
+    });
+
+    // Create kitchen and link to address
     const kitchen = await prisma.kitchen.create({
       data: {
         sellerId: user.id,
+        addressId: address.id, // Link to address record
         name: validatedData.kitchenName,
-        location: validatedData.address,
-        area: validatedData.zone,
+        location: validatedData.address, // Keep temporarily for migration compatibility
+        area: validatedData.zone, // Keep temporarily for migration compatibility
+        latitude: validatedData.latitude, // Keep temporarily for migration compatibility
+        longitude: validatedData.longitude, // Keep temporarily for migration compatibility
         nidName: validatedData.nidName,
         nidFrontImage: validatedData.nidFrontImage,
         nidBackImage: validatedData.nidBackImage,
@@ -192,11 +205,29 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Update user's phone number
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { phone: validatedData.phone },
-    });
+    // Update user's phone number (only if changed and not taken)
+    if (validatedData.phone && validatedData.phone !== existingUser.phone) {
+      // Check if phone number is already taken by another user
+      const phoneExists = await prisma.user.findFirst({
+        where: {
+          phone: validatedData.phone,
+          id: { not: user.id },
+        },
+      });
+
+      if (phoneExists) {
+        return NextResponse.json(
+          { error: "Phone number is already registered" },
+          { status: 400 }
+        );
+      }
+
+      // Update phone number
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { phone: validatedData.phone },
+      });
+    }
 
     return NextResponse.json({
       success: true,

@@ -1,7 +1,9 @@
 import KitchenGallery from "@/components/kitchen/KitchenGallery";
 import KitchenHeader from "@/components/kitchen/KitchenHeader";
 import MenuSection from "@/components/kitchen/MenuSection";
+import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
+import { calculateDistance, formatDistance, isValidCoordinates } from "@/lib/utils/distance";
 import { Star } from "lucide-react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -17,6 +19,7 @@ export default async function KitchenProfilePage({
   const kitchen = await prisma.kitchen.findUnique({
     where: { id },
     include: {
+      address: true, // Include kitchen address for distance calculation
       gallery: {
         orderBy: { order: 'asc' }
       },
@@ -32,6 +35,55 @@ export default async function KitchenProfilePage({
 
   if (!kitchen) {
     notFound();
+  }
+
+  // Calculate distance from user's default address to kitchen
+  let distance: number | null = null;
+  let distanceFormatted: string | null = null;
+  let userLatitude: number | null = null;
+  let userLongitude: number | null = null;
+  
+  const userId = await getAuthUserId();
+  console.log('🔍 Kitchen Page - User ID:', userId);
+  
+  if (userId) {
+    // Get user's default address
+    const userAddress = await prisma.address.findFirst({
+      where: {
+        userId,
+        isDefault: true,
+      },
+    });
+
+    console.log('🔍 Kitchen Page - User Address:', userAddress?.address);
+    console.log('🔍 Kitchen Page - User Coords:', userAddress?.latitude, userAddress?.longitude);
+    console.log('🔍 Kitchen Page - Kitchen Coords:', kitchen.address?.latitude, kitchen.address?.longitude);
+
+    if (userAddress) {
+      userLatitude = userAddress.latitude;
+      userLongitude = userAddress.longitude;
+    }
+
+    // Calculate distance if both have valid coordinates
+    if (
+      kitchen.address &&
+      userAddress &&
+      isValidCoordinates(kitchen.address.latitude, kitchen.address.longitude) &&
+      isValidCoordinates(userAddress.latitude, userAddress.longitude)
+    ) {
+      distance = calculateDistance(
+        userAddress.latitude!,
+        userAddress.longitude!,
+        kitchen.address.latitude!,
+        kitchen.address.longitude!
+      );
+      distanceFormatted = formatDistance(distance);
+      console.log('✅ Distance calculated:', distanceFormatted);
+    } else {
+      console.log('❌ Cannot calculate distance - missing or invalid coordinates');
+    }
+  } else {
+    console.log('⚠️ No user logged in');
   }
 
   // Fetch menu items for this kitchen
@@ -85,9 +137,15 @@ export default async function KitchenProfilePage({
     name: kitchen.name,
     type: kitchen.type || "Home Kitchen",
     description: kitchen.description || "A wonderful kitchen serving delicious food",
-    location: kitchen.location || "Dhaka",
-    area: kitchen.area || "Unknown Area",
-    distance: kitchen.distance || 0,
+    location: kitchen.address?.address || kitchen.location || "Dhaka",
+    area: kitchen.address?.zone || kitchen.area || "Unknown Area",
+    distance: distanceFormatted || "N/A",
+    distanceKm: distance,
+    // Add coordinates for debug
+    latitude: kitchen.address?.latitude,
+    longitude: kitchen.address?.longitude,
+    userLatitude,
+    userLongitude,
     image: kitchen.coverImage || "/placeholder-kitchen.jpg",
     profileImage: kitchen.profileImage,
     rating: Number(kitchen.rating) || 0,
