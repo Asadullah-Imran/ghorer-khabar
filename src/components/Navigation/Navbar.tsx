@@ -159,11 +159,13 @@ export default function Navbar() {
                 title={user?.email || "Profile"}
               >
                 <Image
+                  key={userAvatar} // Force re-render when avatar changes
                   src={userAvatar}
                   alt={user?.user_metadata?.full_name || "Profile"}
                   width={36}
                   height={36}
                   className="object-cover"
+                  unoptimized // Disable Next.js image optimization to avoid caching
                 />
               </button>
 

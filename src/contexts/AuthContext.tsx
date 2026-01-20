@@ -52,19 +52,52 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      // Fetch fresh session data from our API (which merges DB data)
-      const response = await fetch("/api/auth/session");
-      if (response.ok) {
-        const { user } = await response.json();
+      // Try Supabase session first (for OAuth users)
+      const sessionResponse = await fetch("/api/auth/session", {
+        cache: 'no-store',
+        credentials: "include",
+      });
+      if (sessionResponse.ok) {
+        const { user } = await sessionResponse.json();
         if (user) {
           setUser(user);
           if (user.role) setRole(user.role);
+          return;
         }
-      } else {
-        // Fallback to Supabase client if API fails
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+      }
+      
+      // Fallback to JWT session (for email/password users)
+      const jwtResponse = await fetch("/api/auth/me", {
+        cache: 'no-store',
+        credentials: "include",
+      });
+      if (jwtResponse.ok) {
+        const data = await jwtResponse.json();
+        if (data.user) {
+          // Create a user-like object for consistency
+          setUser({
+            id: data.user.id,
+            email: data.user.email,
+            role: data.user.role,
+            user_metadata: {
+              name: data.user.name,
+              full_name: data.user.name,
+              avatar_url: data.user.avatar || null,
+              picture: data.user.avatar || null,
+              kitchen: data.user.kitchen,
+            },
+            kitchen: data.user.kitchen,
+          });
+          if (data.user.role) setRole(data.user.role);
+          return;
+        }
+      }
+      
+      // Final fallback to Supabase client
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
         setUser(user);
       }
     } catch (error) {
@@ -115,6 +148,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               user_metadata: {
                 name: data.user.name,
                 full_name: data.user.name,
+                avatar_url: data.user.avatar || null, // Include avatar
+                picture: data.user.avatar || null, // Include avatar
                 kitchen: data.user.kitchen,
               },
               kitchen: data.user.kitchen,
