@@ -57,6 +57,18 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Create admin notification for the support ticket
+    await prisma.adminNotification.create({
+      data: {
+        supportTicketId: ticket.id,
+        title: `New Support Ticket: ${topic}`,
+        message: `${ticket.user?.name || "Guest"} submitted a ${topic.toLowerCase()} ticket${
+          orderNumber ? ` (Order: ${orderNumber})` : ""
+        }`,
+        read: false,
+      },
+    });
+
     return NextResponse.json({
       success: true,
       ticket,

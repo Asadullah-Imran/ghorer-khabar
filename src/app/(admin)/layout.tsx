@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { AdminNotificationProvider } from "@/contexts/AdminNotificationContext";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 
 export default function AdminLayout({
@@ -55,9 +56,11 @@ export default function AdminLayout({
 
   // Render with unified layout: Sidebar + Children
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background-dark text-white">
-      <AdminSidebar />
-      {children}
-    </div>
+    <AdminNotificationProvider>
+      <div className="flex h-screen w-full overflow-hidden bg-background-dark text-white">
+        <AdminSidebar />
+        {children}
+      </div>
+    </AdminNotificationProvider>
   );
 }

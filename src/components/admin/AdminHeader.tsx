@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Search, Bell, HelpCircle, LogOut, User } from 'lucide-react';
+import { Search, HelpCircle, LogOut, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import AdminNotificationBell from './AdminNotificationBell';
 
 interface AdminHeaderProps {
   title: string;
@@ -41,10 +42,7 @@ export default function AdminHeader({ title, description, actions }: AdminHeader
 
       {/* Right Actions */}
       <div className="flex items-center gap-3">
-        <button className="p-2 bg-surface-dark rounded-lg relative hover:bg-border-dark transition-colors text-white">
-          <Bell size={20} />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full" />
-        </button>
+        <AdminNotificationBell />
         <button className="p-2 bg-surface-dark rounded-lg hover:bg-border-dark transition-colors text-white">
           <HelpCircle size={20} />
         </button>

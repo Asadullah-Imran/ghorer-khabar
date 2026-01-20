@@ -377,6 +377,19 @@ model SupportTicket {
   @@map("support_tickets")
 }
 
+model AdminNotification {
+  id              String   @id @default(cuid())
+  supportTicketId String   @map("support_ticket_id")
+  title           String
+  message         String
+  read            Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@index([read])
+  @@index([createdAt])
+  @@map("admin_notifications")
+}
+
 enum Role {
   BUYER
   SELLER
