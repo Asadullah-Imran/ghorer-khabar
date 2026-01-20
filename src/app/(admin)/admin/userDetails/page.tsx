@@ -1,6 +1,5 @@
 "use client";
 
-import AdminSidebar from "@/components/admin/AdminSidebar";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -31,12 +30,9 @@ function UserDetailsContent() {
   const userId = searchParams.get("id");
   const user = USERS_LIST.find((u) => u.id === userId) || USERS_LIST[0];
   return (
-    <div className="flex h-screen bg-background-dark text-white font-display overflow-hidden">
-      <AdminSidebar />
-
-      <main className="flex-1 overflow-y-auto flex flex-col">
-        {/* Content Container */}
-        <div className="p-8 space-y-6 flex-1">
+    <main className="flex-1 overflow-y-auto flex flex-col bg-background-dark text-white font-display">
+      {/* Content Container */}
+      <div className="p-8 space-y-6 flex-1">
           {/* Back Navigation */}
           <Link
             href="/admin/users"
@@ -241,8 +237,7 @@ function UserDetailsContent() {
           </div>
         </div>
       </main>
-    </div>
-  );
+    );
 }
 
 // --- Internal Helper Components ---
