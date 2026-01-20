@@ -92,6 +92,7 @@ export async function GET(req: NextRequest) {
         title: true,
         message: true,
         read: true,
+        actionUrl: true,
         createdAt: true,
       },
     });
@@ -104,6 +105,7 @@ export async function GET(req: NextRequest) {
       message: notif.message,
       timestamp: notif.createdAt,
       read: notif.read,
+      actionUrl: notif.actionUrl,
     }));
 
     return NextResponse.json({ success: true, data: transformedNotifications });
