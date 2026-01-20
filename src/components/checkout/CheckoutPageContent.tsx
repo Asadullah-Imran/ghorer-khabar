@@ -2,17 +2,18 @@
 
 import { useCart } from "@/components/cart/CartProvider";
 import LocationPicker from "@/components/profile/address/LocationPicker";
+import { useToast } from "@/contexts/ToastContext";
 import {
-  ArrowRight,
-  BadgeCheck,
-  Banknote,
-  Clock,
-  Info,
-  Loader2,
-  MapPin,
-  ShieldCheck,
-  Truck,
-  UserCheck
+    ArrowRight,
+    BadgeCheck,
+    Banknote,
+    Clock,
+    Info,
+    Loader2,
+    MapPin,
+    ShieldCheck,
+    Truck,
+    UserCheck
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -22,6 +23,7 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const kitchenId = searchParams.get("kitchenId");
+  const toast = useToast();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderPlaced, setIsOrderPlaced] = useState(false); // Track success to prevent redirect
@@ -135,7 +137,7 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
         // 3. Navigate to order details
         router.push(`/orders/${data.orderId}`);
     } catch (error: any) {
-        alert(error.message);
+        toast.error("Order Failed", error.message);
         setIsSubmitting(false); // Only reset if error
     } 
     // Do not reset submitting or orderPlaced if success, as we are navigating away

@@ -1,14 +1,16 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext"; // Added useToast
 import {
-  Briefcase,
-  Edit2,
-  Home,
-  Loader2,
-  MapPin,
-  Plus,
-  Trash2,
+    Briefcase,
+    Edit2,
+    Home,
+    Loader2,
+    MapPin,
+    Plus,
+    Trash2
 } from "lucide-react";
+import { useRouter } from "next/navigation"; // Added useRouter
 import { useEffect, useState } from "react";
 import AddressForm, { AddressFormData } from "./AddressForm";
 
@@ -28,6 +30,8 @@ export default function AddressList() {
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
+  const router = useRouter(); // Initialized useRouter
+  const toast = useToast(); // Initialized useToast
 
   // Fetch addresses
   useEffect(() => {
@@ -72,7 +76,7 @@ export default function AddressList() {
 
       setAddresses(addresses.filter((addr) => addr.id !== id));
     } catch (err: any) {
-      alert(err.message);
+      toast.error("Delete Failed", err.message);
     }
   };
 
@@ -96,7 +100,7 @@ export default function AddressList() {
         }))
       );
     } catch (err: any) {
-      alert(err.message);
+      toast.error("Update Failed", err.message);
     }
   };
 

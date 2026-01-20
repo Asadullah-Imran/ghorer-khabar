@@ -1,11 +1,12 @@
 "use client";
 
 import KanbanColumn from "@/components/chef/Kanban/KanbanColumn";
+import { useToast } from "@/contexts/ToastContext";
 import {
-  CheckCircle,
-  Clock,
-  PackageCheck,
-  Zap,
+    CheckCircle,
+    Clock,
+    PackageCheck,
+    Zap,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -49,6 +50,7 @@ export default function OrdersPage() {
   const [error, setError] = useState<string | null>(null);
   const [rejectConfirm, setRejectConfirm] = useState<{ orderId: string; orderNumber: string } | null>(null);
   const [isRejecting, setIsRejecting] = useState(false);
+  const toast = useToast();
 
   const fetchOrders = async () => {
     try {
@@ -137,7 +139,7 @@ export default function OrdersPage() {
         backendStatus = "COMPLETED";
       } else {
         console.error("Invalid status transition", { from: currentOrder.status, to: newStatus });
-        alert("Invalid status transition");
+        toast.warning("Invalid Action", "Invalid status transition");
         return;
       }
 
@@ -157,7 +159,7 @@ export default function OrdersPage() {
       await fetchOrders();
     } catch (err) {
       console.error("Error updating order:", err);
-      alert(err instanceof Error ? err.message : "Failed to update order");
+      toast.error("Update Failed", err instanceof Error ? err.message : "Failed to update order");
     }
   };
 
@@ -200,7 +202,7 @@ export default function OrdersPage() {
       setRejectConfirm(null);
     } catch (err) {
       console.error("Error rejecting order:", err);
-      alert(err instanceof Error ? err.message : "Failed to reject order");
+      toast.error("Rejection Failed", err instanceof Error ? err.message : "Failed to reject order");
     } finally {
       setIsRejecting(false);
     }

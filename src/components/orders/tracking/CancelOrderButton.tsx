@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -13,10 +14,11 @@ export default function CancelOrderButton({ orderId, canCancel }: CancelOrderBut
   const [reason, setReason] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
   const router = useRouter();
+  const toast = useToast();
 
   const handleCancel = async () => {
     if (!reason.trim()) {
-      alert("Please provide a reason for cancellation");
+      toast.warning("Reason Required", "Please provide a reason for cancellation");
       return;
     }
 
@@ -33,15 +35,15 @@ export default function CancelOrderButton({ orderId, canCancel }: CancelOrderBut
       const data = await response.json();
 
       if (response.ok && data.success) {
-        alert("Order cancelled successfully");
+        toast.success("Order Cancelled", "Your order has been cancelled successfully");
         router.refresh();
         setIsOpen(false);
       } else {
-        alert(data.error || "Failed to cancel order");
+        toast.error("Cancellation Failed", data.error || "Failed to cancel order");
       }
     } catch (error) {
       console.error("Error cancelling order:", error);
-      alert("Failed to cancel order. Please try again.");
+      toast.error("Cancellation Error", "Failed to cancel order. Please try again.");
     } finally {
       setIsCancelling(false);
     }

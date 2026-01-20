@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, Trash2, ChefHat, Power, Edit, Users, DollarSign, TrendingUp, AlertCircle } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 import SubscriptionModal from "@/components/chef/Subscription/SubscriptionModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
+import { AlertCircle, ChefHat, DollarSign, Edit, Plus, Power, Trash2, TrendingUp, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface MenuItem {
   id: string;
@@ -52,6 +53,7 @@ export default function SubscriptionsPage() {
   const [editingSubscription, setEditingSubscription] = useState<SubscriptionPlan | undefined>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   // Fetch subscriptions and menu items
   useEffect(() => {
@@ -189,7 +191,7 @@ export default function SubscriptionsPage() {
       setEditingSubscription(undefined);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Operation failed";
-      alert(message);
+      toast.error("Operation Failed", message);
     }
   };
 
@@ -209,7 +211,7 @@ export default function SubscriptionsPage() {
         setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to delete";
-        alert(message);
+        toast.error("Delete Failed", message);
       }
     }
   };
@@ -233,7 +235,7 @@ export default function SubscriptionsPage() {
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to update status";
-      alert(message);
+      toast.error("Status Update Failed", message);
     }
   };
 

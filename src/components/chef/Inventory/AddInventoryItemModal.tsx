@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
 import { InventoryItem } from "@/lib/dummy-data/chef";
 import { X } from "lucide-react";
 import { useState } from "react";
@@ -22,12 +23,13 @@ export default function AddInventoryItemModal({
     reorderLevel: "1",
     unitCost: "100",
   });
+  const toast = useToast();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name.trim()) {
-      alert("Item name is required");
+      toast.warning("Validation Error", "Item name is required");
       return;
     }
 

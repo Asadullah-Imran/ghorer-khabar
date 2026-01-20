@@ -1,6 +1,7 @@
 "use client";
 
-import { Star, Edit2, Trash2 } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
+import { Edit2, Star, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import ReviewForm from "./ReviewForm";
@@ -36,6 +37,7 @@ export default function ReviewSection({
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [deleteConfirmReviewId, setDeleteConfirmReviewId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     fetchReviews();
@@ -119,12 +121,12 @@ export default function ReviewSection({
         setDeleteConfirmReviewId(null);
       } else {
         const data = await response.json();
-        alert(data.error || "Failed to delete review");
+        toast.error("Delete Failed", data.error || "Failed to delete review");
         setDeleteConfirmReviewId(null);
       }
     } catch (error) {
       console.error("Error deleting review:", error);
-      alert("Failed to delete review");
+      toast.error("Delete Failed", "Failed to delete review");
       setDeleteConfirmReviewId(null);
     } finally {
       setIsDeleting(false);

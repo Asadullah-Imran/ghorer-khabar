@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
 import { ArrowRightLeft, ChefHat, PauseCircle, User, X } from "lucide-react";
 import { useState } from "react";
 
@@ -48,6 +49,7 @@ export function RoleSwitcher() {
 // --- 2. Subscription Actions (Updated with Modals) ---
 export function SubscriptionActions() {
   const [showSkipModal, setShowSkipModal] = useState(false);
+  const toast = useToast();
 
   return (
     <>
@@ -96,7 +98,7 @@ export function SubscriptionActions() {
               </button>
               <button
                 onClick={() => {
-                  alert("Meal skipped! Subscription extended.");
+                  toast.success("Meal Skipped", "Meal skipped! Subscription extended.");
                   setShowSkipModal(false);
                 }}
                 className="flex-1 py-2.5 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700"
