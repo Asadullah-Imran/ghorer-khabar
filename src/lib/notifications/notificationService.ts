@@ -8,6 +8,7 @@ export interface CreateNotificationInput {
   type: NotificationType;
   title: string;
   message: string;
+  actionUrl?: string;
 }
 
 /**
@@ -26,6 +27,7 @@ export async function createNotification(input: CreateNotificationInput) {
         type: input.type,
         title: input.title,
         message: input.message,
+        actionUrl: input.actionUrl,
       },
     });
     return notification;
@@ -178,13 +180,15 @@ export async function notifyUser(
   userId: string,
   type: NotificationType,
   title: string,
-  message: string
+  message: string,
+  actionUrl?: string
 ) {
   return createNotification({
     userId,
     type,
     title,
     message,
+    actionUrl,
   });
 }
 

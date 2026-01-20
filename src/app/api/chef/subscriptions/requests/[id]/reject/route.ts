@@ -130,6 +130,7 @@ export async function PATCH(
           message: reason
             ? `Your subscription request for "${updated.plan.name}" has been rejected. Reason: ${reason}`
             : `Your subscription request for "${updated.plan.name}" has been rejected.`,
+          actionUrl: "/explore/subscriptions",
         },
       });
     } catch (notifError) {
