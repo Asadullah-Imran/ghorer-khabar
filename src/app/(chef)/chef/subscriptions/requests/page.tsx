@@ -96,7 +96,7 @@ export default function SubscriptionRequestsPage() {
       title: "Approve Subscription Request",
       message: `Are you sure you want to approve this subscription request for "${planName}"?`,
       confirmLabel: "Approve",
-      variant: "success",
+      variant: "info",
     });
 
     if (confirmed) {
