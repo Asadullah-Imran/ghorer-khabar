@@ -56,6 +56,35 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "kitchenId is required" }, { status: 400 });
     }
 
+    // Handle rejection - send email and delete kitchen data
+    if (action === "reject" && reason) {
+      const kitchen = await prisma.kitchen.findUnique({
+        where: { id: kitchenId },
+        include: { seller: true },
+      });
+
+      if (!kitchen) {
+        return NextResponse.json({ error: "Kitchen not found" }, { status: 404 });
+      }
+
+      // Send rejection email before deletion
+      if (kitchen.seller?.email) {
+        sendSellerRejectionEmail(
+          kitchen.seller.email,
+          kitchen.seller.name || "Seller",
+          kitchen.name,
+          reason
+        ).catch((err) => console.error("Failed to send seller rejection email:", err));
+      }
+
+      // Delete kitchen and all related data
+      await prisma.kitchen.delete({
+        where: { id: kitchenId },
+      });
+
+      return NextResponse.json({ success: true, deleted: true });
+    }
+
     const data: any = {};
     if (typeof isVerified === "boolean") data.isVerified = isVerified;
     if (typeof onboardingCompleted === "boolean") data.onboardingCompleted = onboardingCompleted;
@@ -74,16 +103,6 @@ export async function PATCH(req: NextRequest) {
         kitchen.seller.name || "Seller",
         kitchen.name
       ).catch((err) => console.error("Failed to send seller approval email:", err));
-    }
-
-    // Fire-and-forget rejection email when action is "reject"
-    if (action === "reject" && reason && kitchen.seller?.email) {
-      sendSellerRejectionEmail(
-        kitchen.seller.email,
-        kitchen.seller.name || "Seller",
-        kitchen.name,
-        reason
-      ).catch((err) => console.error("Failed to send seller rejection email:", err));
     }
 
     // Fire-and-forget suspension email when action is "suspend"
