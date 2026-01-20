@@ -1,0 +1,122 @@
+[
+  {
+    "id": "s1",
+    "customerId": "c1",
+    "planId": "p7",
+    "status": "active",
+    "startDate": "2024-11-20T18:00:00.000Z",
+    "endDate": "2024-12-20T18:00:00.000Z",
+    "mealsDelivered": 12,
+    "totalMeals": 15
+  },
+  {
+    "id": "s2",
+    "customerId": "c2",
+    "planId": "p4",
+    "status": "paused",
+    "startDate": "2024-03-27T18:00:00.000Z",
+    "endDate": "2024-04-27T18:00:00.000Z",
+    "mealsDelivered": 10,
+    "totalMeals": 16
+  },
+  {
+    "id": "s3",
+    "customerId": "c3",
+    "planId": "p6",
+    "status": "paused",
+    "startDate": "2024-01-06T18:00:00.000Z",
+    "endDate": "2024-02-06T18:00:00.000Z",
+    "mealsDelivered": 13,
+    "totalMeals": 23
+  },
+  {
+    "id": "s4",
+    "customerId": "c5",
+    "planId": "p4",
+    "status": "active",
+    "startDate": "2024-03-08T18:00:00.000Z",
+    "endDate": "2024-04-08T18:00:00.000Z",
+    "mealsDelivered": 2,
+    "totalMeals": 16
+  },
+  {
+    "id": "s5",
+    "customerId": "c6",
+    "planId": "p9",
+    "status": "active",
+    "startDate": "2024-03-07T18:00:00.000Z",
+    "endDate": "2024-04-07T18:00:00.000Z",
+    "mealsDelivered": 15,
+    "totalMeals": 17
+  },
+  {
+    "id": "s6",
+    "customerId": "c7",
+    "planId": "p9",
+    "status": "active",
+    "startDate": "2024-01-27T18:00:00.000Z",
+    "endDate": "2024-02-27T18:00:00.000Z",
+    "mealsDelivered": 7,
+    "totalMeals": 17
+  },
+  {
+    "id": "s7",
+    "customerId": "c11",
+    "planId": "p4",
+    "status": "active",
+    "startDate": "2024-09-09T18:00:00.000Z",
+    "endDate": "2024-10-09T18:00:00.000Z",
+    "mealsDelivered": 5,
+    "totalMeals": 16
+  },
+  {
+    "id": "s8",
+    "customerId": "c13",
+    "planId": "p1",
+    "status": "paused",
+    "startDate": "2024-02-19T18:00:00.000Z",
+    "endDate": "2024-03-19T18:00:00.000Z",
+    "mealsDelivered": 17,
+    "totalMeals": 22
+  },
+  {
+    "id": "s9",
+    "customerId": "c18",
+    "planId": "p9",
+    "status": "paused",
+    "startDate": "2024-05-13T18:00:00.000Z",
+    "endDate": "2024-06-13T18:00:00.000Z",
+    "mealsDelivered": 8,
+    "totalMeals": 17
+  },
+  {
+    "id": "s10",
+    "customerId": "c19",
+    "planId": "p11",
+    "status": "paused",
+    "startDate": "2024-06-24T18:00:00.000Z",
+    "endDate": "2024-07-24T18:00:00.000Z",
+    "mealsDelivered": 2,
+    "totalMeals": 15
+  },
+  {
+    "id": "s11",
+    "customerId": "c21",
+    "planId": "p8",
+    "status": "paused",
+    "startDate": "2024-04-14T18:00:00.000Z",
+    "endDate": "2024-05-14T18:00:00.000Z",
+    "mealsDelivered": 7,
+    "totalMeals": 23
+  },
+  {
+    "id": "s12",
+    "customerId": "c25",
+    "planId": "p7",
+    "status": "active",
+    "startDate": "2024-08-03T18:00:00.000Z",
+    "endDate": "2024-09-03T18:00:00.000Z",
+    "mealsDelivered": 9,
+    "totalMeals": 15
+  }
+]

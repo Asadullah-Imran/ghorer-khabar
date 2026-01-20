@@ -81,8 +81,8 @@ export async function GET() {
         status: true,
         notes: true,
         createdAt: true,
-        deliveryDate: true,
-        deliveryTimeSlot: true,
+        delivery_date: true,
+        delivery_time_slot: true,
         items: {
           include: {
             menuItem: {

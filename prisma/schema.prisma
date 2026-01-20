@@ -148,8 +148,8 @@ model Kitchen {
   responseTime        Int?
   deliveryRate        Decimal?             @db.Decimal(3, 2)
   operatingDays       Json?
-  maxCapacity         Int                  @default(6) @map("max_capacity")
-  minPrepTimeHours    Int                  @default(4) @map("min_prep_time_hours")
+  max_capacity        Int                  @default(6)
+  min_prep_time_hours Int                  @default(4)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   latitude            Float?
@@ -211,27 +211,27 @@ model subscription_plans {
 }
 
 model Order {
-  id             String              @id @default(cuid())
-  userId         String              @map("user_id")
-  kitchenId      String              @map("kitchen_id")
-  subscriptionId String?             @map("subscription_id")
-  total          Float
-  status         OrderStatus          @default(PENDING)
-  notes          String?
-  deliveryDate   DateTime            @map("delivery_date")
-  deliveryTimeSlot MealType?          @map("delivery_time_slot")
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-  items          OrderItem[]
-  kitchen        Kitchen              @relation(fields: [kitchenId], references: [id])
-  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subscription   user_subscriptions?  @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
-  reviews        Review[]
+  id                 String              @id @default(cuid())
+  userId             String              @map("user_id")
+  kitchenId          String              @map("kitchen_id")
+  subscription_id    String?
+  total              Float
+  status             OrderStatus         @default(PENDING)
+  notes              String?
+  delivery_date      DateTime
+  delivery_time_slot MealType?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  items              OrderItem[]
+  kitchen            Kitchen             @relation(fields: [kitchenId], references: [id])
+  user_subscriptions user_subscriptions? @relation(fields: [subscription_id], references: [id])
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews            Review[]
 
   @@index([userId])
   @@index([kitchenId])
-  @@index([subscriptionId])
-  @@index([deliveryDate, deliveryTimeSlot, kitchenId])
+  @@index([delivery_date, delivery_time_slot, kitchenId])
+  @@index([subscription_id])
   @@map("orders")
 }
 
@@ -345,10 +345,10 @@ model user_subscriptions {
   confirmedAt          DateTime?          @map("confirmed_at")
   cancelledAt          DateTime?          @map("cancelled_at")
   cancellationReason   String?            @map("cancellation_reason")
+  orders               Order[]
   kitchen              Kitchen            @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
   plan                 subscription_plans @relation(fields: [planId], references: [id], onDelete: Cascade)
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders               Order[]
 
   @@index([userId])
   @@index([planId])
