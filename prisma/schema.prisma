@@ -39,20 +39,23 @@ model User {
 }
 
 model Address {
-  id        String   @id @default(cuid())
-  userId    String   @map("user_id")
-  label     String
-  address   String
-  zone      String?
-  latitude  Float?
-  longitude Float?
-  isDefault Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id               String   @id @default(cuid())
+  userId           String   @map("user_id")
+  label            String
+  address          String
+  zone             String?
+  latitude         Float?
+  longitude        Float?
+  isDefault        Boolean  @default(false)
+  isKitchenAddress Boolean  @default(false) @map("is_kitchen_address")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kitchen          Kitchen?
 
   @@index([userId])
   @@index([latitude, longitude])
+  @@index([isKitchenAddress])
   @@map("addresses")
 }
 
@@ -121,12 +124,13 @@ model menu_items {
 model Kitchen {
   id                  String               @id @default(cuid())
   sellerId            String               @map("seller_id")
+  addressId           String?              @unique @map("address_id")
   name                String
   type                String?
   description         String?
-  location            String?
-  area                String?
-  distance            Float?
+  location            String?              // Keep temporarily for migration
+  area                String?              // Keep temporarily for migration
+  distance            Float?               // Keep temporarily for migration
   nidName             String?
   nidFrontImage       String?
   nidBackImage        String?
@@ -147,8 +151,9 @@ model Kitchen {
   operatingDays       Json?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
-  latitude            Float?
-  longitude           Float?
+  latitude            Float?               // Keep temporarily for migration
+  longitude           Float?               // Keep temporarily for migration
+  address             Address?             @relation(fields: [addressId], references: [id])
   favorites           Favorite[]
   gallery             KitchenGallery[]
   seller              User                 @relation(fields: [sellerId], references: [id], onDelete: Cascade)
@@ -158,6 +163,7 @@ model Kitchen {
   user_subscriptions  user_subscriptions[]
 
   @@index([sellerId])
+  @@index([addressId])
   @@map("kitchens")
 }
 
