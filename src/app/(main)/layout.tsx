@@ -25,6 +25,11 @@ export default async function RootLayout({
       include: { kitchens: true },
     });
 
+    // Block admins from accessing buyer/seller experience and send them to admin
+    if (user?.role === "ADMIN") {
+      redirect("/admin/dashboard");
+    }
+
     if (user?.role === "SELLER") {
       const kitchen = user.kitchens[0]; // Assuming one kitchen per user for now
       if (!kitchen || !kitchen.onboardingCompleted) {
