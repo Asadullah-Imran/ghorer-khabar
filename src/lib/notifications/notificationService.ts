@@ -13,11 +13,36 @@ export interface CreateNotificationInput {
 
 /**
  * Create a notification for a user or kitchen
+ * Includes deduplication check to prevent duplicate notifications within 5 seconds
  */
 export async function createNotification(input: CreateNotificationInput) {
   try {
     if (!input.userId && !input.kitchenId) {
       throw new Error("Either userId or kitchenId must be provided");
+    }
+
+    // Check for duplicate notification created in the last 5 seconds
+    const fiveSecondsAgo = new Date(Date.now() - 5000);
+    const recentDuplicate = await prisma.notification.findFirst({
+      where: {
+        userId: input.userId || undefined,
+        kitchenId: input.kitchenId || undefined,
+        type: input.type,
+        title: input.title,
+        message: input.message,
+        createdAt: {
+          gte: fiveSecondsAgo,
+        },
+      },
+    });
+
+    // If a duplicate was found, return it instead of creating a new one
+    if (recentDuplicate) {
+      console.log(
+        `[Notification] Duplicate notification prevented for ${input.userId || input.kitchenId}:`,
+        input.title
+      );
+      return recentDuplicate;
     }
 
     const notification = await prisma.notification.create({
