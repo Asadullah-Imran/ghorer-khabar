@@ -29,63 +29,6 @@ interface NotificationFeedProps {
   onMarkAsRead?: (id: string) => void;
 }
 
-const defaultNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "success",
-    title: "Order Completed",
-    message: "Order #1024 has been successfully delivered",
-    timestamp: new Date(Date.now() - 10 * 60000), // 10 min ago
-    read: false,
-    actionUrl: "/chef/orders",
-  },
-  {
-    id: "2",
-    type: "info",
-    title: "New Order Received",
-    message: "New order from Sadia Rahman for ৳450",
-    timestamp: new Date(Date.now() - 25 * 60000), // 25 min ago
-    read: false,
-    actionUrl: "/chef/orders",
-  },
-  {
-    id: "3",
-    type: "warning",
-    title: "Low Inventory",
-    message: "Your Beef Bhuna stock is running low",
-    timestamp: new Date(Date.now() - 1 * 3600000), // 1 hour ago
-    read: true,
-    actionUrl: "/chef/inventory",
-  },
-  {
-    id: "4",
-    type: "success",
-    title: "Payment Received",
-    message: "৳2,450 credited to your account",
-    timestamp: new Date(Date.now() - 2 * 3600000), // 2 hours ago
-    read: true,
-    actionUrl: "/chef/analytics",
-  },
-  {
-    id: "5",
-    type: "info",
-    title: "Review Added",
-    message: "Rahim K. left a 5-star review: 'Tastes exactly like my mom's cooking'",
-    timestamp: new Date(Date.now() - 4 * 3600000), // 4 hours ago
-    read: true,
-    actionUrl: "/chef/menu",
-  },
-  {
-    id: "6",
-    type: "error",
-    title: "Order Cancelled",
-    message: "Order #1019 was cancelled by customer",
-    timestamp: new Date(Date.now() - 6 * 3600000), // 6 hours ago
-    read: true,
-    actionUrl: "/chef/orders",
-  },
-];
-
 const notificationConfig = {
   info: {
     icon: Info,
@@ -140,7 +83,7 @@ function formatTime(date: Date | string): string {
 }
 
 export default function NotificationFeed({
-  notifications = defaultNotifications,
+  notifications = [],
   maxHeight = "max-h-96",
   onDismiss,
   onMarkAsRead,

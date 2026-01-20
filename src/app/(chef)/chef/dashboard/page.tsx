@@ -39,7 +39,7 @@ export default function ChefDashboard() {
   }, [dashboardData]);
 
   const displayNotifications = useMemo(() => {
-    return notifications.length > 0 ? notifications : CHEF_STATS.notifications;
+    return notifications;
   }, [notifications]);
 
   return (
