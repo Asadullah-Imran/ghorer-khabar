@@ -1,0 +1,17 @@
+name: Generate Subscription Orders
+
+on:
+  schedule:
+    # Run daily at midnight UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  generate-orders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Order Generation
+        run: |
+          curl -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://ghorer-khabar-eight.vercel.app/api/cron/generate-subscription-orders

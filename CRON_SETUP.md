@@ -88,6 +88,8 @@ curl -H "Authorization: Bearer YOUR_CRON_SECRET" \
   https://your-domain.com/api/cron/generate-subscription-orders
 ```
 
+
+
 ## Environment Variables
 
 Add to your `.env.local` or deployment environment:
@@ -184,3 +186,7 @@ Before using this feature, run the database migration to add `subscriptionId` to
 npx prisma migrate dev --name add_subscription_id_to_orders
 npx prisma generate
 ```
+
+
+curl -H "Authorization: Bearer 7f9KQ@xM2pZ!LwA8C3R#eYH$D6S0bVnT" 
+  localhost:3000/api/cron/generate-subscription-orders
