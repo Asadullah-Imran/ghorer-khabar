@@ -154,6 +154,11 @@ async function main() {
       const orderDate = new Date()
       orderDate.setDate(orderDate.getDate() - orderData.daysAgo)
 
+      // Set delivery date to tomorrow from order creation date
+      const deliveryDate = new Date(orderDate);
+      deliveryDate.setDate(deliveryDate.getDate() + 1);
+      deliveryDate.setHours(13, 0, 0, 0); // Default to lunch time (1 PM)
+
       const order = await prisma.order.create({
         data: {
           userId: testUser.id,
@@ -162,6 +167,8 @@ async function main() {
           status: orderData.status,
           createdAt: orderDate,
           updatedAt: orderDate,
+          deliveryDate: deliveryDate,
+          deliveryTimeSlot: "LUNCH", // Default to lunch for seed data
           items: {
             create: orderData.items.map(item => ({
               menuItemId: item.id,

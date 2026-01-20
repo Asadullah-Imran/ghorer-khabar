@@ -148,6 +148,8 @@ model Kitchen {
   responseTime        Int?
   deliveryRate        Decimal?             @db.Decimal(3, 2)
   operatingDays       Json?
+  maxCapacity         Int                  @default(6) @map("max_capacity")
+  minPrepTimeHours    Int                  @default(4) @map("min_prep_time_hours")
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   latitude            Float?
@@ -216,6 +218,8 @@ model Order {
   total          Float
   status         OrderStatus          @default(PENDING)
   notes          String?
+  deliveryDate   DateTime            @map("delivery_date")
+  deliveryTimeSlot MealType?          @map("delivery_time_slot")
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
   items          OrderItem[]
@@ -227,6 +231,7 @@ model Order {
   @@index([userId])
   @@index([kitchenId])
   @@index([subscriptionId])
+  @@index([deliveryDate, deliveryTimeSlot, kitchenId])
   @@map("orders")
 }
 
