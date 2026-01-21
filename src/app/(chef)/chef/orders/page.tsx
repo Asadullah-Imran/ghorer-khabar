@@ -1,6 +1,6 @@
 "use client";
 
-import KanbanColumn from "@/components/chef/Kanban/KanbanColumn";
+import { KanbanColumn } from "@/components/chef/Kanban/KanbanColumn.memo";
 import { useToast } from "@/contexts/ToastContext";
 import {
     CheckCircle,
@@ -8,162 +8,36 @@ import {
     PackageCheck,
     Zap,
 } from "lucide-react";
-import { useEffect, useState } from "react";
-
-type OrderStatus = "new" | "cooking" | "ready" | "handover";
-
-interface OrderItem {
-  name: string;
-  quantity: number;
-  price: number;
-}
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  status: OrderStatus;
-  customerName: string;
-  customerPhone: string;
-  items: OrderItem[];
-  totalPrice: number;
-  specialNotes?: string;
-  createdAt: Date;
-  prepTime: number;
-  userId: string;
-}
-
-interface KanbanOrders {
-  new: Order[];
-  cooking: Order[];
-  ready: Order[];
-  handover: Order[];
-}
+import { useState, useCallback, useMemo } from "react";
+import { useChefOrdersRealtime } from "@/lib/hooks/useChefOrdersRealtime";
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<KanbanOrders>({
-    new: [],
-    cooking: [],
-    ready: [],
-    handover: [],
-  });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    orders,
+    loading,
+    error,
+    moveOrder: moveOrderHook,
+    rejectOrder: rejectOrderHook,
+  } = useChefOrdersRealtime();
+
   const [rejectConfirm, setRejectConfirm] = useState<{ orderId: string; orderNumber: string } | null>(null);
   const [isRejecting, setIsRejecting] = useState(false);
   const toast = useToast();
 
-  const fetchOrders = async () => {
+  // Memoize total orders count
+  const totalOrders = useMemo(() => {
+    return Object.values(orders).flat().length;
+  }, [orders]);
+
+  const handleMoveOrder = useCallback(async (orderId: string, newStatus: string) => {
     try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch("/api/chef/orders/kanban", {
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to fetch orders");
-      }
-
-      const data = await response.json();
-      if (data.success && data.data) {
-        // Convert createdAt strings to Date objects
-        const transformedData = {
-          new: data.data.new.map((o: any) => ({
-            ...o,
-            createdAt: new Date(o.createdAt),
-          })),
-          cooking: data.data.cooking.map((o: any) => ({
-            ...o,
-            createdAt: new Date(o.createdAt),
-          })),
-          ready: data.data.ready.map((o: any) => ({
-            ...o,
-            createdAt: new Date(o.createdAt),
-          })),
-          handover: data.data.handover.map((o: any) => ({
-            ...o,
-            createdAt: new Date(o.createdAt),
-          })),
-        };
-        setOrders(transformedData);
-      }
+      await moveOrderHook(orderId, newStatus);
     } catch (err) {
-      console.error("Error fetching orders:", err);
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchOrders();
-
-    // Refresh orders every 30 seconds
-    const interval = setInterval(fetchOrders, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleMoveOrder = async (orderId: string, newStatus: string) => {
-    try {
-      const currentOrder = [
-        ...orders.new,
-        ...orders.cooking,
-        ...orders.ready,
-        ...orders.handover,
-      ].find((o) => o.id === orderId);
-
-      if (!currentOrder) return;
-
-      // Don't allow moving orders that are already in handover (COMPLETED)
-      if (currentOrder.status === "handover") {
-        console.warn("Cannot move order that is already completed");
-        return;
-      }
-
-      // Map frontend status transitions to backend status
-      // Flow: PENDING -> CONFIRMED -> PREPARING -> DELIVERING -> COMPLETED
-      // Frontend: new -> cooking -> ready -> handover
-      let backendStatus: string;
-      
-      if (currentOrder.status === "new" && newStatus === "cooking") {
-        // Accept order: PENDING -> CONFIRMED
-        backendStatus = "CONFIRMED";
-      } else if (currentOrder.status === "cooking" && newStatus === "ready") {
-        // Mark ready: CONFIRMED/PREPARING -> DELIVERING
-        // API allows CONFIRMED -> DELIVERING (skipping PREPARING if needed)
-        backendStatus = "DELIVERING";
-      } else if (currentOrder.status === "ready" && newStatus === "handover") {
-        // Handover: DELIVERING -> COMPLETED
-        backendStatus = "COMPLETED";
-      } else {
-        console.error("Invalid status transition", { from: currentOrder.status, to: newStatus });
-        toast.warning("Invalid Action", "Invalid status transition");
-        return;
-      }
-
-      const response = await fetch(`/api/chef/orders/${orderId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ status: backendStatus }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to update order");
-      }
-
-      // Refresh orders after successful update
-      await fetchOrders();
-    } catch (err) {
-      console.error("Error updating order:", err);
       toast.error("Update Failed", err instanceof Error ? err.message : "Failed to update order");
     }
-  };
+  }, [moveOrderHook, toast]);
 
-  const handleRejectOrder = async (orderId: string) => {
+  const handleRejectOrder = useCallback((orderId: string) => {
     const currentOrder = [
       ...orders.new,
       ...orders.cooking,
@@ -173,44 +47,29 @@ export default function OrdersPage() {
 
     if (!currentOrder) return;
 
-    // Show confirmation dialog
     setRejectConfirm({
       orderId,
       orderNumber: currentOrder.orderNumber,
     });
-  };
+  }, [orders]);
 
-  const confirmRejectOrder = async () => {
+  const confirmRejectOrder = useCallback(async () => {
     if (!rejectConfirm) return;
 
     try {
       setIsRejecting(true);
-      const response = await fetch(`/api/chef/orders/${rejectConfirm.orderId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ status: "CANCELLED" }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to reject order");
-      }
-
-      // Refresh orders after successful rejection
-      await fetchOrders();
+      await rejectOrderHook(rejectConfirm.orderId);
       setRejectConfirm(null);
     } catch (err) {
-      console.error("Error rejecting order:", err);
       toast.error("Rejection Failed", err instanceof Error ? err.message : "Failed to reject order");
     } finally {
       setIsRejecting(false);
     }
-  };
+  }, [rejectConfirm, rejectOrderHook, toast]);
 
-  const cancelRejectOrder = () => {
+  const cancelRejectOrder = useCallback(() => {
     setRejectConfirm(null);
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -258,7 +117,7 @@ export default function OrdersPage() {
       <div>
         <h1 className="text-4xl font-black text-gray-900">Live Orders</h1>
         <p className="text-gray-500 mt-2">
-          Manage your kitchen workflow - {Object.values(orders).flat().length} orders
+          Manage your kitchen workflow - {totalOrders} orders
         </p>
       </div>
 

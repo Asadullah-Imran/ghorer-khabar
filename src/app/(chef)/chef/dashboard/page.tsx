@@ -5,133 +5,40 @@ import RevenueChart from "@/components/chef/RevenueChart";
 import NotificationFeed from "@/components/chef/NotificationFeed";
 import KitchenStatusToggle from "@/components/chef/KitchenStatusToggle";
 import { Banknote, Trophy, UtensilsCrossed } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useChefDashboard } from "@/lib/hooks/useChefDashboard";
 import { CHEF_STATS } from "@/lib/dummy-data/chef";
+import { useMemo, memo } from "react";
 
-interface DashboardData {
-  revenueToday: string;
-  revenueTodayAmount: number;
-  activeOrders: number;
-  kriScore: string;
-  kriScoreAmount: number;
-  kitchenOpen: boolean;
-  monthlyRevenue: Array<{ month: string; revenue: number }>;
-  revenueTrend: number;
-}
-
-interface Notification {
-  id: string;
-  type: "info" | "success" | "warning" | "error";
-  title: string;
-  message: string;
-  timestamp: Date;
-  read: boolean;
-}
+// Memoized StatCard wrapper to prevent unnecessary re-renders
+const MemoizedStatCard = memo(StatCard);
 
 export default function ChefDashboard() {
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [kitchenOpen, setKitchenOpen] = useState(true);
+  const {
+    dashboardData,
+    notifications,
+    loading,
+    error,
+    kitchenOpen,
+    updateKitchenStatus,
+  } = useChefDashboard();
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Fetch metrics
-        const metricsResponse = await fetch("/api/chef/dashboard/metrics", {
-          credentials: "include",
-        });
-        console.log("Metrics response status:", metricsResponse.status);
-        
-        if (!metricsResponse.ok) {
-          const errorData = await metricsResponse.json();
-          console.error("Metrics error:", errorData);
-          throw new Error(errorData.error || "Failed to fetch dashboard metrics");
-        }
-        const metricsData = await metricsResponse.json();
-        console.log("Metrics data received:", metricsData);
-        
-        if (metricsData.success && metricsData.data) {
-          setDashboardData(metricsData.data);
-          setKitchenOpen(metricsData.data.kitchenOpen);
-        } else {
-          throw new Error("Invalid metrics response format");
-        }
-
-        // Fetch notifications
-        const notificationsResponse = await fetch(
-          "/api/chef/dashboard/notifications?limit=10",
-          { credentials: "include" }
-        );
-        console.log("Notifications response status:", notificationsResponse.status);
-        
-        if (notificationsResponse.ok) {
-          const notificationsData = await notificationsResponse.json();
-          console.log("Notifications data received:", notificationsData);
-          
-          if (notificationsData.success && notificationsData.data) {
-            setNotifications(notificationsData.data);
-          }
-        } else {
-          const errorData = await notificationsResponse.json();
-          console.error("Notifications error:", errorData);
-        }
-      } catch (err) {
-        console.error("Error fetching dashboard data:", err);
-        setError(err instanceof Error ? err.message : "An error occurred");
-        // Fallback to dummy data
-        setDashboardData({
-          revenueToday: CHEF_STATS.revenueToday,
-          revenueTodayAmount: 2450,
-          activeOrders: CHEF_STATS.activeOrders,
-          kriScore: CHEF_STATS.kriScore,
-          kriScoreAmount: 98,
-          kitchenOpen: true,
-          monthlyRevenue: CHEF_STATS.monthlyRevenue,
-          revenueTrend: 12,
-        });
-        setNotifications(CHEF_STATS.notifications);
-      } finally {
-        setLoading(false);
-      }
+  // Memoize data to prevent recalculation
+  const data = useMemo(() => {
+    return dashboardData || {
+      revenueToday: CHEF_STATS.revenueToday,
+      revenueTodayAmount: 2450,
+      activeOrders: CHEF_STATS.activeOrders,
+      kriScore: CHEF_STATS.kriScore,
+      kriScoreAmount: 98,
+      kitchenOpen: true,
+      monthlyRevenue: CHEF_STATS.monthlyRevenue,
+      revenueTrend: 12,
     };
+  }, [dashboardData]);
 
-    fetchDashboardData();
-
-    // Refresh data every 30 seconds
-    const interval = setInterval(fetchDashboardData, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleStatusChange = async (status: boolean) => {
-    try {
-      const response = await fetch("/api/chef/dashboard/metrics", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ isOpen: status }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          setKitchenOpen(status);
-          if (dashboardData) {
-            setDashboardData({ ...dashboardData, kitchenOpen: status });
-          }
-        }
-      } else {
-        const errorData = await response.json();
-        console.error("Error updating kitchen status:", errorData);
-      }
-    } catch (err) {
-      console.error("Error updating kitchen status:", err);
-    }
-  };
+  const displayNotifications = useMemo(() => {
+    return notifications.length > 0 ? notifications : CHEF_STATS.notifications;
+  }, [notifications]);
 
   if (loading) {
     return (
@@ -207,17 +114,6 @@ export default function ChefDashboard() {
     );
   }
 
-  const data = dashboardData || {
-    revenueToday: CHEF_STATS.revenueToday,
-    revenueTodayAmount: 2450,
-    activeOrders: CHEF_STATS.activeOrders,
-    kriScore: CHEF_STATS.kriScore,
-    kriScoreAmount: 98,
-    kitchenOpen: true,
-    monthlyRevenue: CHEF_STATS.monthlyRevenue,
-    revenueTrend: 12,
-  };
-
   return (
     <div className="p-6 space-y-8">
       {/* Header Section */}
@@ -230,14 +126,14 @@ export default function ChefDashboard() {
         </div>
         <KitchenStatusToggle
           initialStatus={kitchenOpen}
-          onStatusChange={handleStatusChange}
+          onStatusChange={updateKitchenStatus}
         />
       </div>
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Today's Revenue */}
-        <StatCard
+        <MemoizedStatCard
           title="Today's Revenue"
           value={data.revenueToday}
           subtitle="Last 24 hours"
@@ -250,7 +146,7 @@ export default function ChefDashboard() {
         />
 
         {/* Active Orders */}
-        <StatCard
+        <MemoizedStatCard
           title="Active Orders"
           value={data.activeOrders}
           subtitle="In progress"
@@ -261,7 +157,7 @@ export default function ChefDashboard() {
         />
 
         {/* KRI Score */}
-        <StatCard
+        <MemoizedStatCard
           title="Kitchen Reliability Index"
           value={data.kriScore}
           subtitle="Excellent standing"
@@ -285,9 +181,7 @@ export default function ChefDashboard() {
 
         {/* Right Column: Notifications */}
         <div className="lg:col-span-1">
-          <NotificationFeed
-            notifications={notifications.length > 0 ? notifications : CHEF_STATS.notifications}
-          />
+          <NotificationFeed notifications={displayNotifications} />
         </div>
       </div>
     </div>

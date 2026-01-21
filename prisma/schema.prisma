@@ -47,9 +47,9 @@ model Address {
   latitude         Float?
   longitude        Float?
   isDefault        Boolean  @default(false)
-  isKitchenAddress Boolean  @default(false) @map("is_kitchen_address")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  isKitchenAddress Boolean  @default(false) @map("is_kitchen_address")
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   kitchen          Kitchen?
 
@@ -124,13 +124,12 @@ model menu_items {
 model Kitchen {
   id                  String               @id @default(cuid())
   sellerId            String               @map("seller_id")
-  addressId           String?              @unique @map("address_id")
   name                String
   type                String?
   description         String?
-  location            String?              // Keep temporarily for migration
-  area                String?              // Keep temporarily for migration
-  distance            Float?               // Keep temporarily for migration
+  location            String?
+  area                String?
+  distance            Float?
   nidName             String?
   nidFrontImage       String?
   nidBackImage        String?
@@ -151,11 +150,12 @@ model Kitchen {
   operatingDays       Json?
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
-  latitude            Float?               // Keep temporarily for migration
-  longitude           Float?               // Keep temporarily for migration
-  address             Address?             @relation(fields: [addressId], references: [id])
+  latitude            Float?
+  longitude           Float?
+  addressId           String?              @unique @map("address_id")
   favorites           Favorite[]
   gallery             KitchenGallery[]
+  address             Address?             @relation(fields: [addressId], references: [id])
   seller              User                 @relation(fields: [sellerId], references: [id], onDelete: Cascade)
   notifications       Notification[]
   orders              Order[]
