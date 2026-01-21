@@ -1,4 +1,5 @@
 import FeedGreeting from "@/components/feed/FeedGreeting";
+import TabbedRecommendations from "@/components/feed/TabbedRecommendations";
 import DishCard from "@/components/shared/DishCard";
 import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard";
@@ -376,30 +377,27 @@ export default async function FeedPage() {
           </div>
         </section>
 
-        {/* 6. Recommended For You (Grid) */}
+        {/* 6. Recommended For You (Tabbed) - ML Powered */}
         <section className="px-4 md:px-0">
           <SectionHeader
             title="Recommended For You"
-            subtitle="Fresh picks tailored just for you"
+            subtitle="AI-powered personalized recommendations"
             href="/explore?tab=dishes&filter=recommended"
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {recommendedDishes.map((dish) => (
-              <DishCard 
-                key={dish.id} 
-                data={dish} 
-                isFavorite={favoriteDishIds.has(dish.id)}
-                currentUserId={userId}
-                userRole={userRole}
-              />
-            ))}
-          </div>
+          <TabbedRecommendations
+            userId={userId}
+            userRole={userRole}
+            favoriteDishIds={favoriteDishIds}
+            favoriteKitchenIds={favoriteKitchenIds}
+            favoritePlanIds={favoritePlanIds}
+            excludeDishIds={[...dishes.map(d => d.id), ...newDishes.map(d => d.id)]}
+          />
           <div className="mt-8 text-center">
             <a
               href="/explore"
               className="inline-block px-8 py-3 bg-white border border-gray-200 text-gray-600 font-medium rounded-full hover:bg-gray-50 transition shadow-sm"
             >
-              Explore All Dishes
+              Explore All
             </a>
           </div>
         </section>
