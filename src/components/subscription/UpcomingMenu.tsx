@@ -1,5 +1,6 @@
 "use client";
 
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { Utensils } from "lucide-react";
 import { useState } from "react";
 
@@ -8,10 +9,18 @@ export default function UpcomingMenu({
 }: {
   initialMeals: any[];
 }) {
+  const { confirm } = useConfirmation();
   const [meals, setMeals] = useState(initialMeals);
 
-  const handleSkip = (index: number) => {
-    if (confirm("Skip this meal? You will be refunded for this day.")) {
+  const handleSkip = async (index: number) => {
+    const confirmed = await confirm({
+      title: "Skip This Meal",
+      message: "Skip this meal? You will be refunded for this day.",
+      confirmLabel: "Skip Meal",
+      variant: "info",
+    });
+
+    if (confirmed) {
       const updated = [...meals];
       updated[index].status = "Skipped";
       setMeals(updated);

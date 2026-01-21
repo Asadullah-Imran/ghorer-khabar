@@ -1,10 +1,20 @@
 "use client";
 
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { AlertCircle, XCircle } from "lucide-react";
 
 export default function OrderActions() {
-  const handleCancel = () => {
-    if (confirm("Are you sure you want to cancel this order?")) {
+  const { confirm } = useConfirmation();
+
+  const handleCancel = async () => {
+    const confirmed = await confirm({
+      title: "Cancel Order",
+      message: "Are you sure you want to cancel this order? You will receive a full refund.",
+      confirmLabel: "Cancel Order",
+      variant: "warning",
+    });
+
+    if (confirmed) {
       console.log("Cancelling order...");
     }
   };

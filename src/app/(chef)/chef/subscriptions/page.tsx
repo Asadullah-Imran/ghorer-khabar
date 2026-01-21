@@ -2,6 +2,7 @@
 
 import SubscriptionModal from "@/components/chef/Subscription/SubscriptionModal";
 import { useAuth } from "@/contexts/AuthContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { useToast } from "@/contexts/ToastContext";
 import { AlertCircle, ChefHat, DollarSign, Edit, Plus, Power, Trash2, TrendingUp, Users } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -47,6 +48,7 @@ interface SubscriptionPlan {
 
 export default function SubscriptionsPage() {
   const { user } = useAuth();
+  const { confirm, setLoading: setConfirmLoading } = useConfirmation();
   const [subscriptions, setSubscriptions] = useState<SubscriptionPlan[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -201,17 +203,28 @@ export default function SubscriptionsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this subscription plan?")) {
+    const confirmed = await confirm({
+      title: "Delete Subscription Plan",
+      message: "This will permanently delete the subscription plan. Active subscribers will be notified.",
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+
+    if (confirmed) {
       try {
+        setConfirmLoading(true);
         const response = await fetch(`/api/chef/subscriptions/${id}`, {
           method: "DELETE",
         });
         if (!response.ok) throw new Error("Failed to delete subscription");
 
         setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
+        toast.success("Deleted", "Subscription plan deleted successfully");
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to delete";
         toast.error("Delete Failed", message);
+      } finally {
+        setConfirmLoading(false);
       }
     }
   };

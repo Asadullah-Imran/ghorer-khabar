@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import {
-  Search,
-  Eye,
-  Trash2,
-  Edit,
-  Star,
-  DollarSign,
-  Shield,
+    DollarSign,
+    Eye,
+    Search,
+    Shield,
+    Star,
+    Trash2
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface MenuItem {
   id: string;
@@ -33,6 +33,7 @@ interface MenuItem {
 }
 
 export default function MenuManagement() {
+  const { confirm, setLoading: setConfirmLoading } = useConfirmation();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<MenuItem[]>([]);
   const [search, setSearch] = useState("");
@@ -68,8 +69,16 @@ export default function MenuManagement() {
   };
 
   const handleDelete = async (itemId: string) => {
-    if (confirm("Are you sure you want to delete this menu item?")) {
+    const confirmed = await confirm({
+      title: "Delete Menu Item",
+      message: "This menu item will be permanently deleted. This action cannot be undone.",
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+
+    if (confirmed) {
       try {
+        setConfirmLoading(true);
         const res = await fetch(`/api/admin/menu?id=${itemId}`, {
           method: "DELETE",
         });
@@ -81,6 +90,8 @@ export default function MenuManagement() {
         }
       } catch (error) {
         console.error("Failed to delete menu item:", error);
+      } finally {
+        setConfirmLoading(false);
       }
     }
   };

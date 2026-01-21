@@ -1,14 +1,15 @@
 "use client";
 
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { useToast } from "@/contexts/ToastContext"; // Added useToast
 import {
-    Briefcase,
-    Edit2,
-    Home,
-    Loader2,
-    MapPin,
-    Plus,
-    Trash2
+  Briefcase,
+  Edit2,
+  Home,
+  Loader2,
+  MapPin,
+  Plus,
+  Trash2
 } from "lucide-react";
 import { useRouter } from "next/navigation"; // Added useRouter
 import { useEffect, useState } from "react";
@@ -25,6 +26,7 @@ interface Address {
 }
 
 export default function AddressList() {
+  const { confirm, setLoading: setConfirmLoading } = useConfirmation();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -61,11 +63,19 @@ export default function AddressList() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to remove this address?")) {
+    const confirmed = await confirm({
+      title: "Remove Address",
+      message: "This address will be removed from your saved addresses.",
+      confirmLabel: "Remove",
+      variant: "warning",
+    });
+
+    if (!confirmed) {
       return;
     }
 
     try {
+      setConfirmLoading(true);
       const response = await fetch(`/api/addresses/${id}`, {
         method: "DELETE",
       });
@@ -75,8 +85,11 @@ export default function AddressList() {
       }
 
       setAddresses(addresses.filter((addr) => addr.id !== id));
+      toast.success("Address Removed", "Address has been removed successfully");
     } catch (err: any) {
       toast.error("Delete Failed", err.message);
+    } finally {
+      setConfirmLoading(false);
     }
   };
 
