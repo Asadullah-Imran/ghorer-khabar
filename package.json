@@ -14,6 +14,7 @@
     "seed:menu": "tsx prisma/seedForAddMenuDishes.ts",
     "seed:subscriptions": "tsx prisma/seedForSubscriptionPlans.ts",
     "seed:inventory": "tsx prisma/seedForAddInventory.ts",
+    "seed:recommendations": "tsx prisma/seedForRecommendations.ts",
     "seed:all": "TEMP_Seller_ID=ad5f641d-5ac2-46d9-88f9-80a4acf5c73b npm run seed:menu && TEMP_Seller_ID=ad5f641d-5ac2-46d9-88f9-80a4acf5c73b npm run seed:subscriptions && TEMP_Seller_ID=ad5f641d-5ac2-46d9-88f9-80a4acf5c73b npm run seed:inventory",
     "create-admin": "tsx scripts/create-admin.ts"
   },
