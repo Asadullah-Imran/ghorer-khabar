@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
 import logo from "@/lib/image/logo.png";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, User, UtensilsCrossed } from "lucide-react";
@@ -16,6 +17,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
+  const toast = useToast();
   // const { user, loading: authLoading } = useAuth(); // Removed as handled by middleware
 
   // Redirect logic moved to middleware for better performance
@@ -40,7 +42,7 @@ function LoginForm() {
     });
 
     if (error) {
-      alert("Error logging in with Google: " + error.message);
+      toast.error("Google Login Failed", error.message);
     }
   };
 
@@ -75,11 +77,11 @@ function LoginForm() {
       } else {
         const error = await res.json();
         console.error("Login failed:", error);
-        alert(error.error || "Invalid credentials");
+        toast.error("Login Failed", error.error || "Invalid credentials");
       }
     } catch (error) {
       console.error("Login error:", error);
-      alert("An error occurred. Please try again.");
+      toast.error("Login Error", "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }

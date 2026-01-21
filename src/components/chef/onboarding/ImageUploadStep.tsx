@@ -1,11 +1,12 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
 import {
-  CreditCard,
-  Image as ImageIcon,
-  Loader2,
-  Upload,
-  X,
+    CreditCard,
+    Image as ImageIcon,
+    Loader2,
+    Upload,
+    X,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -33,6 +34,7 @@ export default function ImageUploadStep({
   const [uploadingNidFront, setUploadingNidFront] = useState(false);
   const [uploadingNidBack, setUploadingNidBack] = useState(false);
   const [uploadingKitchen, setUploadingKitchen] = useState(false);
+  const toast = useToast();
 
   const handleFileUpload = async (
     file: File,
@@ -60,7 +62,7 @@ export default function ImageUploadStep({
       onSuccess(data.url);
     } catch (error) {
       console.error("Upload error:", error);
-      alert(error instanceof Error ? error.message : "Failed to upload image");
+      toast.error("Upload Failed", error instanceof Error ? error.message : "Failed to upload image");
     } finally {
       setLoading(false);
     }

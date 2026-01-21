@@ -1,17 +1,15 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import { useToast } from "@/contexts/ToastContext";
 import {
-  Search,
   CheckCircle,
-  XCircle,
   Eye,
-  MapPin,
-  Users,
-  TrendingUp,
+  Search,
+  XCircle
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Kitchen {
   id: string;
@@ -35,6 +33,7 @@ export default function SellerOnboarding() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedKitchen, setSelectedKitchen] = useState<Kitchen | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     fetchKitchens();
@@ -98,7 +97,7 @@ export default function SellerOnboarding() {
 
   const handleReject = async (kitchenId: string) => {
     // You can implement rejection logic here
-    alert("Rejection logic can be implemented with email notification");
+    toast.info("Coming Soon", "Rejection logic can be implemented with email notification");
   };
 
   if (loading) {

@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
-import { Search, Eye, Trash2, Shield, Mail } from "lucide-react";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
+import { Eye, Mail, Search, Shield } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface User {
   id: string;
@@ -16,6 +17,7 @@ interface User {
 }
 
 export default function UsersPage() {
+  const { confirm, setLoading: setConfirmLoading } = useConfirmation();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
@@ -69,8 +71,16 @@ export default function UsersPage() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (confirm("Are you sure you want to delete this user?")) {
+    const confirmed = await confirm({
+      title: "Delete User",
+      message: "This will permanently delete the user account and all associated data. This action cannot be undone.",
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+
+    if (confirmed) {
       try {
+        setConfirmLoading(true);
         const res = await fetch(`/api/admin/users?id=${userId}`, {
           method: "DELETE",
         });
@@ -82,6 +92,8 @@ export default function UsersPage() {
         }
       } catch (error) {
         console.error("Failed to delete user:", error);
+      } finally {
+        setConfirmLoading(false);
       }
     }
   };

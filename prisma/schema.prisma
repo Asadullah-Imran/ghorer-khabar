@@ -219,7 +219,7 @@ model Order {
   updatedAt DateTime    @updatedAt
   items     OrderItem[]
   kitchen   Kitchen     @relation(fields: [kitchenId], references: [id])
-  user      User        @relation(fields: [userId], references: [id])
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   reviews   Review[]
 
   @@index([userId])
@@ -233,7 +233,7 @@ model OrderItem {
   menuItemId String     @map("menu_item_id")
   quantity   Int
   price      Float
-  menuItem   menu_items @relation(fields: [menuItemId], references: [id])
+  menuItem   menu_items @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
   order      Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@index([orderId])

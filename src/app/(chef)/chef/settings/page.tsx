@@ -1,17 +1,18 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
 import {
-  AlertTriangle,
-  Building2,
-  CheckCircle2,
-  Clock,
-  MapPin,
-  Phone,
-  Save,
-  ShieldCheck,
-  Trash2,
-  User,
-  XCircle,
+    AlertTriangle,
+    Building2,
+    CheckCircle2,
+    Clock,
+    MapPin,
+    Phone,
+    Save,
+    ShieldCheck,
+    Trash2,
+    User,
+    XCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -57,6 +58,7 @@ export default function SettingsPage() {
   // Delete confirmation dialog state
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const toast = useToast();
 
   // Fetch settings on component mount
   useEffect(() => {
@@ -225,7 +227,10 @@ export default function SettingsPage() {
         throw new Error(result.error || "Failed to delete account");
       }
 
-      alert("Your account has been permanently deleted. You will now be logged out.");
+      toast.success(
+        "Account Deleted",
+        "Your account has been permanently deleted. You will now be logged out."
+      );
       
       // Clear any local storage auth data
       if (typeof window !== "undefined") {

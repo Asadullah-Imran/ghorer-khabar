@@ -1,10 +1,12 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
 import { ArrowRight, Info, Store, Utensils } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function RoleSelectionPage() {
   const router = useRouter();
+  const toast = useToast();
 
   const selectRole = async (roleName: "BUYER" | "SELLER") => {
     try {
@@ -24,7 +26,7 @@ export default function RoleSelectionPage() {
         }
       } else {
         const err = await response.json();
-        alert(err.error || "Failed to set role");
+        toast.error("Role Selection Failed", err.error || "Failed to set role");
       }
     } catch (error) {
       console.error("Role selection error:", error);
