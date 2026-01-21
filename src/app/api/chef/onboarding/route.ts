@@ -151,63 +151,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user has a default address
-    const hasDefaultAddress = await prisma.address.findFirst({
-      where: {
-        userId: user.id,
-        isDefault: true,
-      },
-    });
-
-    // Create address for kitchen location
-    // If user has no default address, make this their default
-    const address = await prisma.address.create({
-      data: {
-        userId: user.id,
-        label: `Kitchen: ${validatedData.kitchenName}`,
-        address: validatedData.address,
-        zone: validatedData.zone,
-        latitude: validatedData.latitude,
-        longitude: validatedData.longitude,
-        isDefault: !hasDefaultAddress, // Set as default if user has no default address
-        isKitchenAddress: true, // Mark as kitchen address
-      },
-    });
-
-    // Create kitchen and link to address
-    const kitchen = await prisma.kitchen.create({
-      data: {
-        sellerId: user.id,
-        addressId: address.id, // Link to address record
-        name: validatedData.kitchenName,
-        location: validatedData.address, // Keep temporarily for migration compatibility
-        area: validatedData.zone, // Keep temporarily for migration compatibility
-        latitude: validatedData.latitude, // Keep temporarily for migration compatibility
-        longitude: validatedData.longitude, // Keep temporarily for migration compatibility
-        nidName: validatedData.nidName,
-        nidFrontImage: validatedData.nidFrontImage,
-        nidBackImage: validatedData.nidBackImage,
-        coverImage: validatedData.kitchenImages[0] || null,
-        onboardingCompleted: true,
-        isVerified: false, // Pending admin verification
-        isActive: false, // Inactive until verified
-      },
-    });
-
-    // Create kitchen gallery images
-    if (validatedData.kitchenImages.length > 0) {
-      await prisma.kitchenGallery.createMany({
-        data: validatedData.kitchenImages.map((imageUrl, index) => ({
-          kitchenId: kitchen.id,
-          imageUrl,
-          order: index,
-        })),
-      });
-    }
-
-    // Update user's phone number (only if changed and not taken)
+    // VALIDATION FIRST: Check phone number availability BEFORE any database writes
     if (validatedData.phone && validatedData.phone !== existingUser.phone) {
-      // Check if phone number is already taken by another user
       const phoneExists = await prisma.user.findFirst({
         where: {
           phone: validatedData.phone,
@@ -221,20 +166,80 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-
-      // Update phone number
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { phone: validatedData.phone },
-      });
     }
+
+    // Check if user has a default address
+    const hasDefaultAddress = await prisma.address.findFirst({
+      where: {
+        userId: user.id,
+        isDefault: true,
+      },
+    });
+
+    // Use transaction to ensure all database operations succeed or fail together
+    const result = await prisma.$transaction(async (tx) => {
+      // Create address for kitchen location
+      const address = await tx.address.create({
+        data: {
+          userId: user.id,
+          label: `Kitchen: ${validatedData.kitchenName}`,
+          address: validatedData.address,
+          zone: validatedData.zone,
+          latitude: validatedData.latitude,
+          longitude: validatedData.longitude,
+          isDefault: !hasDefaultAddress,
+          isKitchenAddress: true,
+        },
+      });
+
+      // Create kitchen and link to address
+      const kitchen = await tx.kitchen.create({
+        data: {
+          sellerId: user.id,
+          addressId: address.id,
+          name: validatedData.kitchenName,
+          location: validatedData.address,
+          area: validatedData.zone,
+          latitude: validatedData.latitude,
+          longitude: validatedData.longitude,
+          nidName: validatedData.nidName,
+          nidFrontImage: validatedData.nidFrontImage,
+          nidBackImage: validatedData.nidBackImage,
+          coverImage: validatedData.kitchenImages[0] || null,
+          onboardingCompleted: true,
+          isVerified: false,
+          isActive: false,
+        },
+      });
+
+      // Create kitchen gallery images
+      if (validatedData.kitchenImages.length > 0) {
+        await tx.kitchenGallery.createMany({
+          data: validatedData.kitchenImages.map((imageUrl, index) => ({
+            kitchenId: kitchen.id,
+            imageUrl,
+            order: index,
+          })),
+        });
+      }
+
+      // Update user's phone number (only if changed)
+      if (validatedData.phone && validatedData.phone !== existingUser.phone) {
+        await tx.user.update({
+          where: { id: user.id },
+          data: { phone: validatedData.phone },
+        });
+      }
+
+      return { kitchen, address };
+    });
 
     return NextResponse.json({
       success: true,
       kitchen: {
-        id: kitchen.id,
-        name: kitchen.name,
-        isVerified: kitchen.isVerified,
+        id: result.kitchen.id,
+        name: result.kitchen.name,
+        isVerified: result.kitchen.isVerified,
       },
     });
   } catch (error) {
