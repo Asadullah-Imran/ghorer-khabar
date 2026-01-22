@@ -106,7 +106,7 @@ async function seedReviews() {
           status: OrderStatus.COMPLETED,
           total: Number(menuItem.price),
           delivery_date: deliveryDate,
-          delivery_time_slot: "LUNCH", // Default to lunch for seed data
+          delivery_time_slot: "LUNCH" as const, // Default to lunch for seed data
           items: {
             create: {
               menuItemId: menuItem.id,

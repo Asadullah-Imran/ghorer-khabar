@@ -2,46 +2,46 @@
 
 import React, { useEffect, useState } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
-import { Search, Eye, CheckCircle, AlertCircle } from "lucide-react";
+import { Search, Eye, CheckCircle, AlertCircle, Mail, X } from "lucide-react";
 
-interface Notification {
+interface Ticket {
   id: string;
-  type: string;
-  title: string;
+  topic: string;
+  orderNumber: string | null;
   message: string;
-  read: boolean;
+  status: string;
+  adminReply: string | null;
+  resolvedAt: string | null;
   createdAt: string;
   user?: {
     id: string;
-    name: string;
+    name: string | null;
     email: string;
-  };
-  kitchen?: {
-    id: string;
-    name: string;
   };
 }
 
 export default function SupportPage() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [filteredNotifications, setFilteredNotifications] = useState<Notification[]>([]);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [filteredTickets, setFilteredTickets] = useState<Ticket[]>([]);
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("ALL");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [loading, setLoading] = useState(true);
-  const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null);
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
+  const [adminReply, setAdminReply] = useState("");
+  const [resolving, setResolving] = useState(false);
 
   useEffect(() => {
-    fetchNotifications();
+    fetchTickets();
   }, []);
 
-  const fetchNotifications = async () => {
+  const fetchTickets = async () => {
     try {
-      const res = await fetch("/api/admin/support");
+      const res = await fetch("/api/admin/support/tickets");
       const data = await res.json();
-      setNotifications(data.notifications);
-      setFilteredNotifications(data.notifications);
+      setTickets(data.tickets);
+      setFilteredTickets(data.tickets);
     } catch (error) {
-      console.error("Failed to fetch notifications:", error);
+      console.error("Failed to fetch tickets:", error);
     } finally {
       setLoading(false);
     }
@@ -49,85 +49,95 @@ export default function SupportPage() {
 
   const handleSearch = (value: string) => {
     setSearch(value);
-    applyFilters(value, typeFilter);
+    applyFilters(value, statusFilter);
   };
 
-  const handleTypeFilter = (type: string) => {
-    setTypeFilter(type);
-    applyFilters(search, type);
+  const handleStatusFilter = (status: string) => {
+    setStatusFilter(status);
+    applyFilters(search, status);
   };
 
-  const applyFilters = (searchValue: string, type: string) => {
-    let filtered = notifications;
+  const applyFilters = (searchValue: string, status: string) => {
+    let filtered = tickets;
 
     if (searchValue) {
       filtered = filtered.filter(
-        (n) =>
-          n.title.toLowerCase().includes(searchValue.toLowerCase()) ||
-          n.message.toLowerCase().includes(searchValue.toLowerCase())
+        (t) =>
+          t.topic.toLowerCase().includes(searchValue.toLowerCase()) ||
+          t.message.toLowerCase().includes(searchValue.toLowerCase()) ||
+          (t.orderNumber && t.orderNumber.toLowerCase().includes(searchValue.toLowerCase())) ||
+          (t.user?.email && t.user.email.toLowerCase().includes(searchValue.toLowerCase()))
       );
     }
 
-    if (type !== "ALL") {
-      filtered = filtered.filter((n) => n.type === type);
+    if (status !== "ALL") {
+      filtered = filtered.filter((t) => t.status === status);
     }
 
-    setFilteredNotifications(filtered);
+    setFilteredTickets(filtered);
   };
 
-  const markAsRead = async (notificationId: string) => {
+  const handleResolveTicket = async () => {
+    if (!selectedTicket || !adminReply.trim()) {
+      alert("Please enter a response message");
+      return;
+    }
+
+    setResolving(true);
     try {
-      const res = await fetch("/api/admin/support", {
+      const res = await fetch("/api/admin/support/tickets", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notificationId }),
+        body: JSON.stringify({
+          ticketId: selectedTicket.id,
+          status: "RESOLVED",
+          adminReply: adminReply.trim(),
+          resolvedBy: "admin", // You can replace with actual admin user ID
+        }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        setNotifications(
-          notifications.map((n) =>
-            n.id === notificationId ? { ...n, read: true } : n
+        // Update local state
+        setTickets(
+          tickets.map((t) =>
+            t.id === selectedTicket.id
+              ? { ...t, status: "RESOLVED", adminReply: adminReply.trim(), resolvedAt: new Date().toISOString() }
+              : t
           )
         );
-        setFilteredNotifications(
-          filteredNotifications.map((n) =>
-            n.id === notificationId ? { ...n, read: true } : n
+        setFilteredTickets(
+          filteredTickets.map((t) =>
+            t.id === selectedTicket.id
+              ? { ...t, status: "RESOLVED", adminReply: adminReply.trim(), resolvedAt: new Date().toISOString() }
+              : t
           )
         );
-        if (selectedNotification?.id === notificationId) {
-          setSelectedNotification({ ...selectedNotification, read: true });
-        }
+        setSelectedTicket(null);
+        setAdminReply("");
+        alert(data.message || "Ticket resolved and email sent!");
+      } else {
+        alert(data.error || "Failed to resolve ticket");
       }
     } catch (error) {
-      console.error("Failed to mark as read:", error);
+      console.error("Failed to resolve ticket:", error);
+      alert("Failed to resolve ticket");
+    } finally {
+      setResolving(false);
     }
   };
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "INFO":
-        return <AlertCircle size={18} className="text-blue-400" />;
-      case "SUCCESS":
-        return <CheckCircle size={18} className="text-green-400" />;
-      case "WARNING":
-        return <AlertCircle size={18} className="text-yellow-400" />;
-      case "ERROR":
-        return <AlertCircle size={18} className="text-red-400" />;
-      default:
-        return <AlertCircle size={18} />;
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case "INFO":
-        return "bg-blue-500/20 text-blue-400";
-      case "SUCCESS":
-        return "bg-green-500/20 text-green-400";
-      case "WARNING":
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "OPEN":
         return "bg-yellow-500/20 text-yellow-400";
-      case "ERROR":
-        return "bg-red-500/20 text-red-400";
+      case "IN_PROGRESS":
+        return "bg-blue-500/20 text-blue-400";
+      case "RESOLVED":
+        return "bg-green-500/20 text-green-400";
+      case "CLOSED":
+        return "bg-gray-500/20 text-gray-400";
       default:
         return "bg-gray-500/20 text-gray-400";
     }
@@ -146,14 +156,14 @@ export default function SupportPage() {
 
   return (
     <main className="flex-1 overflow-y-auto flex flex-col">
-      <AdminHeader title="Support & Notifications" />
+      <AdminHeader title="Support Tickets" />
 
       <div className="p-8 space-y-6">
         {/* Header */}
         <div>
           <h2 className="text-3xl font-bold mb-2">Support Tickets</h2>
           <p className="text-text-muted">
-            Manage user support requests and system notifications
+            Manage user support requests and resolve issues
           </p>
         </div>
 
@@ -164,71 +174,80 @@ export default function SupportPage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
             <input
               type="text"
-              placeholder="Search by title or message..."
+              placeholder="Search by topic, message, order number, or email..."
               value={search}
               onChange={(e) => handleSearch(e.target.value)}
               className="w-full bg-surface-dark bg-neutral-900 border border-border-dark rounded-lg pl-12 pr-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none text-white"
             />
           </div>
 
-          {/* Type Filter */}
+          {/* Status Filter */}
           <select
-            value={typeFilter}
-            onChange={(e) => handleTypeFilter(e.target.value)}
+            value={statusFilter}
+            onChange={(e) => handleStatusFilter(e.target.value)}
             className="bg-surface-dark bg-neutral-900 border border-border-dark rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none text-white"
           >
-            <option value="ALL">All Types</option>
-            <option value="INFO">Info</option>
-            <option value="SUCCESS">Success</option>
-            <option value="WARNING">Warning</option>
-            <option value="ERROR">Error</option>
+            <option value="ALL">All Status</option>
+            <option value="OPEN">Open</option>
+            <option value="IN_PROGRESS">In Progress</option>
+            <option value="RESOLVED">Resolved</option>
+            <option value="CLOSED">Closed</option>
           </select>
         </div>
 
-        {/* Notifications List */}
+        {/* Tickets List */}
         <div className="space-y-3">
-          {filteredNotifications.length === 0 ? (
+          {filteredTickets.length === 0 ? (
             <div className="text-center py-12 bg-surface-dark border border-border-dark rounded-xl">
               <p className="text-text-muted text-lg">No support tickets found</p>
             </div>
           ) : (
-            filteredNotifications.map((notification) => (
+            filteredTickets.map((ticket) => (
               <div
-                key={notification.id}
+                key={ticket.id}
                 className={`p-4 rounded-lg border transition-all cursor-pointer ${
-                  notification.read
-                    ? "bg-background-dark border-border-dark"
-                    : "bg-surface-dark border-primary/50"
+                  ticket.status === "OPEN"
+                    ? "bg-surface-dark border-yellow-500/50"
+                    : "bg-background-dark border-border-dark"
                 }`}
-                onClick={() => setSelectedNotification(notification)}
+                onClick={() => setSelectedTicket(ticket)}
               >
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0 pt-1">
-                    {getTypeIcon(notification.type)}
+                    <AlertCircle size={18} className="text-yellow-400" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <h3 className="font-bold text-lg">{notification.title}</h3>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-bold text-lg">{ticket.topic}</h3>
+                          {ticket.orderNumber && (
+                            <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded font-mono">
+                              {ticket.orderNumber.substring(0, 12)}...
+                            </span>
+                          )}
+                        </div>
                         <p className="text-text-muted text-sm mt-1 line-clamp-2">
-                          {notification.message}
+                          {ticket.message}
                         </p>
+                        {ticket.user && (
+                          <p className="text-xs text-text-muted mt-2">
+                            From: {ticket.user.name || "Guest"} ({ticket.user.email})
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <span
-                          className={`px-2 py-1 rounded text-xs font-bold whitespace-nowrap ${getTypeColor(
-                            notification.type
+                          className={`px-2 py-1 rounded text-xs font-bold whitespace-nowrap ${getStatusColor(
+                            ticket.status
                           )}`}
                         >
-                          {notification.type}
+                          {ticket.status}
                         </span>
-                        {!notification.read && (
-                          <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
-                        )}
                       </div>
                     </div>
                     <p className="text-xs text-text-muted mt-2">
-                      {new Date(notification.createdAt).toLocaleString()}
+                      {new Date(ticket.createdAt).toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -239,89 +258,126 @@ export default function SupportPage() {
       </div>
 
       {/* Detail Modal */}
-      {selectedNotification && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-surface-dark border border-border-dark rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      {selectedTicket && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-surface-dark border border-border-dark rounded-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="p-8 space-y-6">
               {/* Header */}
               <div className="flex justify-between items-start gap-4">
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="pt-1">{getTypeIcon(selectedNotification.type)}</div>
-                  <div>
-                    <h2 className="text-2xl font-bold mb-1">
-                      {selectedNotification.title}
-                    </h2>
-                    <p className="text-text-muted">
-                      {new Date(selectedNotification.createdAt).toLocaleString()}
-                    </p>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h2 className="text-2xl font-bold">{selectedTicket.topic}</h2>
+                    <span
+                      className={`px-3 py-1 rounded font-bold text-sm ${getStatusColor(
+                        selectedTicket.status
+                      )}`}
+                    >
+                      {selectedTicket.status}
+                    </span>
                   </div>
+                  <p className="text-text-muted text-sm">
+                    Submitted on {new Date(selectedTicket.createdAt).toLocaleString()}
+                  </p>
                 </div>
                 <button
-                  onClick={() => setSelectedNotification(null)}
+                  onClick={() => {
+                    setSelectedTicket(null);
+                    setAdminReply("");
+                  }}
                   className="text-text-muted hover:text-white text-2xl"
                 >
-                  ✕
+                  <X size={24} />
                 </button>
               </div>
 
-              {/* Type Badge */}
-              <div className="flex items-center gap-2">
-                <span
-                  className={`px-3 py-1 rounded font-bold ${getTypeColor(
-                    selectedNotification.type
-                  )}`}
-                >
-                  {selectedNotification.type}
-                </span>
-                {!selectedNotification.read && (
-                  <span className="px-3 py-1 rounded bg-primary/20 text-primary font-bold text-xs">
-                    UNREAD
-                  </span>
-                )}
-              </div>
+              {/* User Info */}
+              {selectedTicket.user && (
+                <div className="bg-background-dark rounded-lg p-4">
+                  <h3 className="font-bold text-sm text-text-muted mb-2">CUSTOMER INFORMATION</h3>
+                  <div className="space-y-1">
+                    <p className="font-medium">{selectedTicket.user.name || "Guest User"}</p>
+                    <p className="text-sm text-text-muted">{selectedTicket.user.email}</p>
+                    {selectedTicket.orderNumber && (
+                      <p className="text-sm text-blue-400 font-mono mt-2">
+                        Order: {selectedTicket.orderNumber}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
 
-              {/* Message */}
+              {/* Original Message */}
               <div className="bg-background-dark rounded-lg p-4">
-                <p className="text-white leading-relaxed">
-                  {selectedNotification.message}
+                <h3 className="font-bold text-sm text-text-muted mb-3">CUSTOMER MESSAGE</h3>
+                <p className="text-white leading-relaxed whitespace-pre-wrap">
+                  {selectedTicket.message}
                 </p>
               </div>
 
-              {/* Related Info */}
-              {(selectedNotification.user || selectedNotification.kitchen) && (
-                <div className="bg-background-dark rounded-lg p-4 space-y-3">
-                  <h3 className="font-bold text-lg">Related Information</h3>
-                  {selectedNotification.user && (
-                    <div>
-                      <p className="text-text-muted text-sm">User</p>
-                      <p className="font-medium">{selectedNotification.user.name}</p>
-                      <p className="text-sm text-text-muted">
-                        {selectedNotification.user.email}
-                      </p>
-                    </div>
-                  )}
-                  {selectedNotification.kitchen && (
-                    <div>
-                      <p className="text-text-muted text-sm">Kitchen</p>
-                      <p className="font-medium">{selectedNotification.kitchen.name}</p>
-                    </div>
+              {/* Admin Reply (if exists) */}
+              {selectedTicket.adminReply && (
+                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircle size={16} className="text-green-400" />
+                    <h3 className="font-bold text-sm text-green-400">ADMIN RESPONSE</h3>
+                  </div>
+                  <p className="text-white leading-relaxed whitespace-pre-wrap">
+                    {selectedTicket.adminReply}
+                  </p>
+                  {selectedTicket.resolvedAt && (
+                    <p className="text-xs text-text-muted mt-2">
+                      Resolved on {new Date(selectedTicket.resolvedAt).toLocaleString()}
+                    </p>
                   )}
                 </div>
               )}
 
-              {/* Action Button */}
-              {!selectedNotification.read && (
-                <button
-                  onClick={() => {
-                    markAsRead(selectedNotification.id);
-                  }}
-                  className="w-full px-4 py-3 bg-primary/10 text-primary rounded-lg font-bold hover:bg-primary/20 transition-colors flex items-center justify-center gap-2"
-                >
-                  <CheckCircle size={18} /> Mark as Read
-                </button>
+              {/* Reply Form (if not resolved) */}
+              {selectedTicket.status !== "RESOLVED" && selectedTicket.status !== "CLOSED" && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-bold text-text-muted mb-2">
+                      ADMIN RESPONSE
+                    </label>
+                    <textarea
+                      value={adminReply}
+                      onChange={(e) => setAdminReply(e.target.value)}
+                      rows={6}
+                      placeholder="Type your response to the customer here..."
+                      className="w-full px-4 py-3 rounded-lg bg-background-dark border border-border-dark text-white focus:ring-2 focus:ring-primary outline-none resize-none"
+                    />
+                    <p className="text-xs text-text-muted mt-2">
+                      This response will be sent to the customer via email
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleResolveTicket}
+                      disabled={resolving || !adminReply.trim()}
+                      className="flex-1 px-4 py-3 bg-primary hover:bg-primary/80 text-white rounded-lg font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {resolving ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Mail size={18} /> Resolve & Send Email
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
               )}
+
+              {/* Close Button */}
               <button
-                onClick={() => setSelectedNotification(null)}
+                onClick={() => {
+                  setSelectedTicket(null);
+                  setAdminReply("");
+                }}
                 className="w-full px-4 py-3 bg-border-dark text-white rounded-lg font-bold hover:bg-border-dark/80 transition-colors"
               >
                 Close

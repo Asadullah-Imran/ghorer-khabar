@@ -33,8 +33,8 @@ model User {
   notifications      Notification[]
   orders             Order[]
   reviews            Review[]
-  support_tickets    support_tickets[]
   user_subscriptions user_subscriptions[]
+  supportTickets     SupportTicket[]
 
   @@map("users")
 }
@@ -358,22 +358,22 @@ model user_subscriptions {
   @@map("user_subscriptions")
 }
 
-model support_tickets {
-  id           String              @id
-  user_id      String?
+model SupportTicket {
+  id           String               @id @default(cuid())
+  userId       String?              @map("user_id")
   topic        String
-  order_number String?
+  orderNumber  String?              @map("order_number")
   message      String
-  status       SupportTicketStatus @default(OPEN)
-  admin_reply  String?
-  resolved_at  DateTime?
-  resolved_by  String?
-  created_at   DateTime            @default(now())
-  updated_at   DateTime
-  users        User?               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  status       SupportTicketStatus  @default(OPEN)
+  adminReply   String?              @map("admin_reply")
+  resolvedAt   DateTime?            @map("resolved_at")
+  resolvedBy   String?              @map("resolved_by")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  user         User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@index([status])
-  @@index([user_id])
+  @@map("support_tickets")
 }
 
 enum Role {

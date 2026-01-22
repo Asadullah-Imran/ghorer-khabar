@@ -387,3 +387,82 @@ export async function sendPasswordResetEmail(
     throw new Error("Failed to send password reset email");
   }
 }
+
+/**
+ * Send support ticket resolution email
+ */
+export async function sendSupportTicketResolutionEmail(
+  email: string,
+  userName: string | null,
+  topic: string,
+  orderNumber: string | null,
+  originalMessage: string,
+  adminReply: string
+) {
+  const mailOptions = {
+    from: `"Ghorer Khabar Support" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: `Support Ticket Resolved: ${topic}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #0D8ABC; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+            .ticket-box { background: white; border-left: 4px solid #0D8ABC; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .reply-box { background: #e8f5e9; border-left: 4px solid #16a34a; padding: 15px; margin: 20px 0; border-radius: 4px; }
+            .status-badge { display: inline-block; background: #16a34a; color: white; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+            .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎉 Ticket Resolved</h1>
+              <div class="status-badge">RESOLVED</div>
+            </div>
+            <div class="content">
+              <h2>Hi ${userName || "there"}!</h2>
+              <p>Great news! Your support ticket has been resolved by our team.</p>
+              
+              <div class="ticket-box">
+                <p style="margin: 0 0 8px 0; font-weight: bold; color: #666; font-size: 12px; text-transform: uppercase;">Your Ticket</p>
+                <p style="margin: 0 0 8px 0;"><strong>Topic:</strong> ${topic}</p>
+                ${orderNumber ? `<p style="margin: 0 0 8px 0;"><strong>Order Number:</strong> ${orderNumber}</p>` : ""}
+                <p style="margin: 0 0 8px 0;"><strong>Your Message:</strong></p>
+                <p style="margin: 0; color: #555;">${originalMessage}</p>
+              </div>
+
+              <div class="reply-box">
+                <p style="margin: 0 0 8px 0; font-weight: bold; color: #16a34a; font-size: 12px; text-transform: uppercase;">Admin Response</p>
+                <p style="margin: 0; color: #1f2937; white-space: pre-wrap;">${adminReply}</p>
+              </div>
+
+              <p>If you need further assistance or have additional questions, please don't hesitate to submit another support ticket.</p>
+              
+              <p style="margin-top: 20px; font-size: 14px; color: #999;">
+                Thank you for using Ghorer Khabar!
+              </p>
+            </div>
+            <div class="footer">
+              <p>&copy; 2026 Ghorer Khabar. All rights reserved.</p>
+              <p>Need more help? Visit our <a href="${process.env.NEXT_PUBLIC_APP_URL}/support">Support Center</a></p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log("Support ticket resolution email sent to:", email);
+    return true;
+  } catch (error) {
+    console.error("Error sending support ticket resolution email:", error);
+    throw new Error("Failed to send support ticket resolution email");
+  }
+}
