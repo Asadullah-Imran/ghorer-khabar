@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import AdminSidebar from "@/components/admin/AdminSidebar";
 
 export default function AdminLayout({
   children,
@@ -31,10 +32,10 @@ export default function AdminLayout({
   // Show loading state while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-background-dark">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-          <p className="mt-4 text-gray-400">Verifying admin access...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-text-muted">Verifying admin access...</p>
         </div>
       </div>
     );
@@ -43,15 +44,20 @@ export default function AdminLayout({
   // Show loading state if user is not authenticated or not admin
   if (!user || role !== "ADMIN") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center bg-background-dark">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto"></div>
-          <p className="mt-4 text-gray-400">Redirecting...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-text-muted">Redirecting...</p>
         </div>
       </div>
     );
   }
 
-  // Render children only if user is an admin
-  return <>{children}</>;
+  // Render with unified layout: Sidebar + Children
+  return (
+    <div className="flex h-screen w-full overflow-hidden bg-background-dark text-white">
+      <AdminSidebar />
+      {children}
+    </div>
+  );
 }
