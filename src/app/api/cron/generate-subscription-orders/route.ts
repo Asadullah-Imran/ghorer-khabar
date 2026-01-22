@@ -115,7 +115,7 @@ export async function GET(req: NextRequest) {
         // Get kitchen to find chef_id and capacity settings
         const kitchen = await prisma.kitchen.findUnique({
           where: { id: subscription.kitchenId },
-          select: { sellerId: true, maxCapacity: true },
+          select: { sellerId: true, max_capacity: true },
         });
 
         if (!kitchen) {
@@ -150,12 +150,12 @@ export async function GET(req: NextRequest) {
 
           const existingOrder = await prisma.order.findFirst({
             where: {
-              subscriptionId: subscription.id,
-              deliveryDate: {
+              subscription_id: subscription.id,
+              delivery_date: {
                 gte: deliveryDateStart,
                 lte: deliveryDateEnd,
               },
-              deliveryTimeSlot: timeSlot,
+              delivery_time_slot: timeSlot,
             },
           });
 
@@ -169,18 +169,18 @@ export async function GET(req: NextRequest) {
           const currentOrdersCount = await prisma.order.count({
             where: {
               kitchenId: subscription.kitchenId,
-              deliveryDate: {
+              delivery_date: {
                 gte: deliveryDateStart,
                 lte: deliveryDateEnd,
               },
-              deliveryTimeSlot: timeSlot,
+              delivery_time_slot: timeSlot,
               status: {
                 notIn: ["CANCELLED"],
               },
             },
           });
 
-          if (currentOrdersCount >= kitchen.maxCapacity) {
+          if (currentOrdersCount >= kitchen.max_capacity) {
             console.log(`[Subscription Orders] Kitchen full for ${timeSlot} on ${tomorrow.toLocaleDateString()}. Skipping subscription ${subscription.id}`);
             results.errors.push(`Subscription ${subscription.id}: Kitchen full for ${timeSlot}`);
             continue;
@@ -238,11 +238,11 @@ export async function GET(req: NextRequest) {
             data: {
               userId: subscription.userId,
               kitchenId: subscription.kitchenId,
-              subscriptionId: subscription.id,
+              subscription_id: subscription.id,
               total: total,
               status: "PENDING",
-              deliveryDate: tomorrow,
-              deliveryTimeSlot: timeSlot,
+              delivery_date: tomorrow,
+              delivery_time_slot: timeSlot,
               notes: `Subscription order for ${subscription.plan.name} - ${timeSlot} on ${tomorrow.toLocaleDateString()}`,
               items: {
                 create: orderItemsData,
