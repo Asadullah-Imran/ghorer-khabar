@@ -14,6 +14,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/prisma";
 import { MealType } from "@/../generated/prisma/client";
+import { getDeliveryInfo } from "@/lib/services/deliveryCharge";
 
 // Helper to get day name in uppercase (matching schema format)
 function getDayName(date: Date): string {
@@ -229,9 +230,11 @@ export async function GET(req: NextRequest) {
             continue;
           }
 
-          // Add delivery fee (from subscription) - only once per day, so divide by number of meals
-          // Actually, for now, we'll add it to each order. Can be adjusted later.
-          total += subscription.deliveryFee || 0;
+          // Add delivery fee (from subscription) - calculated when subscription was created
+          // The delivery fee is stored per subscription and represents the fee for each delivery
+          // For subscriptions, we add the delivery fee to each meal order
+          const deliveryFee = subscription.deliveryFee || 0;
+          total += deliveryFee;
 
           // Create order with delivery date and time slot
           const order = await prisma.order.create({

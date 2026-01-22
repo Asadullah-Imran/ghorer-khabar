@@ -233,7 +233,12 @@ export default async function PlanDetailsPage({
           </div>
 
           {/* Right Column: Sticky Sidebar */}
-          <SubscriptionSidebar plan={plan} kitchenSellerId={planData.kitchen?.sellerId} currentUserId={currentUserId} />
+          <SubscriptionSidebar 
+            plan={plan} 
+            kitchenSellerId={planData.kitchen?.sellerId} 
+            currentUserId={currentUserId}
+            kitchenId={planData.kitchen?.id}
+          />
         </div>
       </div>
     </main>

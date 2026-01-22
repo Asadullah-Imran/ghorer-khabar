@@ -7,11 +7,13 @@ import Image from "next/image";
 export default function SubscriptionSidebar({ 
   plan, 
   kitchenSellerId, 
-  currentUserId 
+  currentUserId,
+  kitchenId
 }: { 
   plan: any;
   kitchenSellerId?: string | null;
   currentUserId?: string | null;
+  kitchenId?: string | null;
 }) {
   const isOwnKitchen = !!(currentUserId && kitchenSellerId && currentUserId === kitchenSellerId);
   return (
@@ -52,6 +54,7 @@ export default function SubscriptionSidebar({
           mealsPerDay={plan.mealsPerDay}
           servingsPerMeal={plan.servingsPerMeal}
           isOwnKitchen={isOwnKitchen}
+          kitchenId={kitchenId || plan.kitchen?.id}
         />
         <p className="text-center text-xs text-gray-400 mt-4">
           Next delivery starts from Monday, 8:00 AM

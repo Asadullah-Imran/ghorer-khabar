@@ -2,7 +2,9 @@
 
 import { useToast } from "@/contexts/ToastContext";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import LocationPicker from "@/components/profile/address/LocationPicker";
+import { MapPin, Info, Loader2 } from "lucide-react";
 
 interface SubscriptionFlowManagerProps {
   planId: string;
@@ -14,6 +16,7 @@ interface SubscriptionFlowManagerProps {
   mealsPerDay: number;
   servingsPerMeal: number;
   isOwnKitchen?: boolean;
+  kitchenId?: string;
 }
 
 export default function SubscriptionFlowManager({
@@ -26,6 +29,7 @@ export default function SubscriptionFlowManager({
   mealsPerDay,
   servingsPerMeal,
   isOwnKitchen = false,
+  kitchenId,
 }: SubscriptionFlowManagerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
@@ -33,16 +37,154 @@ export default function SubscriptionFlowManager({
   const router = useRouter();
   const toast = useToast();
 
+  // Address state
+  const [addresses, setAddresses] = useState<any[]>([]);
+  const [loadingAddresses, setLoadingAddresses] = useState(true);
+  const [showMap, setShowMap] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
+
+  // Delivery charge state
+  const [deliveryInfo, setDeliveryInfo] = useState<{
+    distance: number | null;
+    charge: number | null;
+    available: boolean;
+    error?: string;
+  }>({
+    distance: null,
+    charge: 300, // Default fallback
+    available: true,
+  });
+  const [loadingDelivery, setLoadingDelivery] = useState(false);
+
   // Form state
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [deliveryInstructions, setDeliveryInstructions] = useState("");
   const [useChefContainers, setUseChefContainers] = useState(true);
   const [agreedToPolicy, setAgreedToPolicy] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+
+  // Fetch addresses on mount
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      try {
+        const res = await fetch("/api/addresses");
+        if (res.ok) {
+          const data = await res.json();
+          setAddresses(data.addresses);
+          // Auto-select default address if exists
+          const defaultAddr = data.addresses.find((a: any) => a.isDefault);
+          if (defaultAddr) {
+            setSelectedAddressId(defaultAddr.id);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch addresses:", error);
+      } finally {
+        setLoadingAddresses(false);
+      }
+    };
+    fetchAddresses();
+  }, []);
+
+  // Fetch delivery charge when address or kitchen changes
+  useEffect(() => {
+    const fetchDeliveryCharge = async () => {
+      if (!kitchenId) {
+        setDeliveryInfo({
+          distance: null,
+          charge: 300,
+          available: true,
+        });
+        return;
+      }
+
+      // If addressId is available, use it
+      if (selectedAddressId) {
+        try {
+          setLoadingDelivery(true);
+          const response = await fetch(
+            `/api/orders/calculate-delivery?kitchenId=${kitchenId}&addressId=${selectedAddressId}`
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            setDeliveryInfo(data.data);
+          } else {
+            const errorData = await response.json();
+            setDeliveryInfo({
+              distance: null,
+              charge: 300,
+              available: false,
+              error: errorData.error || "Failed to calculate delivery charge",
+            });
+          }
+        } catch (error) {
+          console.error("Failed to fetch delivery charge:", error);
+          setDeliveryInfo({
+            distance: null,
+            charge: 300,
+            available: true,
+          });
+        } finally {
+          setLoadingDelivery(false);
+        }
+      } 
+      // If location is selected from map, use lat/lng
+      else if (selectedLocation) {
+        try {
+          setLoadingDelivery(true);
+          const response = await fetch(
+            `/api/orders/calculate-delivery?kitchenId=${kitchenId}&lat=${selectedLocation.lat}&lng=${selectedLocation.lng}`
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            setDeliveryInfo(data.data);
+          } else {
+            const errorData = await response.json();
+            setDeliveryInfo({
+              distance: null,
+              charge: 300,
+              available: false,
+              error: errorData.error || "Failed to calculate delivery charge",
+            });
+          }
+        } catch (error) {
+          console.error("Failed to fetch delivery charge:", error);
+          setDeliveryInfo({
+            distance: null,
+            charge: 300,
+            available: true,
+          });
+        } finally {
+          setLoadingDelivery(false);
+        }
+      }
+      // No address selected
+      else {
+        setDeliveryInfo({
+          distance: null,
+          charge: 300,
+          available: true,
+        });
+      }
+    };
+
+    fetchDeliveryCharge();
+  }, [kitchenId, selectedAddressId, selectedLocation]);
 
   // Calculate pricing
-  const deliveryFee = 300;
+  const deliveryFee = deliveryInfo.charge ?? 300; // Use calculated charge or fallback
   const discount = 0;
   const totalAmount = planPrice + deliveryFee - discount;
+
+  const handleLocationSelect = async (lat: number, lng: number, address?: string) => {
+    setSelectedLocation({ lat, lng });
+    setSelectedAddressId(""); // Clear address selection when using map
+  };
 
   const handleSubscribeClick = () => {
     setIsOpen(true);
@@ -69,6 +211,17 @@ export default function SubscriptionFlowManager({
       toast.warning("Policy Agreement Required", "Please agree to the allergen policy");
       return;
     }
+    if (!selectedAddressId && !selectedLocation) {
+      toast.warning("Address Required", "Please select a delivery address with location");
+      return;
+    }
+    if (!deliveryInfo.available) {
+      toast.error(
+        "Delivery Unavailable", 
+        deliveryInfo.error || "Delivery is not available for this distance. Please select a different address."
+      );
+      return;
+    }
     setCurrentStep(2);
   };
 
@@ -78,6 +231,19 @@ export default function SubscriptionFlowManager({
 
   const handlePlaceOrder = async () => {
     if (!startDate) return;
+
+    if (!selectedAddressId && !selectedLocation) {
+      toast.error("Address Required", "Please select a delivery address with location");
+      return;
+    }
+
+    if (!deliveryInfo.available) {
+      toast.error(
+        "Delivery Unavailable", 
+        deliveryInfo.error || "Delivery is not available for this distance. Please select a different address."
+      );
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -91,6 +257,9 @@ export default function SubscriptionFlowManager({
           startDate: startDate.toISOString(),
           deliveryInstructions,
           useChefContainers,
+          addressId: selectedAddressId || undefined,
+          deliveryLat: selectedLocation?.lat,
+          deliveryLng: selectedLocation?.lng,
         }),
       });
 
@@ -175,6 +344,86 @@ export default function SubscriptionFlowManager({
                     />
                   </div>
 
+                  {/* Address Selection */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <span className="material-symbols-outlined text-teal-700">location_on</span>
+                      <h3 className="text-lg font-bold text-gray-900">Delivery Address</h3>
+                    </div>
+                    
+                    {/* Saved Addresses List */}
+                    {!loadingAddresses && addresses.length > 0 && (
+                      <div className="grid grid-cols-1 gap-3 mb-2">
+                        {addresses.map((addr) => (
+                          <div 
+                            key={addr.id}
+                            onClick={() => {
+                              setSelectedAddressId(addr.id);
+                              setSelectedLocation(null); // Clear map selection
+                            }}
+                            className={`p-3 rounded-lg border-2 cursor-pointer flex items-start gap-3 transition-colors ${
+                              selectedAddressId === addr.id 
+                              ? "border-teal-600 bg-teal-50/50" 
+                              : "border-gray-200 hover:border-gray-300"
+                            }`}
+                          >
+                            <div className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                              selectedAddressId === addr.id ? "border-teal-600" : "border-gray-300"
+                            }`}>
+                              {selectedAddressId === addr.id && <div className="w-2 h-2 rounded-full bg-teal-600" />}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">{addr.label}</p>
+                              <p className="text-xs text-gray-500 line-clamp-2">{addr.address}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Map Picker Button */}
+                    <button
+                      type="button"
+                      onClick={() => setShowMap(true)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 flex items-center justify-center gap-2 text-gray-700 font-medium"
+                    >
+                      <MapPin size={18} />
+                      <span>Pick Location from Map</span>
+                    </button>
+
+                    {!selectedAddressId && !selectedLocation && (
+                      <p className="text-xs text-amber-600 flex items-center gap-1">
+                        <Info size={12} />
+                        Select a saved address or use the map to get accurate delivery charges
+                      </p>
+                    )}
+
+                    {/* Delivery Info Display */}
+                    {deliveryInfo.distance !== null && (
+                      <div className="p-3 bg-teal-50 rounded-lg border border-teal-200">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-700">Distance</span>
+                          <span className="text-sm font-semibold text-teal-700">
+                            {deliveryInfo.distance.toFixed(2)} km
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center mt-1">
+                          <span className="text-sm text-gray-700">Delivery Fee</span>
+                          {loadingDelivery ? (
+                            <Loader2 className="animate-spin text-gray-400" size={14} />
+                          ) : (
+                            <span className={`text-sm font-bold ${deliveryInfo.available ? "text-teal-700" : "text-red-600"}`}>
+                              ৳{deliveryFee}
+                            </span>
+                          )}
+                        </div>
+                        {!deliveryInfo.available && deliveryInfo.error && (
+                          <p className="text-xs text-red-600 mt-2">{deliveryInfo.error}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Instructions */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
@@ -227,9 +476,34 @@ export default function SubscriptionFlowManager({
                         <span className="font-medium text-gray-900">৳ {planPrice}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Delivery Fees ({kitchenArea || 'Area'})</span>
-                        <span className="font-medium text-gray-900">৳ {deliveryFee}</span>
+                        <div className="flex flex-col">
+                          <span className="text-gray-600">Delivery Fees</span>
+                          {deliveryInfo.distance !== null && (
+                            <span className="text-xs text-gray-400">
+                              {deliveryInfo.distance.toFixed(2)} km away
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-end">
+                          {loadingDelivery ? (
+                            <Loader2 className="animate-spin text-gray-400" size={14} />
+                          ) : (
+                            <>
+                              <span className={`font-medium ${deliveryInfo.available ? "text-gray-900" : "text-red-600"}`}>
+                                ৳ {deliveryFee}
+                              </span>
+                              {!deliveryInfo.available && (
+                                <span className="text-xs text-red-600">Unavailable</span>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
+                      {!deliveryInfo.available && deliveryInfo.error && (
+                        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="text-xs text-red-700">{deliveryInfo.error}</p>
+                        </div>
+                      )}
                       <div className="flex justify-between text-sm">
                         <span className="text-green-600">Chef's Discount</span>
                         <span className="font-medium text-green-600">- ৳ {discount}</span>
@@ -356,9 +630,34 @@ export default function SubscriptionFlowManager({
                         <span className="text-gray-900 font-medium">৳{planPrice}</span>
                       </div>
                       <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Estimated Delivery Fee</span>
-                        <span className="text-gray-900 font-medium">৳{deliveryFee}</span>
+                        <div className="flex flex-col">
+                          <span className="text-gray-600">Delivery Fee</span>
+                          {deliveryInfo.distance !== null && (
+                            <span className="text-xs text-gray-400">
+                              {deliveryInfo.distance.toFixed(2)} km away
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-col items-end">
+                          {loadingDelivery ? (
+                            <Loader2 className="animate-spin text-gray-400" size={14} />
+                          ) : (
+                            <>
+                              <span className={`font-medium ${deliveryInfo.available ? "text-gray-900" : "text-red-600"}`}>
+                                ৳{deliveryFee}
+                              </span>
+                              {!deliveryInfo.available && (
+                                <span className="text-xs text-red-600">Unavailable</span>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
+                      {!deliveryInfo.available && deliveryInfo.error && (
+                        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="text-xs text-red-700">{deliveryInfo.error}</p>
+                        </div>
+                      )}
                       <div className="h-px bg-gray-200"></div>
                       <div className="flex justify-between items-center">
                         <span className="text-gray-900 text-base font-bold">Total Amount to be Paid</span>
@@ -393,8 +692,8 @@ export default function SubscriptionFlowManager({
                     </button>
                     <button
                       onClick={handlePlaceOrder}
-                      disabled={isSubmitting}
-                      className="flex-[2] py-3.5 px-6 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold shadow-lg flex justify-center items-center gap-2 disabled:opacity-50"
+                      disabled={isSubmitting || !deliveryInfo.available || loadingDelivery}
+                      className="flex-[2] py-3.5 px-6 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold shadow-lg flex justify-center items-center gap-2 disabled:opacity-50 disabled:bg-gray-400 disabled:hover:bg-gray-400"
                     >
                       {isSubmitting ? (
                         <>
@@ -414,6 +713,14 @@ export default function SubscriptionFlowManager({
             )}
           </div>
         </div>
+      )}
+
+      {/* Location Picker Modal */}
+      {showMap && (
+        <LocationPicker
+          onLocationSelect={handleLocationSelect}
+          onClose={() => setShowMap(false)}
+        />
       )}
     </>
   );
