@@ -1,0 +1,3368 @@
+[
+  {
+    "id": "o1",
+    "customerId": "c1",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d17",
+        "dishName": "Fried Chicken 27",
+        "price": 441,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 882,
+    "status": "completed",
+    "orderDate": "2024-08-20T18:00:00.000Z",
+    "deliveryTime": "52 min"
+  },
+  {
+    "id": "o2",
+    "customerId": "c2",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d31",
+        "dishName": "Morog Polao 39",
+        "price": 403,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 806,
+    "status": "completed",
+    "orderDate": "2024-08-23T18:00:00.000Z",
+    "deliveryTime": "38 min"
+  },
+  {
+    "id": "o3",
+    "customerId": "c2",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d1",
+        "dishName": "Shatkora Beef 11",
+        "price": 106,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 212,
+    "status": "pending",
+    "orderDate": "2024-02-20T18:00:00.000Z",
+    "deliveryTime": "55 min"
+  },
+  {
+    "id": "o4",
+    "customerId": "c2",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d47",
+        "dishName": "Khichuri 414",
+        "price": 164,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 328,
+    "status": "pending",
+    "orderDate": "2024-01-17T18:00:00.000Z",
+    "deliveryTime": "35 min"
+  },
+  {
+    "id": "o5",
+    "customerId": "c3",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d24",
+        "dishName": "Chicken Rezala 32",
+        "price": 156,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 468,
+    "status": "completed",
+    "orderDate": "2024-05-17T18:00:00.000Z",
+    "deliveryTime": "40 min"
+  },
+  {
+    "id": "o6",
+    "customerId": "c3",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d26",
+        "dishName": "Kachchi Biryani 34",
+        "price": 283,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 849,
+    "status": "pending",
+    "orderDate": "2024-04-10T18:00:00.000Z",
+    "deliveryTime": "46 min"
+  },
+  {
+    "id": "o7",
+    "customerId": "c3",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d15",
+        "dishName": "Alu Bhorta 25",
+        "price": 82,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 246,
+    "status": "pending",
+    "orderDate": "2024-02-08T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o8",
+    "customerId": "c3",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d42",
+        "dishName": "Morog Polao 49",
+        "price": 168,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 336,
+    "status": "completed",
+    "orderDate": "2024-10-27T18:00:00.000Z",
+    "deliveryTime": "45 min"
+  },
+  {
+    "id": "o9",
+    "customerId": "c3",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d39",
+        "dishName": "Beef Rezala 46",
+        "price": 405,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 810,
+    "status": "completed",
+    "orderDate": "2024-09-12T18:00:00.000Z",
+    "deliveryTime": "29 min"
+  },
+  {
+    "id": "o10",
+    "customerId": "c3",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d27",
+        "dishName": "Cholar Dal 35",
+        "price": 215,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 430,
+    "status": "completed",
+    "orderDate": "2024-02-03T18:00:00.000Z",
+    "deliveryTime": "33 min"
+  },
+  {
+    "id": "o11",
+    "customerId": "c3",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d4",
+        "dishName": "Beef Tehari 14",
+        "price": 462,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 462,
+    "status": "pending",
+    "orderDate": "2024-12-08T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o12",
+    "customerId": "c3",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d57",
+        "dishName": "Dal Tadka 510",
+        "price": 358,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 358,
+    "status": "completed",
+    "orderDate": "2024-12-27T18:00:00.000Z",
+    "deliveryTime": "38 min"
+  },
+  {
+    "id": "o13",
+    "customerId": "c3",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d1",
+        "dishName": "Shatkora Beef 11",
+        "price": 106,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 212,
+    "status": "completed",
+    "orderDate": "2024-10-15T18:00:00.000Z",
+    "deliveryTime": "55 min"
+  },
+  {
+    "id": "o14",
+    "customerId": "c3",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d50",
+        "dishName": "Ilish Macher Jhol 53",
+        "price": 85,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 255,
+    "status": "completed",
+    "orderDate": "2024-03-20T18:00:00.000Z",
+    "deliveryTime": "55 min"
+  },
+  {
+    "id": "o15",
+    "customerId": "c3",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d20",
+        "dishName": "Alu Bhorta 210",
+        "price": 105,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 315,
+    "status": "completed",
+    "orderDate": "2024-02-22T18:00:00.000Z",
+    "deliveryTime": "28 min"
+  },
+  {
+    "id": "o16",
+    "customerId": "c4",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d16",
+        "dishName": "Gosht Korma 26",
+        "price": 185,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 370,
+    "status": "completed",
+    "orderDate": "2024-11-05T18:00:00.000Z",
+    "deliveryTime": "34 min"
+  },
+  {
+    "id": "o17",
+    "customerId": "c4",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d22",
+        "dishName": "Chicken Rezala 212",
+        "price": 147,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 147,
+    "status": "completed",
+    "orderDate": "2024-11-05T18:00:00.000Z",
+    "deliveryTime": "33 min"
+  },
+  {
+    "id": "o18",
+    "customerId": "c4",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d23",
+        "dishName": "Beef Rezala 31",
+        "price": 442,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 442,
+    "status": "completed",
+    "orderDate": "2024-05-25T18:00:00.000Z",
+    "deliveryTime": "48 min"
+  },
+  {
+    "id": "o19",
+    "customerId": "c4",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d3",
+        "dishName": "Koi Macher Jhol 13",
+        "price": 240,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 240,
+    "status": "completed",
+    "orderDate": "2024-05-24T18:00:00.000Z",
+    "deliveryTime": "48 min"
+  },
+  {
+    "id": "o20",
+    "customerId": "c4",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d38",
+        "dishName": "Begun Bhorta 45",
+        "price": 178,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 534,
+    "status": "completed",
+    "orderDate": "2024-03-26T18:00:00.000Z",
+    "deliveryTime": "23 min"
+  },
+  {
+    "id": "o21",
+    "customerId": "c4",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d9",
+        "dishName": "Morog Polao 19",
+        "price": 479,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 958,
+    "status": "completed",
+    "orderDate": "2024-12-12T18:00:00.000Z",
+    "deliveryTime": "22 min"
+  },
+  {
+    "id": "o22",
+    "customerId": "c4",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d59",
+        "dishName": "Chicken Korma 512",
+        "price": 405,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 405,
+    "status": "completed",
+    "orderDate": "2024-09-03T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o23",
+    "customerId": "c4",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d46",
+        "dishName": "Rui Macher Kalia 413",
+        "price": 193,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 579,
+    "status": "completed",
+    "orderDate": "2024-08-24T18:00:00.000Z",
+    "deliveryTime": "46 min"
+  },
+  {
+    "id": "o24",
+    "customerId": "c4",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d33",
+        "dishName": "Beef Kala Bhuna 311",
+        "price": 145,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 290,
+    "status": "completed",
+    "orderDate": "2024-10-21T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o25",
+    "customerId": "c4",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d44",
+        "dishName": "Beef Vuna 411",
+        "price": 368,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 368,
+    "status": "completed",
+    "orderDate": "2024-11-07T18:00:00.000Z",
+    "deliveryTime": "24 min"
+  },
+  {
+    "id": "o26",
+    "customerId": "c4",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d33",
+        "dishName": "Beef Kala Bhuna 311",
+        "price": 145,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 290,
+    "status": "completed",
+    "orderDate": "2024-01-17T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o27",
+    "customerId": "c5",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d32",
+        "dishName": "Masoor Dal 310",
+        "price": 255,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 765,
+    "status": "completed",
+    "orderDate": "2024-07-02T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o28",
+    "customerId": "c5",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d41",
+        "dishName": "Koi Macher Jhol 48",
+        "price": 208,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 416,
+    "status": "completed",
+    "orderDate": "2024-11-01T18:00:00.000Z",
+    "deliveryTime": "57 min"
+  },
+  {
+    "id": "o29",
+    "customerId": "c5",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d57",
+        "dishName": "Dal Tadka 510",
+        "price": 358,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 358,
+    "status": "completed",
+    "orderDate": "2024-03-17T18:00:00.000Z",
+    "deliveryTime": "38 min"
+  },
+  {
+    "id": "o30",
+    "customerId": "c5",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d7",
+        "dishName": "Grilled Chicken 17",
+        "price": 104,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 312,
+    "status": "completed",
+    "orderDate": "2024-11-09T18:00:00.000Z",
+    "deliveryTime": "29 min"
+  },
+  {
+    "id": "o31",
+    "customerId": "c5",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d29",
+        "dishName": "Morog Polao 37",
+        "price": 272,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 544,
+    "status": "completed",
+    "orderDate": "2024-08-01T18:00:00.000Z",
+    "deliveryTime": "41 min"
+  },
+  {
+    "id": "o32",
+    "customerId": "c5",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d42",
+        "dishName": "Morog Polao 49",
+        "price": 168,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 168,
+    "status": "completed",
+    "orderDate": "2024-04-27T18:00:00.000Z",
+    "deliveryTime": "45 min"
+  },
+  {
+    "id": "o33",
+    "customerId": "c5",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d3",
+        "dishName": "Koi Macher Jhol 13",
+        "price": 240,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 240,
+    "status": "completed",
+    "orderDate": "2024-10-20T18:00:00.000Z",
+    "deliveryTime": "48 min"
+  },
+  {
+    "id": "o34",
+    "customerId": "c5",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d51",
+        "dishName": "Beef Tehari 54",
+        "price": 397,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1191,
+    "status": "completed",
+    "orderDate": "2024-09-30T18:00:00.000Z",
+    "deliveryTime": "20 min"
+  },
+  {
+    "id": "o35",
+    "customerId": "c5",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d49",
+        "dishName": "Morog Polao 52",
+        "price": 293,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 293,
+    "status": "pending",
+    "orderDate": "2024-01-06T18:00:00.000Z",
+    "deliveryTime": "53 min"
+  },
+  {
+    "id": "o36",
+    "customerId": "c6",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d8",
+        "dishName": "Chingri Malai Curry 18",
+        "price": 155,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 155,
+    "status": "completed",
+    "orderDate": "2024-05-01T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o37",
+    "customerId": "c6",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d57",
+        "dishName": "Dal Tadka 510",
+        "price": 358,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1074,
+    "status": "completed",
+    "orderDate": "2024-08-21T18:00:00.000Z",
+    "deliveryTime": "38 min"
+  },
+  {
+    "id": "o38",
+    "customerId": "c6",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d31",
+        "dishName": "Morog Polao 39",
+        "price": 403,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 403,
+    "status": "completed",
+    "orderDate": "2024-11-24T18:00:00.000Z",
+    "deliveryTime": "38 min"
+  },
+  {
+    "id": "o39",
+    "customerId": "c6",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d55",
+        "dishName": "Chingri Malai Curry 58",
+        "price": 130,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 130,
+    "status": "completed",
+    "orderDate": "2024-02-23T18:00:00.000Z",
+    "deliveryTime": "30 min"
+  },
+  {
+    "id": "o40",
+    "customerId": "c6",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d26",
+        "dishName": "Kachchi Biryani 34",
+        "price": 283,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 283,
+    "status": "completed",
+    "orderDate": "2024-09-27T18:00:00.000Z",
+    "deliveryTime": "46 min"
+  },
+  {
+    "id": "o41",
+    "customerId": "c6",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d3",
+        "dishName": "Koi Macher Jhol 13",
+        "price": 240,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 720,
+    "status": "completed",
+    "orderDate": "2024-10-15T18:00:00.000Z",
+    "deliveryTime": "48 min"
+  },
+  {
+    "id": "o42",
+    "customerId": "c7",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d48",
+        "dishName": "Shatkora Beef 51",
+        "price": 327,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 981,
+    "status": "completed",
+    "orderDate": "2024-09-02T18:00:00.000Z",
+    "deliveryTime": "42 min"
+  },
+  {
+    "id": "o43",
+    "customerId": "c7",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d49",
+        "dishName": "Morog Polao 52",
+        "price": 293,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 293,
+    "status": "completed",
+    "orderDate": "2024-06-26T18:00:00.000Z",
+    "deliveryTime": "53 min"
+  },
+  {
+    "id": "o44",
+    "customerId": "c7",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d37",
+        "dishName": "Khichuri 44",
+        "price": 247,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 494,
+    "status": "pending",
+    "orderDate": "2024-10-14T18:00:00.000Z",
+    "deliveryTime": "44 min"
+  },
+  {
+    "id": "o45",
+    "customerId": "c7",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d28",
+        "dishName": "Beef Vuna 36",
+        "price": 376,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1128,
+    "status": "completed",
+    "orderDate": "2024-10-23T18:00:00.000Z",
+    "deliveryTime": "57 min"
+  },
+  {
+    "id": "o46",
+    "customerId": "c7",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d12",
+        "dishName": "Fried Chicken 22",
+        "price": 173,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 519,
+    "status": "completed",
+    "orderDate": "2024-10-10T18:00:00.000Z",
+    "deliveryTime": "54 min"
+  },
+  {
+    "id": "o47",
+    "customerId": "c7",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d43",
+        "dishName": "Mixed Vegetable 410",
+        "price": 382,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 764,
+    "status": "completed",
+    "orderDate": "2024-09-05T18:00:00.000Z",
+    "deliveryTime": "51 min"
+  },
+  {
+    "id": "o48",
+    "customerId": "c7",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d58",
+        "dishName": "Beef Kala Bhuna 511",
+        "price": 426,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1278,
+    "status": "completed",
+    "orderDate": "2024-11-16T18:00:00.000Z",
+    "deliveryTime": "42 min"
+  },
+  {
+    "id": "o49",
+    "customerId": "c7",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d52",
+        "dishName": "Moong Dal 55",
+        "price": 437,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 874,
+    "status": "completed",
+    "orderDate": "2024-07-03T18:00:00.000Z",
+    "deliveryTime": "38 min"
+  },
+  {
+    "id": "o50",
+    "customerId": "c7",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d52",
+        "dishName": "Moong Dal 55",
+        "price": 437,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1311,
+    "status": "completed",
+    "orderDate": "2024-01-01T18:00:00.000Z",
+    "deliveryTime": "38 min"
+  },
+  {
+    "id": "o51",
+    "customerId": "c7",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d34",
+        "dishName": "Beef Kala Bhuna 41",
+        "price": 450,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 450,
+    "status": "completed",
+    "orderDate": "2024-09-18T18:00:00.000Z",
+    "deliveryTime": "20 min"
+  },
+  {
+    "id": "o52",
+    "customerId": "c8",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d31",
+        "dishName": "Morog Polao 39",
+        "price": 403,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1209,
+    "status": "completed",
+    "orderDate": "2024-01-07T18:00:00.000Z",
+    "deliveryTime": "38 min"
+  },
+  {
+    "id": "o53",
+    "customerId": "c8",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d7",
+        "dishName": "Grilled Chicken 17",
+        "price": 104,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 208,
+    "status": "completed",
+    "orderDate": "2024-10-05T18:00:00.000Z",
+    "deliveryTime": "29 min"
+  },
+  {
+    "id": "o54",
+    "customerId": "c8",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d12",
+        "dishName": "Fried Chicken 22",
+        "price": 173,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 173,
+    "status": "completed",
+    "orderDate": "2024-11-01T18:00:00.000Z",
+    "deliveryTime": "54 min"
+  },
+  {
+    "id": "o55",
+    "customerId": "c8",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d8",
+        "dishName": "Chingri Malai Curry 18",
+        "price": 155,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 465,
+    "status": "pending",
+    "orderDate": "2024-06-16T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o56",
+    "customerId": "c8",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d7",
+        "dishName": "Grilled Chicken 17",
+        "price": 104,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 208,
+    "status": "completed",
+    "orderDate": "2024-02-05T18:00:00.000Z",
+    "deliveryTime": "29 min"
+  },
+  {
+    "id": "o57",
+    "customerId": "c8",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d57",
+        "dishName": "Dal Tadka 510",
+        "price": 358,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 716,
+    "status": "completed",
+    "orderDate": "2024-05-19T18:00:00.000Z",
+    "deliveryTime": "38 min"
+  },
+  {
+    "id": "o58",
+    "customerId": "c9",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d14",
+        "dishName": "Plain Rice 24",
+        "price": 462,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1386,
+    "status": "completed",
+    "orderDate": "2024-10-23T18:00:00.000Z",
+    "deliveryTime": "22 min"
+  },
+  {
+    "id": "o59",
+    "customerId": "c9",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d1",
+        "dishName": "Shatkora Beef 11",
+        "price": 106,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 212,
+    "status": "completed",
+    "orderDate": "2024-10-19T18:00:00.000Z",
+    "deliveryTime": "55 min"
+  },
+  {
+    "id": "o60",
+    "customerId": "c9",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d9",
+        "dishName": "Morog Polao 19",
+        "price": 479,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 958,
+    "status": "pending",
+    "orderDate": "2024-02-29T18:00:00.000Z",
+    "deliveryTime": "22 min"
+  },
+  {
+    "id": "o61",
+    "customerId": "c9",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d27",
+        "dishName": "Cholar Dal 35",
+        "price": 215,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 430,
+    "status": "completed",
+    "orderDate": "2024-02-03T18:00:00.000Z",
+    "deliveryTime": "33 min"
+  },
+  {
+    "id": "o62",
+    "customerId": "c9",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d23",
+        "dishName": "Beef Rezala 31",
+        "price": 442,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 884,
+    "status": "completed",
+    "orderDate": "2024-11-19T18:00:00.000Z",
+    "deliveryTime": "48 min"
+  },
+  {
+    "id": "o63",
+    "customerId": "c9",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d42",
+        "dishName": "Morog Polao 49",
+        "price": 168,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 168,
+    "status": "completed",
+    "orderDate": "2024-09-26T18:00:00.000Z",
+    "deliveryTime": "45 min"
+  },
+  {
+    "id": "o64",
+    "customerId": "c9",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d5",
+        "dishName": "Dal Tadka 15",
+        "price": 278,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 278,
+    "status": "completed",
+    "orderDate": "2024-11-08T18:00:00.000Z",
+    "deliveryTime": "34 min"
+  },
+  {
+    "id": "o65",
+    "customerId": "c9",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d15",
+        "dishName": "Alu Bhorta 25",
+        "price": 82,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 164,
+    "status": "completed",
+    "orderDate": "2024-02-21T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o66",
+    "customerId": "c9",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d42",
+        "dishName": "Morog Polao 49",
+        "price": 168,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 168,
+    "status": "pending",
+    "orderDate": "2024-08-11T18:00:00.000Z",
+    "deliveryTime": "45 min"
+  },
+  {
+    "id": "o67",
+    "customerId": "c9",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d40",
+        "dishName": "Chicken Tikka 47",
+        "price": 118,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 354,
+    "status": "completed",
+    "orderDate": "2024-07-08T18:00:00.000Z",
+    "deliveryTime": "55 min"
+  },
+  {
+    "id": "o68",
+    "customerId": "c9",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d12",
+        "dishName": "Fried Chicken 22",
+        "price": 173,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 346,
+    "status": "completed",
+    "orderDate": "2024-10-21T18:00:00.000Z",
+    "deliveryTime": "54 min"
+  },
+  {
+    "id": "o69",
+    "customerId": "c9",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d16",
+        "dishName": "Gosht Korma 26",
+        "price": 185,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 185,
+    "status": "completed",
+    "orderDate": "2024-12-23T18:00:00.000Z",
+    "deliveryTime": "34 min"
+  },
+  {
+    "id": "o70",
+    "customerId": "c9",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d6",
+        "dishName": "Beef Vuna 16",
+        "price": 416,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1248,
+    "status": "completed",
+    "orderDate": "2024-04-01T18:00:00.000Z",
+    "deliveryTime": "44 min"
+  },
+  {
+    "id": "o71",
+    "customerId": "c10",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d39",
+        "dishName": "Beef Rezala 46",
+        "price": 405,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 405,
+    "status": "completed",
+    "orderDate": "2024-07-03T18:00:00.000Z",
+    "deliveryTime": "29 min"
+  },
+  {
+    "id": "o72",
+    "customerId": "c10",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d28",
+        "dishName": "Beef Vuna 36",
+        "price": 376,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 752,
+    "status": "completed",
+    "orderDate": "2024-01-13T18:00:00.000Z",
+    "deliveryTime": "57 min"
+  },
+  {
+    "id": "o73",
+    "customerId": "c10",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d30",
+        "dishName": "Koi Macher Jhol 38",
+        "price": 289,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 289,
+    "status": "completed",
+    "orderDate": "2024-01-23T18:00:00.000Z",
+    "deliveryTime": "23 min"
+  },
+  {
+    "id": "o74",
+    "customerId": "c10",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d53",
+        "dishName": "Beef Vuna 56",
+        "price": 456,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1368,
+    "status": "pending",
+    "orderDate": "2024-05-21T18:00:00.000Z",
+    "deliveryTime": "49 min"
+  },
+  {
+    "id": "o75",
+    "customerId": "c10",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d46",
+        "dishName": "Rui Macher Kalia 413",
+        "price": 193,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 386,
+    "status": "completed",
+    "orderDate": "2024-08-04T18:00:00.000Z",
+    "deliveryTime": "46 min"
+  },
+  {
+    "id": "o76",
+    "customerId": "c10",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d29",
+        "dishName": "Morog Polao 37",
+        "price": 272,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 544,
+    "status": "completed",
+    "orderDate": "2024-06-13T18:00:00.000Z",
+    "deliveryTime": "41 min"
+  },
+  {
+    "id": "o77",
+    "customerId": "c11",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d32",
+        "dishName": "Masoor Dal 310",
+        "price": 255,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 510,
+    "status": "pending",
+    "orderDate": "2024-10-13T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o78",
+    "customerId": "c12",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d19",
+        "dishName": "Bhuna Khichuri 29",
+        "price": 126,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 126,
+    "status": "pending",
+    "orderDate": "2024-06-10T18:00:00.000Z",
+    "deliveryTime": "49 min"
+  },
+  {
+    "id": "o79",
+    "customerId": "c12",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d17",
+        "dishName": "Fried Chicken 27",
+        "price": 441,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 882,
+    "status": "completed",
+    "orderDate": "2024-10-16T18:00:00.000Z",
+    "deliveryTime": "52 min"
+  },
+  {
+    "id": "o80",
+    "customerId": "c12",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d58",
+        "dishName": "Beef Kala Bhuna 511",
+        "price": 426,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 852,
+    "status": "completed",
+    "orderDate": "2024-12-27T18:00:00.000Z",
+    "deliveryTime": "42 min"
+  },
+  {
+    "id": "o81",
+    "customerId": "c13",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d2",
+        "dishName": "Morog Polao 12",
+        "price": 254,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 254,
+    "status": "completed",
+    "orderDate": "2024-07-07T18:00:00.000Z",
+    "deliveryTime": "28 min"
+  },
+  {
+    "id": "o82",
+    "customerId": "c13",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d10",
+        "dishName": "Alu Bhorta 110",
+        "price": 340,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1020,
+    "status": "completed",
+    "orderDate": "2024-06-03T18:00:00.000Z",
+    "deliveryTime": "32 min"
+  },
+  {
+    "id": "o83",
+    "customerId": "c13",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d28",
+        "dishName": "Beef Vuna 36",
+        "price": 376,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 376,
+    "status": "completed",
+    "orderDate": "2024-06-08T18:00:00.000Z",
+    "deliveryTime": "57 min"
+  },
+  {
+    "id": "o84",
+    "customerId": "c13",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d48",
+        "dishName": "Shatkora Beef 51",
+        "price": 327,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 327,
+    "status": "completed",
+    "orderDate": "2024-12-19T18:00:00.000Z",
+    "deliveryTime": "42 min"
+  },
+  {
+    "id": "o85",
+    "customerId": "c14",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d21",
+        "dishName": "Beef Tehari 211",
+        "price": 366,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 366,
+    "status": "completed",
+    "orderDate": "2024-05-03T18:00:00.000Z",
+    "deliveryTime": "54 min"
+  },
+  {
+    "id": "o86",
+    "customerId": "c14",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d55",
+        "dishName": "Chingri Malai Curry 58",
+        "price": 130,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 390,
+    "status": "completed",
+    "orderDate": "2024-03-16T18:00:00.000Z",
+    "deliveryTime": "30 min"
+  },
+  {
+    "id": "o87",
+    "customerId": "c14",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d13",
+        "dishName": "Chingri Malai Curry 23",
+        "price": 87,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 261,
+    "status": "completed",
+    "orderDate": "2024-11-24T18:00:00.000Z",
+    "deliveryTime": "43 min"
+  },
+  {
+    "id": "o88",
+    "customerId": "c14",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d43",
+        "dishName": "Mixed Vegetable 410",
+        "price": 382,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 382,
+    "status": "pending",
+    "orderDate": "2024-03-12T18:00:00.000Z",
+    "deliveryTime": "51 min"
+  },
+  {
+    "id": "o89",
+    "customerId": "c14",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d52",
+        "dishName": "Moong Dal 55",
+        "price": 437,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1311,
+    "status": "completed",
+    "orderDate": "2024-05-24T18:00:00.000Z",
+    "deliveryTime": "38 min"
+  },
+  {
+    "id": "o90",
+    "customerId": "c14",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d33",
+        "dishName": "Beef Kala Bhuna 311",
+        "price": 145,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 290,
+    "status": "completed",
+    "orderDate": "2024-05-05T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o91",
+    "customerId": "c14",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d53",
+        "dishName": "Beef Vuna 56",
+        "price": 456,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 456,
+    "status": "pending",
+    "orderDate": "2024-06-24T18:00:00.000Z",
+    "deliveryTime": "49 min"
+  },
+  {
+    "id": "o92",
+    "customerId": "c14",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d4",
+        "dishName": "Beef Tehari 14",
+        "price": 462,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1386,
+    "status": "completed",
+    "orderDate": "2024-09-15T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o93",
+    "customerId": "c14",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d59",
+        "dishName": "Chicken Korma 512",
+        "price": 405,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 810,
+    "status": "pending",
+    "orderDate": "2024-07-16T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o94",
+    "customerId": "c14",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d42",
+        "dishName": "Morog Polao 49",
+        "price": 168,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 168,
+    "status": "pending",
+    "orderDate": "2024-01-02T18:00:00.000Z",
+    "deliveryTime": "45 min"
+  },
+  {
+    "id": "o95",
+    "customerId": "c14",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d43",
+        "dishName": "Mixed Vegetable 410",
+        "price": 382,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 764,
+    "status": "completed",
+    "orderDate": "2024-04-25T18:00:00.000Z",
+    "deliveryTime": "51 min"
+  },
+  {
+    "id": "o96",
+    "customerId": "c14",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d14",
+        "dishName": "Plain Rice 24",
+        "price": 462,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 462,
+    "status": "completed",
+    "orderDate": "2024-07-11T18:00:00.000Z",
+    "deliveryTime": "22 min"
+  },
+  {
+    "id": "o97",
+    "customerId": "c14",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d7",
+        "dishName": "Grilled Chicken 17",
+        "price": 104,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 312,
+    "status": "completed",
+    "orderDate": "2024-11-20T18:00:00.000Z",
+    "deliveryTime": "29 min"
+  },
+  {
+    "id": "o98",
+    "customerId": "c14",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d15",
+        "dishName": "Alu Bhorta 25",
+        "price": 82,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 164,
+    "status": "completed",
+    "orderDate": "2024-03-03T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o99",
+    "customerId": "c14",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d57",
+        "dishName": "Dal Tadka 510",
+        "price": 358,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 358,
+    "status": "completed",
+    "orderDate": "2024-11-12T18:00:00.000Z",
+    "deliveryTime": "38 min"
+  },
+  {
+    "id": "o100",
+    "customerId": "c15",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d36",
+        "dishName": "Pabda Macher Jhol 43",
+        "price": 391,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 391,
+    "status": "completed",
+    "orderDate": "2024-11-03T18:00:00.000Z",
+    "deliveryTime": "23 min"
+  },
+  {
+    "id": "o101",
+    "customerId": "c15",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d45",
+        "dishName": "Grilled Chicken 412",
+        "price": 140,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 140,
+    "status": "completed",
+    "orderDate": "2024-08-07T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o102",
+    "customerId": "c15",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d18",
+        "dishName": "Magur Macher Jhol 28",
+        "price": 449,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1347,
+    "status": "completed",
+    "orderDate": "2024-03-06T18:00:00.000Z",
+    "deliveryTime": "35 min"
+  },
+  {
+    "id": "o103",
+    "customerId": "c15",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d4",
+        "dishName": "Beef Tehari 14",
+        "price": 462,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1386,
+    "status": "completed",
+    "orderDate": "2024-07-19T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o104",
+    "customerId": "c15",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d50",
+        "dishName": "Ilish Macher Jhol 53",
+        "price": 85,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 85,
+    "status": "completed",
+    "orderDate": "2024-10-08T18:00:00.000Z",
+    "deliveryTime": "55 min"
+  },
+  {
+    "id": "o105",
+    "customerId": "c15",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d16",
+        "dishName": "Gosht Korma 26",
+        "price": 185,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 185,
+    "status": "completed",
+    "orderDate": "2024-12-18T18:00:00.000Z",
+    "deliveryTime": "34 min"
+  },
+  {
+    "id": "o106",
+    "customerId": "c15",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d59",
+        "dishName": "Chicken Korma 512",
+        "price": 405,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1215,
+    "status": "pending",
+    "orderDate": "2024-08-23T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o107",
+    "customerId": "c15",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d41",
+        "dishName": "Koi Macher Jhol 48",
+        "price": 208,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 208,
+    "status": "completed",
+    "orderDate": "2024-07-11T18:00:00.000Z",
+    "deliveryTime": "57 min"
+  },
+  {
+    "id": "o108",
+    "customerId": "c15",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d32",
+        "dishName": "Masoor Dal 310",
+        "price": 255,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 765,
+    "status": "completed",
+    "orderDate": "2024-11-24T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o109",
+    "customerId": "c15",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d2",
+        "dishName": "Morog Polao 12",
+        "price": 254,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 762,
+    "status": "completed",
+    "orderDate": "2024-02-15T18:00:00.000Z",
+    "deliveryTime": "28 min"
+  },
+  {
+    "id": "o110",
+    "customerId": "c15",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d12",
+        "dishName": "Fried Chicken 22",
+        "price": 173,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 519,
+    "status": "completed",
+    "orderDate": "2024-02-29T18:00:00.000Z",
+    "deliveryTime": "54 min"
+  },
+  {
+    "id": "o111",
+    "customerId": "c15",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d55",
+        "dishName": "Chingri Malai Curry 58",
+        "price": 130,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 130,
+    "status": "completed",
+    "orderDate": "2024-12-02T18:00:00.000Z",
+    "deliveryTime": "30 min"
+  },
+  {
+    "id": "o112",
+    "customerId": "c15",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d32",
+        "dishName": "Masoor Dal 310",
+        "price": 255,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 510,
+    "status": "completed",
+    "orderDate": "2024-12-11T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o113",
+    "customerId": "c15",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d25",
+        "dishName": "Chingri Malai Curry 33",
+        "price": 91,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 182,
+    "status": "completed",
+    "orderDate": "2024-04-15T18:00:00.000Z",
+    "deliveryTime": "39 min"
+  },
+  {
+    "id": "o114",
+    "customerId": "c16",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d40",
+        "dishName": "Chicken Tikka 47",
+        "price": 118,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 354,
+    "status": "completed",
+    "orderDate": "2024-10-20T18:00:00.000Z",
+    "deliveryTime": "55 min"
+  },
+  {
+    "id": "o115",
+    "customerId": "c16",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d24",
+        "dishName": "Chicken Rezala 32",
+        "price": 156,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 468,
+    "status": "completed",
+    "orderDate": "2024-06-06T18:00:00.000Z",
+    "deliveryTime": "40 min"
+  },
+  {
+    "id": "o116",
+    "customerId": "c16",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d59",
+        "dishName": "Chicken Korma 512",
+        "price": 405,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 810,
+    "status": "completed",
+    "orderDate": "2024-02-11T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o117",
+    "customerId": "c16",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d8",
+        "dishName": "Chingri Malai Curry 18",
+        "price": 155,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 465,
+    "status": "pending",
+    "orderDate": "2024-02-25T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o118",
+    "customerId": "c16",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d47",
+        "dishName": "Khichuri 414",
+        "price": 164,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 328,
+    "status": "completed",
+    "orderDate": "2024-11-26T18:00:00.000Z",
+    "deliveryTime": "35 min"
+  },
+  {
+    "id": "o119",
+    "customerId": "c16",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d19",
+        "dishName": "Bhuna Khichuri 29",
+        "price": 126,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 126,
+    "status": "completed",
+    "orderDate": "2024-05-13T18:00:00.000Z",
+    "deliveryTime": "49 min"
+  },
+  {
+    "id": "o120",
+    "customerId": "c16",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d10",
+        "dishName": "Alu Bhorta 110",
+        "price": 340,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 680,
+    "status": "completed",
+    "orderDate": "2024-12-17T18:00:00.000Z",
+    "deliveryTime": "32 min"
+  },
+  {
+    "id": "o121",
+    "customerId": "c17",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d45",
+        "dishName": "Grilled Chicken 412",
+        "price": 140,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 140,
+    "status": "pending",
+    "orderDate": "2024-11-26T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o122",
+    "customerId": "c17",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d54",
+        "dishName": "Chicken Rezala 57",
+        "price": 244,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 732,
+    "status": "pending",
+    "orderDate": "2024-11-25T18:00:00.000Z",
+    "deliveryTime": "20 min"
+  },
+  {
+    "id": "o123",
+    "customerId": "c17",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d47",
+        "dishName": "Khichuri 414",
+        "price": 164,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 492,
+    "status": "completed",
+    "orderDate": "2024-05-11T18:00:00.000Z",
+    "deliveryTime": "35 min"
+  },
+  {
+    "id": "o124",
+    "customerId": "c17",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d8",
+        "dishName": "Chingri Malai Curry 18",
+        "price": 155,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 310,
+    "status": "completed",
+    "orderDate": "2024-10-31T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o125",
+    "customerId": "c17",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d30",
+        "dishName": "Koi Macher Jhol 38",
+        "price": 289,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 867,
+    "status": "completed",
+    "orderDate": "2024-05-17T18:00:00.000Z",
+    "deliveryTime": "23 min"
+  },
+  {
+    "id": "o126",
+    "customerId": "c17",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d56",
+        "dishName": "Pulao 59",
+        "price": 360,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1080,
+    "status": "completed",
+    "orderDate": "2024-03-20T18:00:00.000Z",
+    "deliveryTime": "44 min"
+  },
+  {
+    "id": "o127",
+    "customerId": "c17",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d20",
+        "dishName": "Alu Bhorta 210",
+        "price": 105,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 105,
+    "status": "completed",
+    "orderDate": "2024-04-11T18:00:00.000Z",
+    "deliveryTime": "28 min"
+  },
+  {
+    "id": "o128",
+    "customerId": "c17",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d39",
+        "dishName": "Beef Rezala 46",
+        "price": 405,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1215,
+    "status": "pending",
+    "orderDate": "2024-10-25T18:00:00.000Z",
+    "deliveryTime": "29 min"
+  },
+  {
+    "id": "o129",
+    "customerId": "c17",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d55",
+        "dishName": "Chingri Malai Curry 58",
+        "price": 130,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 130,
+    "status": "pending",
+    "orderDate": "2024-04-05T18:00:00.000Z",
+    "deliveryTime": "30 min"
+  },
+  {
+    "id": "o130",
+    "customerId": "c17",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d25",
+        "dishName": "Chingri Malai Curry 33",
+        "price": 91,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 273,
+    "status": "pending",
+    "orderDate": "2024-05-10T18:00:00.000Z",
+    "deliveryTime": "39 min"
+  },
+  {
+    "id": "o131",
+    "customerId": "c17",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d22",
+        "dishName": "Chicken Rezala 212",
+        "price": 147,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 294,
+    "status": "completed",
+    "orderDate": "2024-03-14T18:00:00.000Z",
+    "deliveryTime": "33 min"
+  },
+  {
+    "id": "o132",
+    "customerId": "c17",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d30",
+        "dishName": "Koi Macher Jhol 38",
+        "price": 289,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 578,
+    "status": "completed",
+    "orderDate": "2024-03-08T18:00:00.000Z",
+    "deliveryTime": "23 min"
+  },
+  {
+    "id": "o133",
+    "customerId": "c17",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d2",
+        "dishName": "Morog Polao 12",
+        "price": 254,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 508,
+    "status": "completed",
+    "orderDate": "2024-10-21T18:00:00.000Z",
+    "deliveryTime": "28 min"
+  },
+  {
+    "id": "o134",
+    "customerId": "c17",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d5",
+        "dishName": "Dal Tadka 15",
+        "price": 278,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 834,
+    "status": "pending",
+    "orderDate": "2024-04-18T18:00:00.000Z",
+    "deliveryTime": "34 min"
+  },
+  {
+    "id": "o135",
+    "customerId": "c17",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d30",
+        "dishName": "Koi Macher Jhol 38",
+        "price": 289,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 578,
+    "status": "completed",
+    "orderDate": "2024-05-05T18:00:00.000Z",
+    "deliveryTime": "23 min"
+  },
+  {
+    "id": "o136",
+    "customerId": "c18",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d42",
+        "dishName": "Morog Polao 49",
+        "price": 168,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 504,
+    "status": "completed",
+    "orderDate": "2024-11-19T18:00:00.000Z",
+    "deliveryTime": "45 min"
+  },
+  {
+    "id": "o137",
+    "customerId": "c18",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d5",
+        "dishName": "Dal Tadka 15",
+        "price": 278,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 556,
+    "status": "completed",
+    "orderDate": "2024-09-15T18:00:00.000Z",
+    "deliveryTime": "34 min"
+  },
+  {
+    "id": "o138",
+    "customerId": "c19",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d48",
+        "dishName": "Shatkora Beef 51",
+        "price": 327,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 981,
+    "status": "pending",
+    "orderDate": "2024-11-25T18:00:00.000Z",
+    "deliveryTime": "42 min"
+  },
+  {
+    "id": "o139",
+    "customerId": "c19",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d5",
+        "dishName": "Dal Tadka 15",
+        "price": 278,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 278,
+    "status": "completed",
+    "orderDate": "2024-05-20T18:00:00.000Z",
+    "deliveryTime": "34 min"
+  },
+  {
+    "id": "o140",
+    "customerId": "c19",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d20",
+        "dishName": "Alu Bhorta 210",
+        "price": 105,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 315,
+    "status": "completed",
+    "orderDate": "2024-08-05T18:00:00.000Z",
+    "deliveryTime": "28 min"
+  },
+  {
+    "id": "o141",
+    "customerId": "c19",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d59",
+        "dishName": "Chicken Korma 512",
+        "price": 405,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 405,
+    "status": "completed",
+    "orderDate": "2024-05-17T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o142",
+    "customerId": "c19",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d51",
+        "dishName": "Beef Tehari 54",
+        "price": 397,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 397,
+    "status": "completed",
+    "orderDate": "2024-11-21T18:00:00.000Z",
+    "deliveryTime": "20 min"
+  },
+  {
+    "id": "o143",
+    "customerId": "c19",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d33",
+        "dishName": "Beef Kala Bhuna 311",
+        "price": 145,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 145,
+    "status": "completed",
+    "orderDate": "2024-12-17T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o144",
+    "customerId": "c19",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d52",
+        "dishName": "Moong Dal 55",
+        "price": 437,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1311,
+    "status": "pending",
+    "orderDate": "2024-03-09T18:00:00.000Z",
+    "deliveryTime": "38 min"
+  },
+  {
+    "id": "o145",
+    "customerId": "c19",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d40",
+        "dishName": "Chicken Tikka 47",
+        "price": 118,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 118,
+    "status": "completed",
+    "orderDate": "2024-02-03T18:00:00.000Z",
+    "deliveryTime": "55 min"
+  },
+  {
+    "id": "o146",
+    "customerId": "c19",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d41",
+        "dishName": "Koi Macher Jhol 48",
+        "price": 208,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 624,
+    "status": "completed",
+    "orderDate": "2024-02-11T18:00:00.000Z",
+    "deliveryTime": "57 min"
+  },
+  {
+    "id": "o147",
+    "customerId": "c19",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d38",
+        "dishName": "Begun Bhorta 45",
+        "price": 178,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 178,
+    "status": "pending",
+    "orderDate": "2024-11-17T18:00:00.000Z",
+    "deliveryTime": "23 min"
+  },
+  {
+    "id": "o148",
+    "customerId": "c19",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d12",
+        "dishName": "Fried Chicken 22",
+        "price": 173,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 519,
+    "status": "completed",
+    "orderDate": "2024-10-09T18:00:00.000Z",
+    "deliveryTime": "54 min"
+  },
+  {
+    "id": "o149",
+    "customerId": "c19",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d26",
+        "dishName": "Kachchi Biryani 34",
+        "price": 283,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 566,
+    "status": "pending",
+    "orderDate": "2024-10-22T18:00:00.000Z",
+    "deliveryTime": "46 min"
+  },
+  {
+    "id": "o150",
+    "customerId": "c19",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d8",
+        "dishName": "Chingri Malai Curry 18",
+        "price": 155,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 465,
+    "status": "completed",
+    "orderDate": "2024-09-12T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o151",
+    "customerId": "c19",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d28",
+        "dishName": "Beef Vuna 36",
+        "price": 376,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 376,
+    "status": "completed",
+    "orderDate": "2024-07-06T18:00:00.000Z",
+    "deliveryTime": "57 min"
+  },
+  {
+    "id": "o152",
+    "customerId": "c20",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d15",
+        "dishName": "Alu Bhorta 25",
+        "price": 82,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 164,
+    "status": "pending",
+    "orderDate": "2024-02-01T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o153",
+    "customerId": "c20",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d58",
+        "dishName": "Beef Kala Bhuna 511",
+        "price": 426,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 852,
+    "status": "completed",
+    "orderDate": "2024-01-09T18:00:00.000Z",
+    "deliveryTime": "42 min"
+  },
+  {
+    "id": "o154",
+    "customerId": "c20",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d23",
+        "dishName": "Beef Rezala 31",
+        "price": 442,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1326,
+    "status": "completed",
+    "orderDate": "2024-04-24T18:00:00.000Z",
+    "deliveryTime": "48 min"
+  },
+  {
+    "id": "o155",
+    "customerId": "c20",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d21",
+        "dishName": "Beef Tehari 211",
+        "price": 366,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1098,
+    "status": "pending",
+    "orderDate": "2024-06-16T18:00:00.000Z",
+    "deliveryTime": "54 min"
+  },
+  {
+    "id": "o156",
+    "customerId": "c20",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d7",
+        "dishName": "Grilled Chicken 17",
+        "price": 104,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 312,
+    "status": "completed",
+    "orderDate": "2024-12-07T18:00:00.000Z",
+    "deliveryTime": "29 min"
+  },
+  {
+    "id": "o157",
+    "customerId": "c20",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d34",
+        "dishName": "Beef Kala Bhuna 41",
+        "price": 450,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1350,
+    "status": "pending",
+    "orderDate": "2024-05-22T18:00:00.000Z",
+    "deliveryTime": "20 min"
+  },
+  {
+    "id": "o158",
+    "customerId": "c20",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d19",
+        "dishName": "Bhuna Khichuri 29",
+        "price": 126,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 252,
+    "status": "completed",
+    "orderDate": "2024-05-23T18:00:00.000Z",
+    "deliveryTime": "49 min"
+  },
+  {
+    "id": "o159",
+    "customerId": "c20",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d35",
+        "dishName": "Morog Polao 42",
+        "price": 82,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 246,
+    "status": "completed",
+    "orderDate": "2024-02-20T18:00:00.000Z",
+    "deliveryTime": "50 min"
+  },
+  {
+    "id": "o160",
+    "customerId": "c20",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d23",
+        "dishName": "Beef Rezala 31",
+        "price": 442,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 442,
+    "status": "pending",
+    "orderDate": "2024-10-14T18:00:00.000Z",
+    "deliveryTime": "48 min"
+  },
+  {
+    "id": "o161",
+    "customerId": "c21",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d49",
+        "dishName": "Morog Polao 52",
+        "price": 293,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 879,
+    "status": "completed",
+    "orderDate": "2024-11-18T18:00:00.000Z",
+    "deliveryTime": "53 min"
+  },
+  {
+    "id": "o162",
+    "customerId": "c21",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d22",
+        "dishName": "Chicken Rezala 212",
+        "price": 147,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 441,
+    "status": "pending",
+    "orderDate": "2024-11-24T18:00:00.000Z",
+    "deliveryTime": "33 min"
+  },
+  {
+    "id": "o163",
+    "customerId": "c21",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d10",
+        "dishName": "Alu Bhorta 110",
+        "price": 340,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1020,
+    "status": "completed",
+    "orderDate": "2024-08-17T18:00:00.000Z",
+    "deliveryTime": "32 min"
+  },
+  {
+    "id": "o164",
+    "customerId": "c21",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d13",
+        "dishName": "Chingri Malai Curry 23",
+        "price": 87,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 261,
+    "status": "pending",
+    "orderDate": "2024-01-16T18:00:00.000Z",
+    "deliveryTime": "43 min"
+  },
+  {
+    "id": "o165",
+    "customerId": "c22",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d23",
+        "dishName": "Beef Rezala 31",
+        "price": 442,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 442,
+    "status": "completed",
+    "orderDate": "2024-07-27T18:00:00.000Z",
+    "deliveryTime": "48 min"
+  },
+  {
+    "id": "o166",
+    "customerId": "c22",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d4",
+        "dishName": "Beef Tehari 14",
+        "price": 462,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1386,
+    "status": "pending",
+    "orderDate": "2024-02-05T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o167",
+    "customerId": "c22",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d59",
+        "dishName": "Chicken Korma 512",
+        "price": 405,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 405,
+    "status": "completed",
+    "orderDate": "2024-03-19T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o168",
+    "customerId": "c23",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d44",
+        "dishName": "Beef Vuna 411",
+        "price": 368,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 736,
+    "status": "completed",
+    "orderDate": "2024-02-12T18:00:00.000Z",
+    "deliveryTime": "24 min"
+  },
+  {
+    "id": "o169",
+    "customerId": "c23",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d4",
+        "dishName": "Beef Tehari 14",
+        "price": 462,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1386,
+    "status": "completed",
+    "orderDate": "2024-07-10T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o170",
+    "customerId": "c23",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d5",
+        "dishName": "Dal Tadka 15",
+        "price": 278,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 834,
+    "status": "pending",
+    "orderDate": "2024-06-07T18:00:00.000Z",
+    "deliveryTime": "34 min"
+  },
+  {
+    "id": "o171",
+    "customerId": "c23",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d33",
+        "dishName": "Beef Kala Bhuna 311",
+        "price": 145,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 145,
+    "status": "completed",
+    "orderDate": "2024-01-05T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o172",
+    "customerId": "c23",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d28",
+        "dishName": "Beef Vuna 36",
+        "price": 376,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1128,
+    "status": "completed",
+    "orderDate": "2024-10-20T18:00:00.000Z",
+    "deliveryTime": "57 min"
+  },
+  {
+    "id": "o173",
+    "customerId": "c23",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d33",
+        "dishName": "Beef Kala Bhuna 311",
+        "price": 145,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 290,
+    "status": "completed",
+    "orderDate": "2024-02-15T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o174",
+    "customerId": "c23",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d42",
+        "dishName": "Morog Polao 49",
+        "price": 168,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 336,
+    "status": "completed",
+    "orderDate": "2024-01-05T18:00:00.000Z",
+    "deliveryTime": "45 min"
+  },
+  {
+    "id": "o175",
+    "customerId": "c23",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d6",
+        "dishName": "Beef Vuna 16",
+        "price": 416,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 416,
+    "status": "completed",
+    "orderDate": "2024-05-16T18:00:00.000Z",
+    "deliveryTime": "44 min"
+  },
+  {
+    "id": "o176",
+    "customerId": "c23",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d7",
+        "dishName": "Grilled Chicken 17",
+        "price": 104,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 208,
+    "status": "completed",
+    "orderDate": "2024-11-08T18:00:00.000Z",
+    "deliveryTime": "29 min"
+  },
+  {
+    "id": "o177",
+    "customerId": "c23",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d12",
+        "dishName": "Fried Chicken 22",
+        "price": 173,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 519,
+    "status": "pending",
+    "orderDate": "2024-10-24T18:00:00.000Z",
+    "deliveryTime": "54 min"
+  },
+  {
+    "id": "o178",
+    "customerId": "c23",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d3",
+        "dishName": "Koi Macher Jhol 13",
+        "price": 240,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 240,
+    "status": "pending",
+    "orderDate": "2024-09-12T18:00:00.000Z",
+    "deliveryTime": "48 min"
+  },
+  {
+    "id": "o179",
+    "customerId": "c23",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d11",
+        "dishName": "Nihari 21",
+        "price": 144,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 144,
+    "status": "completed",
+    "orderDate": "2024-02-09T18:00:00.000Z",
+    "deliveryTime": "39 min"
+  },
+  {
+    "id": "o180",
+    "customerId": "c24",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d50",
+        "dishName": "Ilish Macher Jhol 53",
+        "price": 85,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 85,
+    "status": "completed",
+    "orderDate": "2024-11-19T18:00:00.000Z",
+    "deliveryTime": "55 min"
+  },
+  {
+    "id": "o181",
+    "customerId": "c24",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d19",
+        "dishName": "Bhuna Khichuri 29",
+        "price": 126,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 126,
+    "status": "completed",
+    "orderDate": "2024-04-15T18:00:00.000Z",
+    "deliveryTime": "49 min"
+  },
+  {
+    "id": "o182",
+    "customerId": "c24",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d30",
+        "dishName": "Koi Macher Jhol 38",
+        "price": 289,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 289,
+    "status": "completed",
+    "orderDate": "2024-12-05T18:00:00.000Z",
+    "deliveryTime": "23 min"
+  },
+  {
+    "id": "o183",
+    "customerId": "c24",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d7",
+        "dishName": "Grilled Chicken 17",
+        "price": 104,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 312,
+    "status": "completed",
+    "orderDate": "2024-08-10T18:00:00.000Z",
+    "deliveryTime": "29 min"
+  },
+  {
+    "id": "o184",
+    "customerId": "c24",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d40",
+        "dishName": "Chicken Tikka 47",
+        "price": 118,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 354,
+    "status": "pending",
+    "orderDate": "2024-03-08T18:00:00.000Z",
+    "deliveryTime": "55 min"
+  },
+  {
+    "id": "o185",
+    "customerId": "c24",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d3",
+        "dishName": "Koi Macher Jhol 13",
+        "price": 240,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 480,
+    "status": "pending",
+    "orderDate": "2024-09-05T18:00:00.000Z",
+    "deliveryTime": "48 min"
+  },
+  {
+    "id": "o186",
+    "customerId": "c24",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d15",
+        "dishName": "Alu Bhorta 25",
+        "price": 82,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 164,
+    "status": "completed",
+    "orderDate": "2024-12-19T18:00:00.000Z",
+    "deliveryTime": "58 min"
+  },
+  {
+    "id": "o187",
+    "customerId": "c24",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d58",
+        "dishName": "Beef Kala Bhuna 511",
+        "price": 426,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 852,
+    "status": "completed",
+    "orderDate": "2024-10-02T18:00:00.000Z",
+    "deliveryTime": "42 min"
+  },
+  {
+    "id": "o188",
+    "customerId": "c24",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d26",
+        "dishName": "Kachchi Biryani 34",
+        "price": 283,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 283,
+    "status": "completed",
+    "orderDate": "2024-05-07T18:00:00.000Z",
+    "deliveryTime": "46 min"
+  },
+  {
+    "id": "o189",
+    "customerId": "c25",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d38",
+        "dishName": "Begun Bhorta 45",
+        "price": 178,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 178,
+    "status": "completed",
+    "orderDate": "2024-05-09T18:00:00.000Z",
+    "deliveryTime": "23 min"
+  },
+  {
+    "id": "o190",
+    "customerId": "c25",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d32",
+        "dishName": "Masoor Dal 310",
+        "price": 255,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 510,
+    "status": "pending",
+    "orderDate": "2024-06-25T18:00:00.000Z",
+    "deliveryTime": "26 min"
+  },
+  {
+    "id": "o191",
+    "customerId": "c25",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d6",
+        "dishName": "Beef Vuna 16",
+        "price": 416,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 416,
+    "status": "pending",
+    "orderDate": "2024-04-01T18:00:00.000Z",
+    "deliveryTime": "44 min"
+  },
+  {
+    "id": "o192",
+    "customerId": "c25",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d24",
+        "dishName": "Chicken Rezala 32",
+        "price": 156,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 312,
+    "status": "completed",
+    "orderDate": "2024-05-03T18:00:00.000Z",
+    "deliveryTime": "40 min"
+  },
+  {
+    "id": "o193",
+    "customerId": "c25",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d53",
+        "dishName": "Beef Vuna 56",
+        "price": 456,
+        "quantity": 3
+      }
+    ],
+    "totalAmount": 1368,
+    "status": "completed",
+    "orderDate": "2024-08-25T18:00:00.000Z",
+    "deliveryTime": "49 min"
+  },
+  {
+    "id": "o194",
+    "customerId": "c25",
+    "kitchenId": "k1",
+    "items": [
+      {
+        "dishId": "d51",
+        "dishName": "Beef Tehari 54",
+        "price": 397,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 397,
+    "status": "completed",
+    "orderDate": "2024-09-20T18:00:00.000Z",
+    "deliveryTime": "20 min"
+  },
+  {
+    "id": "o195",
+    "customerId": "c25",
+    "kitchenId": "k2",
+    "items": [
+      {
+        "dishId": "d29",
+        "dishName": "Morog Polao 37",
+        "price": 272,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 544,
+    "status": "completed",
+    "orderDate": "2024-04-18T18:00:00.000Z",
+    "deliveryTime": "41 min"
+  },
+  {
+    "id": "o196",
+    "customerId": "c25",
+    "kitchenId": "k5",
+    "items": [
+      {
+        "dishId": "d25",
+        "dishName": "Chingri Malai Curry 33",
+        "price": 91,
+        "quantity": 1
+      }
+    ],
+    "totalAmount": 91,
+    "status": "pending",
+    "orderDate": "2024-01-04T18:00:00.000Z",
+    "deliveryTime": "39 min"
+  },
+  {
+    "id": "o197",
+    "customerId": "c25",
+    "kitchenId": "k3",
+    "items": [
+      {
+        "dishId": "d36",
+        "dishName": "Pabda Macher Jhol 43",
+        "price": 391,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 782,
+    "status": "completed",
+    "orderDate": "2024-10-21T18:00:00.000Z",
+    "deliveryTime": "23 min"
+  },
+  {
+    "id": "o198",
+    "customerId": "c25",
+    "kitchenId": "k4",
+    "items": [
+      {
+        "dishId": "d37",
+        "dishName": "Khichuri 44",
+        "price": 247,
+        "quantity": 2
+      }
+    ],
+    "totalAmount": 494,
+    "status": "completed",
+    "orderDate": "2024-01-16T18:00:00.000Z",
+    "deliveryTime": "44 min"
+  }
+]

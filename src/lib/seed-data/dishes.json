@@ -1,0 +1,2212 @@
+[
+  {
+    "id": "d1",
+    "name": "Shatkora Beef 11",
+    "price": 106,
+    "rating": 4.158621759836226,
+    "image": "https://images.unsplash.com/photo-1500841840260?q=80&w=600&auto=format",
+    "kitchen": "Mayer Hater Ranna",
+    "deliveryTime": "55 min",
+    "category": "Beef",
+    "spiciness": "Mild",
+    "reviewsCount": 79,
+    "prepTime": "38 min",
+    "calories": "233 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500742401584?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500659378920?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500966205463?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d2",
+    "name": "Morog Polao 12",
+    "price": 254,
+    "rating": 4.824518189161861,
+    "image": "https://images.unsplash.com/photo-1500780377089?q=80&w=600&auto=format",
+    "kitchen": "Mayer Hater Ranna",
+    "deliveryTime": "28 min",
+    "category": "Chicken",
+    "spiciness": "High",
+    "reviewsCount": 120,
+    "prepTime": "19 min",
+    "calories": "209 kcal",
+    "description": "Authentic chicken dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500024454502?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500575199821?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d3",
+    "name": "Koi Macher Jhol 13",
+    "price": 240,
+    "rating": 4.799723561304468,
+    "image": "https://images.unsplash.com/photo-1500799484179?q=80&w=600&auto=format",
+    "kitchen": "Mayer Hater Ranna",
+    "deliveryTime": "48 min",
+    "category": "Fish",
+    "spiciness": "Mild",
+    "reviewsCount": 164,
+    "prepTime": "52 min",
+    "calories": "492 kcal",
+    "description": "Authentic fish dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500802567397?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500267260715?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500151429854?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500348886637?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d4",
+    "name": "Beef Tehari 14",
+    "price": 462,
+    "rating": 4.745547108197526,
+    "image": "https://images.unsplash.com/photo-1500009725014?q=80&w=600&auto=format",
+    "kitchen": "Mayer Hater Ranna",
+    "deliveryTime": "58 min",
+    "category": "Rice",
+    "spiciness": "Medium",
+    "reviewsCount": 84,
+    "prepTime": "25 min",
+    "calories": "563 kcal",
+    "description": "Authentic rice dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500831723124?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500090012050?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d5",
+    "name": "Dal Tadka 15",
+    "price": 278,
+    "rating": 4.788487752011648,
+    "image": "https://images.unsplash.com/photo-1500736992484?q=80&w=600&auto=format",
+    "kitchen": "Mayer Hater Ranna",
+    "deliveryTime": "34 min",
+    "category": "Vegetarian",
+    "spiciness": "Mild",
+    "reviewsCount": 109,
+    "prepTime": "21 min",
+    "calories": "559 kcal",
+    "description": "Authentic vegetarian dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500367008997?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500046073167?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500414666680?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500889484943?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d6",
+    "name": "Beef Vuna 16",
+    "price": 416,
+    "rating": 4.374403599838876,
+    "image": "https://images.unsplash.com/photo-1500453129399?q=80&w=600&auto=format",
+    "kitchen": "Mayer Hater Ranna",
+    "deliveryTime": "44 min",
+    "category": "Beef",
+    "spiciness": "Mild",
+    "reviewsCount": 176,
+    "prepTime": "56 min",
+    "calories": "348 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500187022906?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500506236138?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d7",
+    "name": "Grilled Chicken 17",
+    "price": 104,
+    "rating": 4.21077354945027,
+    "image": "https://images.unsplash.com/photo-1500197549108?q=80&w=600&auto=format",
+    "kitchen": "Mayer Hater Ranna",
+    "deliveryTime": "29 min",
+    "category": "Chicken",
+    "spiciness": "Medium",
+    "reviewsCount": 15,
+    "prepTime": "29 min",
+    "calories": "505 kcal",
+    "description": "Authentic chicken dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500382527321?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500280863776?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d8",
+    "name": "Chingri Malai Curry 18",
+    "price": 155,
+    "rating": 4.615789161849422,
+    "image": "https://images.unsplash.com/photo-1500318938241?q=80&w=600&auto=format",
+    "kitchen": "Mayer Hater Ranna",
+    "deliveryTime": "26 min",
+    "category": "Fish",
+    "spiciness": "Medium",
+    "reviewsCount": 35,
+    "prepTime": "37 min",
+    "calories": "350 kcal",
+    "description": "Authentic fish dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500780342989?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500829764806?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500334759268?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d9",
+    "name": "Morog Polao 19",
+    "price": 479,
+    "rating": 4.337911003217642,
+    "image": "https://images.unsplash.com/photo-1500841064387?q=80&w=600&auto=format",
+    "kitchen": "Mayer Hater Ranna",
+    "deliveryTime": "22 min",
+    "category": "Rice",
+    "spiciness": "Mild",
+    "reviewsCount": 37,
+    "prepTime": "44 min",
+    "calories": "370 kcal",
+    "description": "Authentic rice dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500470104372?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500700301520?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d10",
+    "name": "Alu Bhorta 110",
+    "price": 340,
+    "rating": 4.558895164902831,
+    "image": "https://images.unsplash.com/photo-1500443753287?q=80&w=600&auto=format",
+    "kitchen": "Mayer Hater Ranna",
+    "deliveryTime": "32 min",
+    "category": "Vegetarian",
+    "spiciness": "Medium",
+    "reviewsCount": 119,
+    "prepTime": "46 min",
+    "calories": "533 kcal",
+    "description": "Authentic vegetarian dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500856199178?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500311491910?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d11",
+    "name": "Nihari 21",
+    "price": 144,
+    "rating": 4.927000414602746,
+    "image": "https://images.unsplash.com/photo-1500043753713?q=80&w=600&auto=format",
+    "kitchen": "Old Dhaka Spices",
+    "deliveryTime": "39 min",
+    "category": "Beef",
+    "spiciness": "Mild",
+    "reviewsCount": 191,
+    "prepTime": "52 min",
+    "calories": "542 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500868074057?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500792013499?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500717857913?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500213056718?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d12",
+    "name": "Fried Chicken 22",
+    "price": 173,
+    "rating": 4.435450423888447,
+    "image": "https://images.unsplash.com/photo-1500082012803?q=80&w=600&auto=format",
+    "kitchen": "Old Dhaka Spices",
+    "deliveryTime": "54 min",
+    "category": "Chicken",
+    "spiciness": "Medium",
+    "reviewsCount": 122,
+    "prepTime": "29 min",
+    "calories": "245 kcal",
+    "description": "Authentic chicken dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500380940292?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500059082464?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500756264887?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500347998332?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d13",
+    "name": "Chingri Malai Curry 23",
+    "price": 87,
+    "rating": 4.987798767456559,
+    "image": "https://images.unsplash.com/photo-1500337293110?q=80&w=600&auto=format",
+    "kitchen": "Old Dhaka Spices",
+    "deliveryTime": "43 min",
+    "category": "Fish",
+    "spiciness": "High",
+    "reviewsCount": 11,
+    "prepTime": "30 min",
+    "calories": "208 kcal",
+    "description": "Authentic fish dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500860468902?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500616663723?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500234585343?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d14",
+    "name": "Plain Rice 24",
+    "price": 462,
+    "rating": 4.473314988174886,
+    "image": "https://images.unsplash.com/photo-1500907860573?q=80&w=600&auto=format",
+    "kitchen": "Old Dhaka Spices",
+    "deliveryTime": "22 min",
+    "category": "Rice",
+    "spiciness": "Mild",
+    "reviewsCount": 23,
+    "prepTime": "18 min",
+    "calories": "573 kcal",
+    "description": "Authentic rice dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500041178145?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500256254599?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d15",
+    "name": "Alu Bhorta 25",
+    "price": 82,
+    "rating": 4.024570271648043,
+    "image": "https://images.unsplash.com/photo-1500316499392?q=80&w=600&auto=format",
+    "kitchen": "Old Dhaka Spices",
+    "deliveryTime": "58 min",
+    "category": "Vegetarian",
+    "spiciness": "High",
+    "reviewsCount": 205,
+    "prepTime": "39 min",
+    "calories": "588 kcal",
+    "description": "Authentic vegetarian dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500735321772?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500223029409?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500421043984?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500524947384?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d16",
+    "name": "Gosht Korma 26",
+    "price": 185,
+    "rating": 4.685235421012177,
+    "image": "https://images.unsplash.com/photo-1500314266890?q=80&w=600&auto=format",
+    "kitchen": "Old Dhaka Spices",
+    "deliveryTime": "34 min",
+    "category": "Beef",
+    "spiciness": "Medium",
+    "reviewsCount": 42,
+    "prepTime": "51 min",
+    "calories": "586 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500836812989?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500417768448?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500145043563?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d17",
+    "name": "Fried Chicken 27",
+    "price": 441,
+    "rating": 4.989458272557247,
+    "image": "https://images.unsplash.com/photo-1500265341804?q=80&w=600&auto=format",
+    "kitchen": "Old Dhaka Spices",
+    "deliveryTime": "52 min",
+    "category": "Chicken",
+    "spiciness": "Mild",
+    "reviewsCount": 44,
+    "prepTime": "34 min",
+    "calories": "261 kcal",
+    "description": "Authentic chicken dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500736086607?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500412466178?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500984745045?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500053862642?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d18",
+    "name": "Magur Macher Jhol 28",
+    "price": 449,
+    "rating": 4.274687892718047,
+    "image": "https://images.unsplash.com/photo-1500257080305?q=80&w=600&auto=format",
+    "kitchen": "Old Dhaka Spices",
+    "deliveryTime": "35 min",
+    "category": "Fish",
+    "spiciness": "High",
+    "reviewsCount": 65,
+    "prepTime": "24 min",
+    "calories": "531 kcal",
+    "description": "Authentic fish dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500780525252?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500582908141?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500585165593?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500982783673?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d19",
+    "name": "Bhuna Khichuri 29",
+    "price": 126,
+    "rating": 4.993270767022696,
+    "image": "https://images.unsplash.com/photo-1500066902655?q=80&w=600&auto=format",
+    "kitchen": "Old Dhaka Spices",
+    "deliveryTime": "49 min",
+    "category": "Rice",
+    "spiciness": "Medium",
+    "reviewsCount": 44,
+    "prepTime": "34 min",
+    "calories": "403 kcal",
+    "description": "Authentic rice dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500493931722?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500083981453?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d20",
+    "name": "Alu Bhorta 210",
+    "price": 105,
+    "rating": 4.787009684314362,
+    "image": "https://images.unsplash.com/photo-1500021101565?q=80&w=600&auto=format",
+    "kitchen": "Old Dhaka Spices",
+    "deliveryTime": "28 min",
+    "category": "Vegetarian",
+    "spiciness": "Medium",
+    "reviewsCount": 151,
+    "prepTime": "44 min",
+    "calories": "476 kcal",
+    "description": "Authentic vegetarian dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500889563452?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500892875817?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d21",
+    "name": "Beef Tehari 211",
+    "price": 366,
+    "rating": 4.689947043756343,
+    "image": "https://images.unsplash.com/photo-1500846449348?q=80&w=600&auto=format",
+    "kitchen": "Old Dhaka Spices",
+    "deliveryTime": "54 min",
+    "category": "Beef",
+    "spiciness": "High",
+    "reviewsCount": 158,
+    "prepTime": "17 min",
+    "calories": "301 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500041976805?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500582655923?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500706697365?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500846878286?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d22",
+    "name": "Chicken Rezala 212",
+    "price": 147,
+    "rating": 4.2626165458834375,
+    "image": "https://images.unsplash.com/photo-1500697557192?q=80&w=600&auto=format",
+    "kitchen": "Old Dhaka Spices",
+    "deliveryTime": "33 min",
+    "category": "Chicken",
+    "spiciness": "Mild",
+    "reviewsCount": 28,
+    "prepTime": "26 min",
+    "calories": "239 kcal",
+    "description": "Authentic chicken dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500861812125?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500385992712?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d23",
+    "name": "Beef Rezala 31",
+    "price": 442,
+    "rating": 4.213339998956433,
+    "image": "https://images.unsplash.com/photo-1500413110436?q=80&w=600&auto=format",
+    "kitchen": "Padma Kitchen",
+    "deliveryTime": "48 min",
+    "category": "Beef",
+    "spiciness": "Mild",
+    "reviewsCount": 130,
+    "prepTime": "16 min",
+    "calories": "345 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500577410389?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500472463816?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500371900999?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d24",
+    "name": "Chicken Rezala 32",
+    "price": 156,
+    "rating": 4.707193100752282,
+    "image": "https://images.unsplash.com/photo-1500063773697?q=80&w=600&auto=format",
+    "kitchen": "Padma Kitchen",
+    "deliveryTime": "40 min",
+    "category": "Chicken",
+    "spiciness": "High",
+    "reviewsCount": 163,
+    "prepTime": "19 min",
+    "calories": "388 kcal",
+    "description": "Authentic chicken dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500089616666?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500166159393?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d25",
+    "name": "Chingri Malai Curry 33",
+    "price": 91,
+    "rating": 4.462790022159522,
+    "image": "https://images.unsplash.com/photo-1500219281230?q=80&w=600&auto=format",
+    "kitchen": "Padma Kitchen",
+    "deliveryTime": "39 min",
+    "category": "Fish",
+    "spiciness": "Medium",
+    "reviewsCount": 111,
+    "prepTime": "48 min",
+    "calories": "487 kcal",
+    "description": "Authentic fish dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500292789457?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500225664758?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d26",
+    "name": "Kachchi Biryani 34",
+    "price": 283,
+    "rating": 4.6275611940891865,
+    "image": "https://images.unsplash.com/photo-1500847823501?q=80&w=600&auto=format",
+    "kitchen": "Padma Kitchen",
+    "deliveryTime": "46 min",
+    "category": "Rice",
+    "spiciness": "Mild",
+    "reviewsCount": 176,
+    "prepTime": "16 min",
+    "calories": "345 kcal",
+    "description": "Authentic rice dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500920294928?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500730288840?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500126268677?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d27",
+    "name": "Cholar Dal 35",
+    "price": 215,
+    "rating": 4.403138223910364,
+    "image": "https://images.unsplash.com/photo-1500248534088?q=80&w=600&auto=format",
+    "kitchen": "Padma Kitchen",
+    "deliveryTime": "33 min",
+    "category": "Vegetarian",
+    "spiciness": "High",
+    "reviewsCount": 57,
+    "prepTime": "19 min",
+    "calories": "271 kcal",
+    "description": "Authentic vegetarian dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500681057994?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500454958282?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500804842719?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d28",
+    "name": "Beef Vuna 36",
+    "price": 376,
+    "rating": 4.229973318168836,
+    "image": "https://images.unsplash.com/photo-1500877404383?q=80&w=600&auto=format",
+    "kitchen": "Padma Kitchen",
+    "deliveryTime": "57 min",
+    "category": "Beef",
+    "spiciness": "High",
+    "reviewsCount": 166,
+    "prepTime": "54 min",
+    "calories": "458 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500723806391?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500155129170?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d29",
+    "name": "Morog Polao 37",
+    "price": 272,
+    "rating": 4.568966350681387,
+    "image": "https://images.unsplash.com/photo-1500630757483?q=80&w=600&auto=format",
+    "kitchen": "Padma Kitchen",
+    "deliveryTime": "41 min",
+    "category": "Chicken",
+    "spiciness": "Medium",
+    "reviewsCount": 60,
+    "prepTime": "50 min",
+    "calories": "506 kcal",
+    "description": "Authentic chicken dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500390339389?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500760381400?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500951700129?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500095015187?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d30",
+    "name": "Koi Macher Jhol 38",
+    "price": 289,
+    "rating": 4.609196081427096,
+    "image": "https://images.unsplash.com/photo-1500200779061?q=80&w=600&auto=format",
+    "kitchen": "Padma Kitchen",
+    "deliveryTime": "23 min",
+    "category": "Fish",
+    "spiciness": "High",
+    "reviewsCount": 32,
+    "prepTime": "28 min",
+    "calories": "361 kcal",
+    "description": "Authentic fish dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500508783599?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500229109432?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500445722316?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d31",
+    "name": "Morog Polao 39",
+    "price": 403,
+    "rating": 4.391278971796529,
+    "image": "https://images.unsplash.com/photo-1500317415945?q=80&w=600&auto=format",
+    "kitchen": "Padma Kitchen",
+    "deliveryTime": "38 min",
+    "category": "Rice",
+    "spiciness": "High",
+    "reviewsCount": 86,
+    "prepTime": "18 min",
+    "calories": "258 kcal",
+    "description": "Authentic rice dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500075633388?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500114776501?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d32",
+    "name": "Masoor Dal 310",
+    "price": 255,
+    "rating": 4.903479980855472,
+    "image": "https://images.unsplash.com/photo-1500805323393?q=80&w=600&auto=format",
+    "kitchen": "Padma Kitchen",
+    "deliveryTime": "26 min",
+    "category": "Vegetarian",
+    "spiciness": "Mild",
+    "reviewsCount": 167,
+    "prepTime": "37 min",
+    "calories": "578 kcal",
+    "description": "Authentic vegetarian dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500890765812?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500116011630?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500833499571?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500817031991?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d33",
+    "name": "Beef Kala Bhuna 311",
+    "price": 145,
+    "rating": 4.629967838399588,
+    "image": "https://images.unsplash.com/photo-1500317512016?q=80&w=600&auto=format",
+    "kitchen": "Padma Kitchen",
+    "deliveryTime": "26 min",
+    "category": "Beef",
+    "spiciness": "Medium",
+    "reviewsCount": 54,
+    "prepTime": "18 min",
+    "calories": "261 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500832488655?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500050893083?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500491109448?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500923401428?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d34",
+    "name": "Beef Kala Bhuna 41",
+    "price": 450,
+    "rating": 4.066303704090614,
+    "image": "https://images.unsplash.com/photo-1500720941458?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "20 min",
+    "category": "Beef",
+    "spiciness": "Mild",
+    "reviewsCount": 57,
+    "prepTime": "52 min",
+    "calories": "222 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500296659757?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500578541446?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500365732015?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500081641419?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d35",
+    "name": "Morog Polao 42",
+    "price": 82,
+    "rating": 4.495935942494347,
+    "image": "https://images.unsplash.com/photo-1500770747033?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "50 min",
+    "category": "Chicken",
+    "spiciness": "Medium",
+    "reviewsCount": 202,
+    "prepTime": "55 min",
+    "calories": "427 kcal",
+    "description": "Authentic chicken dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500462153420?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500667063381?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500472489433?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500207719552?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d36",
+    "name": "Pabda Macher Jhol 43",
+    "price": 391,
+    "rating": 4.406230253395405,
+    "image": "https://images.unsplash.com/photo-1500853212118?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "23 min",
+    "category": "Fish",
+    "spiciness": "Medium",
+    "reviewsCount": 116,
+    "prepTime": "52 min",
+    "calories": "349 kcal",
+    "description": "Authentic fish dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500179175294?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500548661404?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500135958375?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500882087029?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d37",
+    "name": "Khichuri 44",
+    "price": 247,
+    "rating": 4.031096549535414,
+    "image": "https://images.unsplash.com/photo-1500441302545?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "44 min",
+    "category": "Rice",
+    "spiciness": "Medium",
+    "reviewsCount": 25,
+    "prepTime": "49 min",
+    "calories": "494 kcal",
+    "description": "Authentic rice dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500728605818?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500005183000?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500263886924?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d38",
+    "name": "Begun Bhorta 45",
+    "price": 178,
+    "rating": 4.023974110692868,
+    "image": "https://images.unsplash.com/photo-1500217395431?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "23 min",
+    "category": "Vegetarian",
+    "spiciness": "Medium",
+    "reviewsCount": 143,
+    "prepTime": "30 min",
+    "calories": "300 kcal",
+    "description": "Authentic vegetarian dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500905687820?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500594926604?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500503081917?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d39",
+    "name": "Beef Rezala 46",
+    "price": 405,
+    "rating": 4.960088886205689,
+    "image": "https://images.unsplash.com/photo-1500966590973?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "29 min",
+    "category": "Beef",
+    "spiciness": "High",
+    "reviewsCount": 124,
+    "prepTime": "22 min",
+    "calories": "491 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500241453061?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500851586904?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500651925951?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d40",
+    "name": "Chicken Tikka 47",
+    "price": 118,
+    "rating": 4.396731094643706,
+    "image": "https://images.unsplash.com/photo-1500803935855?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "55 min",
+    "category": "Chicken",
+    "spiciness": "Medium",
+    "reviewsCount": 23,
+    "prepTime": "42 min",
+    "calories": "505 kcal",
+    "description": "Authentic chicken dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500811525193?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500533060509?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500454404259?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500451002664?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d41",
+    "name": "Koi Macher Jhol 48",
+    "price": 208,
+    "rating": 4.372681254824914,
+    "image": "https://images.unsplash.com/photo-1500589750829?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "57 min",
+    "category": "Fish",
+    "spiciness": "High",
+    "reviewsCount": 97,
+    "prepTime": "26 min",
+    "calories": "288 kcal",
+    "description": "Authentic fish dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500540683250?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500643867990?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500187294960?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500493382448?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d42",
+    "name": "Morog Polao 49",
+    "price": 168,
+    "rating": 4.143553767936796,
+    "image": "https://images.unsplash.com/photo-1500809489472?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "45 min",
+    "category": "Rice",
+    "spiciness": "Medium",
+    "reviewsCount": 198,
+    "prepTime": "32 min",
+    "calories": "583 kcal",
+    "description": "Authentic rice dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500430808512?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500221142799?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d43",
+    "name": "Mixed Vegetable 410",
+    "price": 382,
+    "rating": 4.799519577490869,
+    "image": "https://images.unsplash.com/photo-1500522701018?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "51 min",
+    "category": "Vegetarian",
+    "spiciness": "Mild",
+    "reviewsCount": 15,
+    "prepTime": "54 min",
+    "calories": "317 kcal",
+    "description": "Authentic vegetarian dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500919141283?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500824627947?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500134536755?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d44",
+    "name": "Beef Vuna 411",
+    "price": 368,
+    "rating": 4.11856868750497,
+    "image": "https://images.unsplash.com/photo-1500063506559?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "24 min",
+    "category": "Beef",
+    "spiciness": "Mild",
+    "reviewsCount": 149,
+    "prepTime": "28 min",
+    "calories": "573 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500205902985?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500618089215?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500073152627?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d45",
+    "name": "Grilled Chicken 412",
+    "price": 140,
+    "rating": 4.5016737266334665,
+    "image": "https://images.unsplash.com/photo-1500096128432?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "58 min",
+    "category": "Chicken",
+    "spiciness": "High",
+    "reviewsCount": 131,
+    "prepTime": "21 min",
+    "calories": "465 kcal",
+    "description": "Authentic chicken dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500066143517?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500149624347?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500005820181?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500542074403?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d46",
+    "name": "Rui Macher Kalia 413",
+    "price": 193,
+    "rating": 4.104585302121712,
+    "image": "https://images.unsplash.com/photo-1500882073610?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "46 min",
+    "category": "Fish",
+    "spiciness": "Medium",
+    "reviewsCount": 23,
+    "prepTime": "56 min",
+    "calories": "229 kcal",
+    "description": "Authentic fish dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500913137086?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500194459299?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d47",
+    "name": "Khichuri 414",
+    "price": 164,
+    "rating": 4.196713891761782,
+    "image": "https://images.unsplash.com/photo-1500688202821?q=80&w=600&auto=format",
+    "kitchen": "Comfort Bowl",
+    "deliveryTime": "35 min",
+    "category": "Rice",
+    "spiciness": "Medium",
+    "reviewsCount": 197,
+    "prepTime": "53 min",
+    "calories": "412 kcal",
+    "description": "Authentic rice dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500638139974?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500130126709?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500526992442?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d48",
+    "name": "Shatkora Beef 51",
+    "price": 327,
+    "rating": 4.925688447392961,
+    "image": "https://images.unsplash.com/photo-1500824699599?q=80&w=600&auto=format",
+    "kitchen": "Biye Bari Style",
+    "deliveryTime": "42 min",
+    "category": "Beef",
+    "spiciness": "Medium",
+    "reviewsCount": 127,
+    "prepTime": "40 min",
+    "calories": "314 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500034738511?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500911483826?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500132355541?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d49",
+    "name": "Morog Polao 52",
+    "price": 293,
+    "rating": 4.694312143300719,
+    "image": "https://images.unsplash.com/photo-1500486364163?q=80&w=600&auto=format",
+    "kitchen": "Biye Bari Style",
+    "deliveryTime": "53 min",
+    "category": "Chicken",
+    "spiciness": "High",
+    "reviewsCount": 35,
+    "prepTime": "46 min",
+    "calories": "396 kcal",
+    "description": "Authentic chicken dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500292891656?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500349014567?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500335705909?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d50",
+    "name": "Ilish Macher Jhol 53",
+    "price": 85,
+    "rating": 4.768818825530795,
+    "image": "https://images.unsplash.com/photo-1500624022882?q=80&w=600&auto=format",
+    "kitchen": "Biye Bari Style",
+    "deliveryTime": "55 min",
+    "category": "Fish",
+    "spiciness": "Mild",
+    "reviewsCount": 31,
+    "prepTime": "22 min",
+    "calories": "341 kcal",
+    "description": "Authentic fish dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500009173603?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500306432740?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500068008328?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d51",
+    "name": "Beef Tehari 54",
+    "price": 397,
+    "rating": 4.291308253466074,
+    "image": "https://images.unsplash.com/photo-1500976252728?q=80&w=600&auto=format",
+    "kitchen": "Biye Bari Style",
+    "deliveryTime": "20 min",
+    "category": "Rice",
+    "spiciness": "High",
+    "reviewsCount": 82,
+    "prepTime": "52 min",
+    "calories": "388 kcal",
+    "description": "Authentic rice dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500168380703?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500445251294?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500282542356?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500846957550?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d52",
+    "name": "Moong Dal 55",
+    "price": 437,
+    "rating": 4.316528836519094,
+    "image": "https://images.unsplash.com/photo-1500075433563?q=80&w=600&auto=format",
+    "kitchen": "Biye Bari Style",
+    "deliveryTime": "38 min",
+    "category": "Vegetarian",
+    "spiciness": "High",
+    "reviewsCount": 56,
+    "prepTime": "40 min",
+    "calories": "344 kcal",
+    "description": "Authentic vegetarian dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500407861864?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500799036705?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d53",
+    "name": "Beef Vuna 56",
+    "price": 456,
+    "rating": 4.3135925818652625,
+    "image": "https://images.unsplash.com/photo-1500602822206?q=80&w=600&auto=format",
+    "kitchen": "Biye Bari Style",
+    "deliveryTime": "49 min",
+    "category": "Beef",
+    "spiciness": "High",
+    "reviewsCount": 63,
+    "prepTime": "31 min",
+    "calories": "585 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500981006270?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500778676176?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d54",
+    "name": "Chicken Rezala 57",
+    "price": 244,
+    "rating": 4.132517274836042,
+    "image": "https://images.unsplash.com/photo-1500811621968?q=80&w=600&auto=format",
+    "kitchen": "Biye Bari Style",
+    "deliveryTime": "20 min",
+    "category": "Chicken",
+    "spiciness": "Mild",
+    "reviewsCount": 201,
+    "prepTime": "41 min",
+    "calories": "500 kcal",
+    "description": "Authentic chicken dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500429320024?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500136573839?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d55",
+    "name": "Chingri Malai Curry 58",
+    "price": 130,
+    "rating": 4.784802381837917,
+    "image": "https://images.unsplash.com/photo-1500930548217?q=80&w=600&auto=format",
+    "kitchen": "Biye Bari Style",
+    "deliveryTime": "30 min",
+    "category": "Fish",
+    "spiciness": "Mild",
+    "reviewsCount": 95,
+    "prepTime": "25 min",
+    "calories": "401 kcal",
+    "description": "Authentic fish dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500975226028?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500765897489?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500556519472?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500175055432?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d56",
+    "name": "Pulao 59",
+    "price": 360,
+    "rating": 4.858509507543463,
+    "image": "https://images.unsplash.com/photo-1500135151186?q=80&w=600&auto=format",
+    "kitchen": "Biye Bari Style",
+    "deliveryTime": "44 min",
+    "category": "Rice",
+    "spiciness": "Mild",
+    "reviewsCount": 27,
+    "prepTime": "56 min",
+    "calories": "256 kcal",
+    "description": "Authentic rice dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500515267493?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500064156873?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d57",
+    "name": "Dal Tadka 510",
+    "price": 358,
+    "rating": 4.1405068181169575,
+    "image": "https://images.unsplash.com/photo-1500290649147?q=80&w=600&auto=format",
+    "kitchen": "Biye Bari Style",
+    "deliveryTime": "38 min",
+    "category": "Vegetarian",
+    "spiciness": "Medium",
+    "reviewsCount": 94,
+    "prepTime": "41 min",
+    "calories": "304 kcal",
+    "description": "Authentic vegetarian dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      },
+      {
+        "name": "Green Chilies",
+        "icon": "pepper",
+        "detail": "Organic green chilies from rooftop garden"
+      },
+      {
+        "name": "Ginger-Garlic Paste",
+        "icon": "root",
+        "detail": "Fresh ginger and garlic paste made daily"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500277071896?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500964740701?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d58",
+    "name": "Beef Kala Bhuna 511",
+    "price": 426,
+    "rating": 4.7845233957373585,
+    "image": "https://images.unsplash.com/photo-1500315468227?q=80&w=600&auto=format",
+    "kitchen": "Biye Bari Style",
+    "deliveryTime": "42 min",
+    "category": "Beef",
+    "spiciness": "High",
+    "reviewsCount": 207,
+    "prepTime": "44 min",
+    "calories": "536 kcal",
+    "description": "Authentic beef dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500750356284?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500634907734?q=80&w=400&auto=format",
+      "https://images.unsplash.com/photo-1500325024985?q=80&w=400&auto=format"
+    ]
+  },
+  {
+    "id": "d59",
+    "name": "Chicken Korma 512",
+    "price": 405,
+    "rating": 4.1088126582315745,
+    "image": "https://images.unsplash.com/photo-1500799955614?q=80&w=600&auto=format",
+    "kitchen": "Biye Bari Style",
+    "deliveryTime": "58 min",
+    "category": "Chicken",
+    "spiciness": "High",
+    "reviewsCount": 111,
+    "prepTime": "52 min",
+    "calories": "548 kcal",
+    "description": "Authentic chicken dish prepared with traditional recipes and fresh ingredients.",
+    "ingredients": [
+      {
+        "name": "Mustard Oil",
+        "icon": "droplets",
+        "detail": "Pure wood-pressed mustard oil from Pabna"
+      },
+      {
+        "name": "Turmeric Powder",
+        "icon": "wheat",
+        "detail": "Freshly ground turmeric from local market"
+      }
+    ],
+    "images": [
+      "https://images.unsplash.com/photo-1500596074898?q=80&w=800&auto=format",
+      "https://images.unsplash.com/photo-1500834949660?q=80&w=400&auto=format"
+    ]
+  }
+]
