@@ -1,0 +1,57 @@
+[
+  {
+    "id": "k1",
+    "name": "Mayer Hater Ranna",
+    "rating": 4.9,
+    "reviews": 156,
+    "image": "https://images.unsplash.com/photo-1556910103-1c02745a30bf?q=80&w=600&auto=format",
+    "specialty": "Authentic Bengali",
+    "area": "Dhanmondi",
+    "kri": 98,
+    "badge": "Verified Kitchen"
+  },
+  {
+    "id": "k2",
+    "name": "Old Dhaka Spices",
+    "rating": 4.8,
+    "reviews": 234,
+    "image": "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=600&auto=format",
+    "specialty": "Mughlai & Biryani",
+    "area": "Gulshan",
+    "kri": 96,
+    "badge": "Top Rated"
+  },
+  {
+    "id": "k3",
+    "name": "Padma Kitchen",
+    "rating": 4.7,
+    "reviews": 189,
+    "image": "https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=600&auto=format",
+    "specialty": "Fish Specialties",
+    "area": "Mohammadpur",
+    "kri": 94,
+    "badge": "Fresh Daily"
+  },
+  {
+    "id": "k4",
+    "name": "Comfort Bowl",
+    "rating": 4.6,
+    "reviews": 145,
+    "image": "https://images.unsplash.com/photo-1543353071-873f17a7a5c6?q=80&w=600&auto=format",
+    "specialty": "Rice & Comfort Food",
+    "area": "Banani",
+    "kri": 92,
+    "badge": "Hygienic"
+  },
+  {
+    "id": "k5",
+    "name": "Biye Bari Style",
+    "rating": 4.8,
+    "reviews": 201,
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format",
+    "specialty": "Traditional Feast",
+    "area": "Uttara",
+    "kri": 95,
+    "badge": "Family Recipe"
+  }
+]

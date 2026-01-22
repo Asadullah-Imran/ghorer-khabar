@@ -1,0 +1,264 @@
+[
+  {
+    "id": "c1",
+    "name": "Fatima Ahmed",
+    "email": "customer1@example.com",
+    "phone": "+8801313978925",
+    "address": "House 41, Road 16, Dhanmondi, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=1",
+    "joinDate": "2024-10-10T18:00:00.000Z",
+    "totalOrders": 20,
+    "subscriptionId": "s1"
+  },
+  {
+    "id": "c2",
+    "name": "Mohammad Rahman",
+    "email": "customer2@example.com",
+    "phone": "+8801388957689",
+    "address": "House 20, Road 14, Badda, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=2",
+    "joinDate": "2024-01-05T18:00:00.000Z",
+    "totalOrders": 9,
+    "subscriptionId": "s2"
+  },
+  {
+    "id": "c3",
+    "name": "Ayesha Siddiqui",
+    "email": "customer3@example.com",
+    "phone": "+8801351234371",
+    "address": "House 47, Road 3, Lalbagh, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=3",
+    "joinDate": "2023-08-07T18:00:00.000Z",
+    "totalOrders": 47,
+    "subscriptionId": "s3"
+  },
+  {
+    "id": "c4",
+    "name": "Abdul Karim",
+    "email": "customer4@example.com",
+    "phone": "+8801350357618",
+    "address": "House 33, Road 9, Ramna, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=4",
+    "joinDate": "2023-03-27T18:00:00.000Z",
+    "totalOrders": 23
+  },
+  {
+    "id": "c5",
+    "name": "Sultana Begum",
+    "email": "customer5@example.com",
+    "phone": "+8801367838515",
+    "address": "House 33, Road 19, Ramna, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=5",
+    "joinDate": "2023-11-09T18:00:00.000Z",
+    "totalOrders": 27,
+    "subscriptionId": "s4"
+  },
+  {
+    "id": "c6",
+    "name": "Tahmid Hassan",
+    "email": "customer6@example.com",
+    "phone": "+8801370663028",
+    "address": "House 55, Road 11, Paltan, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=6",
+    "joinDate": "2023-10-13T18:00:00.000Z",
+    "totalOrders": 26,
+    "subscriptionId": "s5"
+  },
+  {
+    "id": "c7",
+    "name": "Nusrat Jahan",
+    "email": "customer7@example.com",
+    "phone": "+8801356184297",
+    "address": "House 96, Road 1, Paltan, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=7",
+    "joinDate": "2023-08-17T18:00:00.000Z",
+    "totalOrders": 43,
+    "subscriptionId": "s6"
+  },
+  {
+    "id": "c8",
+    "name": "Mahbub Alam",
+    "email": "customer8@example.com",
+    "phone": "+8801381054838",
+    "address": "House 39, Road 16, Mohammadpur, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=8",
+    "joinDate": "2023-08-04T18:00:00.000Z",
+    "totalOrders": 26
+  },
+  {
+    "id": "c9",
+    "name": "Sabrina Islam",
+    "email": "customer9@example.com",
+    "phone": "+8801340184411",
+    "address": "House 60, Road 13, Uttara, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=9",
+    "joinDate": "2024-02-10T18:00:00.000Z",
+    "totalOrders": 23
+  },
+  {
+    "id": "c10",
+    "name": "Rashedul Islam",
+    "email": "customer10@example.com",
+    "phone": "+8801325117711",
+    "address": "House 95, Road 9, Tejgaon, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=10",
+    "joinDate": "2023-12-24T18:00:00.000Z",
+    "totalOrders": 19
+  },
+  {
+    "id": "c11",
+    "name": "Farjana Akter",
+    "email": "customer11@example.com",
+    "phone": "+8801339098225",
+    "address": "House 62, Road 5, Sabujbagh, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=11",
+    "joinDate": "2023-07-19T18:00:00.000Z",
+    "totalOrders": 26,
+    "subscriptionId": "s7"
+  },
+  {
+    "id": "c12",
+    "name": "Imran Hossain",
+    "email": "customer12@example.com",
+    "phone": "+8801373645037",
+    "address": "House 56, Road 9, Mirpur, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=12",
+    "joinDate": "2024-12-14T18:00:00.000Z",
+    "totalOrders": 16
+  },
+  {
+    "id": "c13",
+    "name": "Shammi Akhter",
+    "email": "customer13@example.com",
+    "phone": "+8801304539367",
+    "address": "House 95, Road 19, Ramna, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=13",
+    "joinDate": "2023-02-25T18:00:00.000Z",
+    "totalOrders": 4,
+    "subscriptionId": "s8"
+  },
+  {
+    "id": "c14",
+    "name": "Jubayer Ahmed",
+    "email": "customer14@example.com",
+    "phone": "+8801377462461",
+    "address": "House 73, Road 13, Uttara, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=14",
+    "joinDate": "2024-06-09T18:00:00.000Z",
+    "totalOrders": 42
+  },
+  {
+    "id": "c15",
+    "name": "Marium Khan",
+    "email": "customer15@example.com",
+    "phone": "+8801372914233",
+    "address": "House 23, Road 12, Shahbagh, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=15",
+    "joinDate": "2024-02-21T18:00:00.000Z",
+    "totalOrders": 38
+  },
+  {
+    "id": "c16",
+    "name": "Saif Uddin",
+    "email": "customer16@example.com",
+    "phone": "+8801315721050",
+    "address": "House 38, Road 15, Banani, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=16",
+    "joinDate": "2024-06-23T18:00:00.000Z",
+    "totalOrders": 5
+  },
+  {
+    "id": "c17",
+    "name": "Taslima Begum",
+    "email": "customer17@example.com",
+    "phone": "+8801308269081",
+    "address": "House 97, Road 9, Uttara, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=17",
+    "joinDate": "2024-04-07T18:00:00.000Z",
+    "totalOrders": 33
+  },
+  {
+    "id": "c18",
+    "name": "Arif Chowdhury",
+    "email": "customer18@example.com",
+    "phone": "+8801307227348",
+    "address": "House 55, Road 4, Paltan, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=18",
+    "joinDate": "2024-01-18T18:00:00.000Z",
+    "totalOrders": 30,
+    "subscriptionId": "s9"
+  },
+  {
+    "id": "c19",
+    "name": "Nadia Sultana",
+    "email": "customer19@example.com",
+    "phone": "+8801322394144",
+    "address": "House 78, Road 6, Shahbagh, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=19",
+    "joinDate": "2024-11-05T18:00:00.000Z",
+    "totalOrders": 12,
+    "subscriptionId": "s10"
+  },
+  {
+    "id": "c20",
+    "name": "Riyad Hossain",
+    "email": "customer20@example.com",
+    "phone": "+8801338187401",
+    "address": "House 40, Road 19, Badda, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=20",
+    "joinDate": "2024-07-31T18:00:00.000Z",
+    "totalOrders": 20
+  },
+  {
+    "id": "c21",
+    "name": "Sumaiya Rahman",
+    "email": "customer21@example.com",
+    "phone": "+8801301025598",
+    "address": "House 14, Road 16, Baridhara, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=21",
+    "joinDate": "2024-07-15T18:00:00.000Z",
+    "totalOrders": 43,
+    "subscriptionId": "s11"
+  },
+  {
+    "id": "c22",
+    "name": "Fahim Khan",
+    "email": "customer22@example.com",
+    "phone": "+8801388710483",
+    "address": "House 60, Road 7, Mohammadpur, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=22",
+    "joinDate": "2023-01-25T18:00:00.000Z",
+    "totalOrders": 35
+  },
+  {
+    "id": "c23",
+    "name": "Afsana Begum",
+    "email": "customer23@example.com",
+    "phone": "+8801384199458",
+    "address": "House 31, Road 5, Kamrangirchar, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=23",
+    "joinDate": "2024-09-25T18:00:00.000Z",
+    "totalOrders": 11
+  },
+  {
+    "id": "c24",
+    "name": "Mizanur Rahman",
+    "email": "customer24@example.com",
+    "phone": "+8801352784196",
+    "address": "House 37, Road 5, Ramna, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=24",
+    "joinDate": "2023-09-15T18:00:00.000Z",
+    "totalOrders": 10
+  },
+  {
+    "id": "c25",
+    "name": "Shabana Parveen",
+    "email": "customer25@example.com",
+    "phone": "+8801304441639",
+    "address": "House 54, Road 15, Dhanmondi, Dhaka",
+    "avatar": "https://i.pravatar.cc/150?u=25",
+    "joinDate": "2023-07-23T18:00:00.000Z",
+    "totalOrders": 41,
+    "subscriptionId": "s12"
+  }
+]
