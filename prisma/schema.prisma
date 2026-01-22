@@ -33,6 +33,7 @@ model User {
   notifications      Notification[]
   orders             Order[]
   reviews            Review[]
+  support_tickets    support_tickets[]
   user_subscriptions user_subscriptions[]
 
   @@map("users")
@@ -357,6 +358,24 @@ model user_subscriptions {
   @@map("user_subscriptions")
 }
 
+model support_tickets {
+  id           String              @id
+  user_id      String?
+  topic        String
+  order_number String?
+  message      String
+  status       SupportTicketStatus @default(OPEN)
+  admin_reply  String?
+  resolved_at  DateTime?
+  resolved_by  String?
+  created_at   DateTime            @default(now())
+  updated_at   DateTime
+  users        User?               @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([user_id])
+}
+
 enum Role {
   BUYER
   SELLER
@@ -407,4 +426,11 @@ enum SubscriptionStatus {
   PAUSED
   CANCELLED
   COMPLETED
+}
+
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
 }

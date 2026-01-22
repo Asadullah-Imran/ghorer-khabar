@@ -263,7 +263,7 @@ export async function getAvailableTimeSlots(
     if (!timingValid) {
       reason = `Order deadline passed (need ${MIN_ORDER_ADVANCE_HOURS} hours, only ${hoursUntilDelivery.toFixed(1)} hours remaining)`;
     } else if (!capacityAvailable) {
-      reason = `Kitchen full (${currentCount}/${kitchen.maxCapacity} orders)`;
+      reason = `Kitchen full (${currentCount}/${kitchen.max_capacity} orders)`;
     } else if (!canPrepareAll) {
       reason = "Prep time insufficient for some dishes";
     }
