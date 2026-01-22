@@ -133,7 +133,7 @@ export default function MenuPage() {
             <div>
               <h1 className="text-4xl font-black text-gray-900">Menu Management</h1>
               <p className="text-gray-500 mt-2">
-                {menuItems.length} items • {filteredItems.length} showing
+                Total Items: {stats.total} • Active Chefs: {stats.available} • Categories: {categories.length} • Available Status: {stats.available}
               </p>
             </div>
             <button

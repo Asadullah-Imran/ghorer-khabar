@@ -22,8 +22,12 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    const [tickets, total] = await Promise.all([
-      prisma.supportTicket.findMany({
+    let tickets;
+    const total = await prisma.supportTicket.count({ where });
+
+    // If specific status is requested, use simple query
+    if (status) {
+      tickets = await prisma.supportTicket.findMany({
         where,
         skip,
         take,
@@ -37,9 +41,68 @@ export async function GET(req: NextRequest) {
           },
         },
         orderBy: { created_at: "desc" },
-      }),
-      prisma.supportTicket.count({ where }),
-    ]);
+      });
+    } else {
+      // If viewing all, prioritize Active (OPEN, IN_PROGRESS) over Resolved (RESOLVED, CLOSED)
+      const activeStatuses = ["OPEN", "IN_PROGRESS"];
+      const activeWhere = { ...where, status: { in: activeStatuses } };
+      const resolvedWhere = { ...where, status: { notIn: activeStatuses } };
+
+      const activeCount = await prisma.supportTicket.count({ where: activeWhere });
+
+      const include = {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      };
+
+      tickets = [];
+
+      if (skip < activeCount) {
+        // We are strictly inside the active range, or straddling the boundary
+        const takeActive = Math.min(take, activeCount - skip);
+
+        const activeTickets = await prisma.supportTicket.findMany({
+          where: activeWhere,
+          skip: skip,
+          take: takeActive,
+          include,
+          orderBy: { created_at: "desc" },
+        });
+
+        tickets.push(...activeTickets);
+
+        // If we need more to fill 'take', fetch from resolved
+        if (tickets.length < take) {
+          const remainingTake = take - tickets.length;
+          const resolvedTickets = await prisma.supportTicket.findMany({
+            where: resolvedWhere,
+            skip: 0, // Start from the top of resolved list
+            take: remainingTake,
+            include,
+            orderBy: { created_at: "desc" }, // Most recently created resolved tickets first
+          });
+          tickets.push(...resolvedTickets);
+        }
+      } else {
+        // We are past the active range, fetch entirely from resolved
+        const resolvedSkip = skip - activeCount;
+
+        const resolvedTickets = await prisma.supportTicket.findMany({
+          where: resolvedWhere,
+          skip: resolvedSkip,
+          take,
+          include,
+          orderBy: { created_at: "desc" },
+        });
+
+        tickets.push(...resolvedTickets);
+      }
+    }
 
     return NextResponse.json({ tickets, total });
   } catch (error) {
@@ -88,8 +151,11 @@ export async function PATCH(req: NextRequest) {
     if (status) updateData.status = status;
     if (adminReply) updateData.adminReply = adminReply;
     if (resolvedBy) updateData.resolvedBy = resolvedBy;
+
     if (status === "RESOLVED" || status === "CLOSED") {
       updateData.resolvedAt = new Date();
+    } else if (status === "OPEN" || status === "IN_PROGRESS") {
+      updateData.resolvedAt = null;
     }
 
     const ticket = await prisma.supportTicket.update({
@@ -123,11 +189,11 @@ export async function PATCH(req: NextRequest) {
       }
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       ticket,
-      message: status === "RESOLVED" 
-        ? "Ticket resolved and email sent to user" 
+      message: status === "RESOLVED"
+        ? "Ticket resolved and email sent to user"
         : "Ticket updated successfully"
     });
   } catch (error) {
