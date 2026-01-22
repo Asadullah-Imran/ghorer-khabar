@@ -209,21 +209,24 @@ model subscription_plans {
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  userId    String      @map("user_id")
-  kitchenId String      @map("kitchen_id")
-  total     Float
-  status    OrderStatus @default(PENDING)
-  notes     String?
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  items     OrderItem[]
-  kitchen   Kitchen     @relation(fields: [kitchenId], references: [id])
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reviews   Review[]
+  id             String              @id @default(cuid())
+  userId         String              @map("user_id")
+  kitchenId      String              @map("kitchen_id")
+  subscriptionId String?             @map("subscription_id")
+  total          Float
+  status         OrderStatus          @default(PENDING)
+  notes          String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  items          OrderItem[]
+  kitchen        Kitchen              @relation(fields: [kitchenId], references: [id])
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscription   user_subscriptions?  @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  reviews        Review[]
 
   @@index([userId])
   @@index([kitchenId])
+  @@index([subscriptionId])
   @@map("orders")
 }
 
@@ -340,6 +343,7 @@ model user_subscriptions {
   kitchen              Kitchen            @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
   plan                 subscription_plans @relation(fields: [planId], references: [id], onDelete: Cascade)
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders               Order[]
 
   @@index([userId])
   @@index([planId])
