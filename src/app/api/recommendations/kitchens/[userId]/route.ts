@@ -12,8 +12,10 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
+  // Extract userId outside try block so it's available in catch block
+  const { userId } = await params;
+  
   try {
-    const { userId } = await params;
     const { searchParams } = new URL(request.url);
     
     // Build query string

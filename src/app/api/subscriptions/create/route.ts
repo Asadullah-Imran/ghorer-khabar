@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { getDeliveryInfo } from "@/lib/services/deliveryCharge";
 
 async function getAuthenticatedUserId() {
   const supabase = await createClient();
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
     console.log("[Subscription API] User authenticated:", userId);
     
     const body = await req.json();
-    const { planId, startDate, deliveryInstructions, useChefContainers } = body;
+    const { planId, startDate, deliveryInstructions, useChefContainers, addressId, deliveryLat, deliveryLng } = body;
     console.log("[Subscription API] Request body:", { planId, startDate, deliveryInstructions, useChefContainers });
 
     // Validation
@@ -71,6 +72,15 @@ export async function POST(req: NextRequest) {
             isActive: true,
             isOpen: true,
             isVerified: true,
+            sellerId: true,
+            latitude: true,
+            longitude: true,
+            address: {
+              select: {
+                latitude: true,
+                longitude: true,
+              },
+            },
           },
         },
       },
@@ -125,14 +135,88 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check if user is trying to subscribe to their own kitchen's plan
+    if (plan.kitchen.sellerId === userId) {
+      console.log("[Subscription API] User trying to subscribe to their own kitchen's plan");
+      return NextResponse.json(
+        { error: "You cannot subscribe to your own kitchen's meal plans" },
+        { status: 403 }
+      );
+    }
+
     console.log("[Subscription API] Plan found, active, and kitchen is open");
+
+    // Calculate delivery charge based on distance
+    let deliveryFee = 300; // Default fallback
+    let distanceKm: number | null = null;
+
+    // Get buyer coordinates from addressId or lat/lng
+    let buyerLat: number | null = null;
+    let buyerLng: number | null = null;
+
+    if (addressId) {
+      // Get buyer address coordinates
+      const buyerAddress = await prisma.address.findUnique({
+        where: { id: addressId },
+        select: {
+          latitude: true,
+          longitude: true,
+        },
+      });
+
+      if (buyerAddress?.latitude && buyerAddress?.longitude) {
+        buyerLat = buyerAddress.latitude;
+        buyerLng = buyerAddress.longitude;
+      }
+    } else if (deliveryLat && deliveryLng) {
+      // Use provided coordinates
+      buyerLat = parseFloat(deliveryLat);
+      buyerLng = parseFloat(deliveryLng);
+
+      if (isNaN(buyerLat) || isNaN(buyerLng)) {
+        return NextResponse.json(
+          { error: "Invalid delivery coordinates" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Calculate delivery if we have coordinates
+    if (buyerLat !== null && buyerLng !== null) {
+      const kitchenLat = plan.kitchen.latitude ?? plan.kitchen.address?.latitude ?? null;
+      const kitchenLng = plan.kitchen.longitude ?? plan.kitchen.address?.longitude ?? null;
+
+      if (kitchenLat && kitchenLng) {
+        const deliveryInfo = getDeliveryInfo(
+          buyerLat,
+          buyerLng,
+          kitchenLat,
+          kitchenLng
+        );
+
+        distanceKm = deliveryInfo.distance;
+
+        if (!deliveryInfo.available) {
+          return NextResponse.json(
+            { 
+              error: deliveryInfo.error || "Delivery is not available for this distance",
+              distance: distanceKm,
+            },
+            { status: 400 }
+          );
+        }
+
+        if (deliveryInfo.charge !== null) {
+          deliveryFee = deliveryInfo.charge;
+        }
+      }
+    }
 
     // Calculate pricing
     const monthlyPrice = plan.price;
-    const deliveryFee = 300;
     const discount = 0;
     const totalAmount = monthlyPrice + deliveryFee - discount;
-    console.log("[Subscription API] Pricing calculated:", { monthlyPrice, deliveryFee, discount, totalAmount });
+    console.log("[Subscription API] Pricing calculated:", { monthlyPrice, deliveryFee, discount, totalAmount, distanceKm });
 
     // Create the subscription
     console.log("[Subscription API] Creating subscription record");
