@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const skip = parseInt(searchParams.get("skip") || "0");
-    const take = parseInt(searchParams.get("take") || "1000"); // Increased for better filtering
+    const take = parseInt(searchParams.get("take") || "10");
     const search = searchParams.get("search");
     const chefId = searchParams.get("chefId");
     const category = searchParams.get("category");
@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
       sortedMenuItems = menuItems.sort((a, b) => (b._count?.favorites || 0) - (a._count?.favorites || 0));
     }
 
-    return NextResponse.json({ menuItems: sortedMenuItems, total });
+    return NextResponse.json({ menuItems: sortedMenuItems, total, hasMore: skip + take < total });
   } catch (error) {
     console.error("Error fetching menu items:", error);
     return NextResponse.json(

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
+import { useRouter } from "next/navigation";
 import {
   Users,
   TrendingUp,
@@ -31,6 +32,7 @@ import {
 interface DashboardStats {
   totalUsers: number;
   totalSellers: number;
+  activeSellers: number;
   totalOrders: number;
   totalRevenue: number;
   pendingOnboarding: number;
@@ -57,9 +59,17 @@ interface DashboardStats {
     kitchen: { name: string };
     createdAt: string;
   }>;
+  weeklyData: Array<{
+    name: string;
+    users: number;
+    orders: number;
+    completedOrders: number;
+    revenue: number;
+  }>;
 }
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -101,14 +111,16 @@ export default function AdminDashboard() {
     value,
     trend,
     color,
+    onClick,
   }: {
     icon: React.ReactNode;
     label: string;
     value: string | number;
     trend?: number;
     color: string;
+    onClick?: () => void;
   }) => (
-    <div className="bg-surface-dark border border-border-dark p-6 rounded-xl">
+    <div className={`bg-surface-dark border border-border-dark p-6 rounded-xl ${onClick ? "cursor-pointer hover:border-primary transition-colors" : ""}`} onClick={onClick}>
       <div className="flex justify-between items-start mb-4">
         <span className="text-text-muted text-sm font-medium">{label}</span>
         <div className={`p-2 rounded-lg ${color}`}>{icon}</div>
@@ -142,14 +154,10 @@ export default function AdminDashboard() {
     );
   }
 
-  const chartData = [
-    { name: "Week 1", users: 400, orders: 240, revenue: 2400 },
-    { name: "Week 2", users: 520, orders: 290, revenue: 2210 },
-    { name: "Week 3", users: 680, orders: 380, revenue: 2290 },
-    { name: "Week 4", users: 890, orders: 480, revenue: 2000 },
-  ];
-
   const COLORS = ["#11d4b4", "#f97316", "#ef4444", "#8b5cf6"];
+
+  // Use real weekly data from API
+  const chartData = stats?.weeklyData || [];
 
   return (
     <main className="flex-1 overflow-y-auto flex flex-col">
@@ -180,13 +188,15 @@ export default function AdminDashboard() {
             value={stats?.totalUsers || 0}
             trend={12}
             color="bg-blue-500/10 text-blue-400"
+            onClick={() => router.push("/admin/users")}
           />
           <StatCard
             icon={<Package size={20} />}
             label="Active Sellers"
-            value={stats?.totalSellers || 0}
+            value={stats?.activeSellers || 0}
             trend={8}
             color="bg-purple-500/10 text-purple-400"
+            onClick={() => router.push("/admin/onboarding?filter=verified")}
           />
           <StatCard
             icon={<ShoppingCart size={20} />}
@@ -194,6 +204,7 @@ export default function AdminDashboard() {
             value={stats?.totalOrders || 0}
             trend={15}
             color="bg-green-500/10 text-green-400"
+            onClick={() => router.push("/admin/orders")}
           />
           <StatCard
             icon={<BarChart3 size={20} />}
@@ -207,8 +218,27 @@ export default function AdminDashboard() {
             label="Pending Approvals"
             value={stats?.pendingOnboarding || 0}
             color="bg-red-500/10 text-red-400"
+            onClick={() => router.push("/admin/onboarding?filter=pending")}
           />
         </div>
+
+        {/* Pending Approvals Section */}
+        {stats && stats.pendingOnboarding > 0 && (
+          <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-6 cursor-pointer hover:border-red-500/50 transition-colors" onClick={() => router.push("/admin/onboarding?filter=pending")}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 flex-1">
+                <AlertCircle size={24} className="text-red-400 flex-shrink-0" />
+                <div>
+                  <h3 className="font-bold text-lg text-red-400">Pending Seller Approvals</h3>
+                  <p className="text-text-muted text-sm">
+                    {stats.pendingOnboarding} seller{stats.pendingOnboarding !== 1 ? 's' : ''} waiting for verification
+                  </p>
+                </div>
+              </div>
+              <div className="text-red-400 font-bold hover:text-red-300">Review Now →</div>
+            </div>
+          </div>
+        )}
 
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -216,7 +246,7 @@ export default function AdminDashboard() {
           <div className="lg:col-span-2 bg-surface-dark border border-border-dark p-6 rounded-xl">
             <h3 className="font-bold text-lg mb-1">Weekly Performance</h3>
             <p className="text-text-muted text-sm mb-6">
-              Users, Orders, and Revenue trends
+              New Users, Orders, and Revenue trends
             </p>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={chartData}>
@@ -229,23 +259,32 @@ export default function AdminDashboard() {
                     border: "1px solid #2a403d",
                     borderRadius: "8px",
                   }}
+                  formatter={(value: any) => {
+                    if (value > 1000) {
+                      return `৳${(value / 1000).toFixed(1)}k`;
+                    }
+                    return value;
+                  }}
                 />
                 <Legend />
                 <Line
                   type="monotone"
                   dataKey="users"
+                  name="New Users"
                   stroke="#11d4b4"
                   strokeWidth={2}
                 />
                 <Line
                   type="monotone"
-                  dataKey="orders"
+                  dataKey="completedOrders"
+                  name="Completed Orders"
                   stroke="#f97316"
                   strokeWidth={2}
                 />
                 <Line
                   type="monotone"
                   dataKey="revenue"
+                  name="Revenue (৳)"
                   stroke="#8b5cf6"
                   strokeWidth={2}
                 />

@@ -2,6 +2,7 @@
 
 import AdminHeader from "@/components/admin/AdminHeader";
 import { useToast } from "@/contexts/ToastContext";
+import { useSearchParams } from "next/navigation";
 import {
   CheckCircle,
   Eye,
@@ -30,6 +31,7 @@ interface Kitchen {
 }
 
 export default function SellerOnboarding() {
+  const searchParams = useSearchParams();
   const [kitchens, setKitchens] = useState<Kitchen[]>([]);
   const [filteredKitchens, setFilteredKitchens] = useState<Kitchen[]>([]);
   const [search, setSearch] = useState("");
@@ -46,6 +48,14 @@ export default function SellerOnboarding() {
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const toast = useToast();
+
+  useEffect(() => {
+    // Check if there's a filter param from dashboard
+    const filterParam = searchParams?.get("filter");
+    if (filterParam === "verified" || filterParam === "pending") {
+      setVerificationFilter(filterParam);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     setSkip(0);
