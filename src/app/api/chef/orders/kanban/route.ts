@@ -74,7 +74,15 @@ export async function GET() {
           in: ["PENDING", "CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"],
         },
       },
-      include: {
+      select: {
+        id: true,
+        userId: true,
+        total: true,
+        status: true,
+        notes: true,
+        createdAt: true,
+        deliveryDate: true,
+        deliveryTimeSlot: true,
         items: {
           include: {
             menuItem: {
@@ -105,6 +113,25 @@ export async function GET() {
         0
       );
 
+      // Format delivery time
+      let deliveryTimeDisplay = "Not set";
+      if (order.deliveryDate && order.deliveryTimeSlot) {
+        const deliveryDate = new Date(order.deliveryDate);
+        const dateStr = deliveryDate.toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+        });
+        const timeSlotNames: Record<string, string> = {
+          BREAKFAST: "Breakfast",
+          LUNCH: "Lunch",
+          SNACKS: "Snacks",
+          DINNER: "Dinner",
+        };
+        const slotName = timeSlotNames[order.deliveryTimeSlot] || order.deliveryTimeSlot;
+        deliveryTimeDisplay = `${dateStr}, ${slotName}`;
+      }
+
       return {
         id: order.id,
         orderNumber: `#${order.id.slice(-6).toUpperCase()}`,
@@ -120,6 +147,9 @@ export async function GET() {
         specialNotes: order.notes || undefined,
         createdAt: order.createdAt,
         prepTime: maxPrepTime, // in minutes
+        deliveryDate: order.deliveryDate ? new Date(order.deliveryDate).toISOString() : null,
+        deliveryTimeSlot: order.deliveryTimeSlot,
+        deliveryTimeDisplay,
         userId: order.userId,
       };
     });

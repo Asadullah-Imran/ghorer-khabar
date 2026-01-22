@@ -1,12 +1,13 @@
 "use client";
 
-import InventoryTable from "@/components/chef/Inventory/InventoryTable";
-import SmartShoppingList from "@/components/chef/Inventory/SmartShoppingList";
-import StockUpdateModal from "@/components/chef/Inventory/StockUpdateModal";
 import AddInventoryItemModal from "@/components/chef/Inventory/AddInventoryItemModal";
+import DemandForecastChart from "@/components/chef/Inventory/DemandForecastChart";
+import InventoryTable from "@/components/chef/Inventory/InventoryTable";
+import MLSmartShoppingList from "@/components/chef/Inventory/MLSmartShoppingList";
+import StockUpdateModal from "@/components/chef/Inventory/StockUpdateModal";
 import { InventoryItem } from "@/lib/dummy-data/chef";
-import { AlertCircle, Package, TrendingUp, ShoppingCart, Plus, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { AlertCircle, BarChart3, Loader2, Package, Plus, ShoppingCart, Sparkles, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function InventoryPage() {
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -14,6 +15,7 @@ export default function InventoryPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"inventory" | "shopping" | "forecast">("shopping");
 
   useEffect(() => {
     fetchItems();
@@ -197,17 +199,76 @@ export default function InventoryPage() {
 
       {/* Tabs Section */}
       <div className="space-y-6">
-        {/* Inventory Table */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Inventory Status</h2>
-          <InventoryTable items={items} onUpdateStock={handleUpdateStock} />
+        {/* Tab Navigation */}
+        <div className="flex gap-2 border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab("shopping")}
+            className={`px-4 py-3 font-semibold text-sm border-b-2 transition ${
+              activeTab === "shopping"
+                ? "border-teal-600 text-teal-700"
+                : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles size={18} />
+              ML Shopping List
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab("forecast")}
+            className={`px-4 py-3 font-semibold text-sm border-b-2 transition ${
+              activeTab === "forecast"
+                ? "border-purple-600 text-purple-700"
+                : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <BarChart3 size={18} />
+              Demand Forecast
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab("inventory")}
+            className={`px-4 py-3 font-semibold text-sm border-b-2 transition ${
+              activeTab === "inventory"
+                ? "border-blue-600 text-blue-700"
+                : "border-transparent text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Package size={18} />
+              Inventory Table
+            </div>
+          </button>
         </div>
 
-        {/* Smart Shopping List */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Smart Shopping List</h2>
-          <SmartShoppingList items={items} />
-        </div>
+        {/* Tab Content */}
+        {activeTab === "shopping" && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Sparkles className="text-teal-600" size={24} />
+              ML-Powered Smart Shopping List
+            </h2>
+            <MLSmartShoppingList />
+          </div>
+        )}
+
+        {activeTab === "forecast" && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <BarChart3 className="text-purple-600" size={24} />
+              7-Day Demand Forecast
+            </h2>
+            <DemandForecastChart />
+          </div>
+        )}
+
+        {activeTab === "inventory" && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Inventory Status</h2>
+            <InventoryTable items={items} onUpdateStock={handleUpdateStock} />
+          </div>
+        )}
       </div>
         </>
       )}

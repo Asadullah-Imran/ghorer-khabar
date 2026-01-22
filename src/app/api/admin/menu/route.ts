@@ -1,12 +1,32 @@
 import { prisma } from "@/lib/prisma/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthUserId } from "@/lib/auth/getAuthUser";
 
 export async function GET(req: NextRequest) {
   try {
+    // Verify authentication
+    const userId = await getAuthUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Verify admin role
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (user?.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(req.url);
     const skip = parseInt(searchParams.get("skip") || "0");
     const take = parseInt(searchParams.get("take") || "10");
     const search = searchParams.get("search");
+    const chefId = searchParams.get("chefId");
+    const category = searchParams.get("category");
+    const sortBy = searchParams.get("sortBy") || "createdAt";
 
     const where: any = {};
     if (search) {
@@ -14,6 +34,23 @@ export async function GET(req: NextRequest) {
         { name: { contains: search, mode: "insensitive" } },
         { description: { contains: search, mode: "insensitive" } },
       ];
+    }
+
+    if (chefId) {
+      where.chef_id = chefId;
+    }
+
+    if (category) {
+      where.category = category;
+    }
+
+    // Determine sorting based on sortBy parameter
+    let orderBy: any = { createdAt: "desc" };
+    
+    if (sortBy === "rating") {
+      orderBy = { rating: "desc" };
+    } else if (sortBy === "reviewCount") {
+      orderBy = { reviewCount: "desc" };
     }
 
     const [menuItems, total] = await Promise.all([
@@ -29,13 +66,27 @@ export async function GET(req: NextRequest) {
             },
           },
           menu_item_images: true,
+          _count: {
+            select: {
+              orderItems: true,
+              favorites: true,
+            },
+          },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy,
       }),
       prisma.menu_items.count({ where }),
     ]);
 
-    return NextResponse.json({ menuItems, total });
+    // Sort by sales or favorites if requested (client-side sorting for aggregated counts)
+    let sortedMenuItems = menuItems;
+    if (sortBy === "sales") {
+      sortedMenuItems = menuItems.sort((a, b) => (b._count?.orderItems || 0) - (a._count?.orderItems || 0));
+    } else if (sortBy === "favorites") {
+      sortedMenuItems = menuItems.sort((a, b) => (b._count?.favorites || 0) - (a._count?.favorites || 0));
+    }
+
+    return NextResponse.json({ menuItems: sortedMenuItems, total, hasMore: skip + take < total });
   } catch (error) {
     console.error("Error fetching menu items:", error);
     return NextResponse.json(
@@ -47,16 +98,62 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    const body = await req.json();
-    const { menuItemId, ...updateData } = body;
+    // Verify authentication
+    const userId = await getAuthUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    const menuItem = await prisma.menu_items.update({
-      where: { id: menuItemId },
-      data: updateData,
-      include: { users: true, menu_item_images: true },
+    // Verify admin role
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
     });
 
-    return NextResponse.json(menuItem);
+    if (user?.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const { menuItemId, isAvailable } = body;
+
+    // Validate required fields
+    if (!menuItemId) {
+      return NextResponse.json(
+        { error: "Menu item ID is required" },
+        { status: 400 }
+      );
+    }
+
+    if (typeof isAvailable !== "boolean") {
+      return NextResponse.json(
+        { error: "isAvailable must be a boolean value" },
+        { status: 400 }
+      );
+    }
+
+    // Update only the isAvailable field
+    const menuItem = await prisma.menu_items.update({
+      where: { id: menuItemId },
+      data: { 
+        isAvailable,
+        updatedAt: new Date()
+      },
+      include: { 
+        users: {
+          select: {
+            id: true,
+            name: true,
+          }
+        }, 
+        menu_item_images: true 
+      },
+    });
+
+    return NextResponse.json({ 
+      success: true,
+      menuItem 
+    });
   } catch (error) {
     console.error("Error updating menu item:", error);
     return NextResponse.json(
@@ -68,6 +165,22 @@ export async function PATCH(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    // Verify authentication
+    const userId = await getAuthUserId();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Verify admin role
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    });
+
+    if (user?.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(req.url);
     const menuItemId = searchParams.get("id");
 
