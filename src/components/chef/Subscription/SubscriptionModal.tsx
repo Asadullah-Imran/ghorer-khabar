@@ -1,6 +1,7 @@
 "use client";
 
-import { X, Clock, Plus, Trash2, ChefHat, Upload, ImagePlus } from "lucide-react";
+import { useToast } from "@/contexts/ToastContext";
+import { ChefHat, Clock, ImagePlus, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 
 interface MealSlot {
@@ -108,6 +109,7 @@ export default function SubscriptionModal({
   );
 
   const [selectedDish, setSelectedDish] = useState<string | null>(null);
+  const toast = useToast();
 
   const currentDaySchedule = (schedule && schedule[selectedDay]) || {
     breakfast: { time: "08:00", dishIds: [] },
@@ -237,7 +239,7 @@ export default function SubscriptionModal({
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      alert("Plan name is required");
+      toast.warning("Validation Error", "Plan name is required");
       return;
     }
 

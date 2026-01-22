@@ -6,6 +6,7 @@ import KitchenAddressStep from "@/components/chef/onboarding/KitchenAddressStep"
 import KitchenNameStep from "@/components/chef/onboarding/KitchenNameStep";
 import NIDDetailsStep from "@/components/chef/onboarding/NIDDetailsStep";
 import StepIndicator from "@/components/chef/onboarding/StepIndicator";
+import { useToast } from "@/contexts/ToastContext";
 import { chefOnboardingSchema } from "@/lib/validation";
 import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -20,6 +21,7 @@ export default function ChefOnboardingPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const toast = useToast();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -187,7 +189,8 @@ export default function ChefOnboardingPage() {
         });
         setErrors(fieldErrors);
       } else {
-        alert(
+        toast.error(
+          "Onboarding Failed",
           error instanceof Error ? error.message : "Failed to submit onboarding"
         );
       }

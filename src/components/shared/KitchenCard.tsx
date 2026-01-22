@@ -11,6 +11,7 @@ interface KitchenProps {
     reviews: number;
     image: string;
     specialty: string;
+    isOpen?: boolean;
   };
   isFavorite?: boolean; // NEW: Pass from parent
 }
@@ -33,10 +34,15 @@ export default function KitchenCard({ data, isFavorite }: KitchenProps) {
           <div className="absolute top-2 right-2 z-10">
             <FavoriteButton itemId={data.id} itemType="kitchen" initialIsFavorite={isFavorite} />
           </div>
-          <div className="absolute bottom-2 left-2 text-white">
-            <p className="text-xs font-medium bg-yellow-500 text-black px-1.5 py-0.5 rounded-sm inline-block mb-1">
+          <div className="absolute bottom-2 left-2 text-white flex gap-1">
+            <p className="text-xs font-medium bg-yellow-500 text-black px-1.5 py-0.5 rounded-sm inline-block">
               {data.specialty}
             </p>
+            {data.isOpen === false && (
+              <p className="text-xs font-medium bg-red-500 text-white px-1.5 py-0.5 rounded-sm inline-block">
+                Closed
+              </p>
+            )}
           </div>
         </div>
 

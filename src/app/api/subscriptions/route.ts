@@ -55,6 +55,11 @@ export async function GET(req: NextRequest) {
     // Build where clause
     const where: any = {
       is_active: true,
+      kitchen: {
+        isActive: true,
+        isOpen: true,
+        isVerified: true,
+      },
     };
 
     // Add search filter if provided

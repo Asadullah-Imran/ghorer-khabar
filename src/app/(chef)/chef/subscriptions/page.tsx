@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Plus, Trash2, ChefHat, Power, Edit, Users, DollarSign, TrendingUp, AlertCircle } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 import SubscriptionModal from "@/components/chef/Subscription/SubscriptionModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
+import { useToast } from "@/contexts/ToastContext";
+import { AlertCircle, ChefHat, DollarSign, Edit, Plus, Power, Trash2, TrendingUp, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface MenuItem {
   id: string;
@@ -46,12 +48,14 @@ interface SubscriptionPlan {
 
 export default function SubscriptionsPage() {
   const { user } = useAuth();
+  const { confirm, setLoading: setConfirmLoading } = useConfirmation();
   const [subscriptions, setSubscriptions] = useState<SubscriptionPlan[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState<SubscriptionPlan | undefined>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   // Fetch subscriptions and menu items
   useEffect(() => {
@@ -189,7 +193,7 @@ export default function SubscriptionsPage() {
       setEditingSubscription(undefined);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Operation failed";
-      alert(message);
+      toast.error("Operation Failed", message);
     }
   };
 
@@ -199,17 +203,28 @@ export default function SubscriptionsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this subscription plan?")) {
+    const confirmed = await confirm({
+      title: "Delete Subscription Plan",
+      message: "This will permanently delete the subscription plan. Active subscribers will be notified.",
+      confirmLabel: "Delete",
+      variant: "danger",
+    });
+
+    if (confirmed) {
       try {
+        setConfirmLoading(true);
         const response = await fetch(`/api/chef/subscriptions/${id}`, {
           method: "DELETE",
         });
         if (!response.ok) throw new Error("Failed to delete subscription");
 
         setSubscriptions(subscriptions.filter((sub) => sub.id !== id));
+        toast.success("Deleted", "Subscription plan deleted successfully");
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to delete";
-        alert(message);
+        toast.error("Delete Failed", message);
+      } finally {
+        setConfirmLoading(false);
       }
     }
   };
@@ -233,7 +248,7 @@ export default function SubscriptionsPage() {
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to update status";
-      alert(message);
+      toast.error("Status Update Failed", message);
     }
   };
 

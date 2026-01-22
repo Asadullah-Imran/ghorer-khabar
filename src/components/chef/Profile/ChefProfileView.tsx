@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import KitchenGallery from "@/components/kitchen/KitchenGallery";
+import KitchenHeader from "@/components/kitchen/KitchenHeader";
 import MenuSection from "@/components/kitchen/MenuSection";
-import ChefNavbar from "@/components/chef/Navigation/Navbar";
-import { Edit2, X } from "lucide-react";
+import { Edit2 } from "lucide-react";
 import Image from "next/image";
 import ChefProfileEditModal from "./ChefProfileEditModal";
 
@@ -15,12 +15,14 @@ interface Kitchen {
   description: string;
   location: string;
   area: string;
-  distance: number;
+  distance?: string;
   image: string;
   profileImage?: string;
   rating: number;
   reviewCount: number;
   kriScore: number;
+  isOpen?: boolean;
+  isActive?: boolean;
   stats: {
     orders: string;
     satisfaction: string;
@@ -36,7 +38,6 @@ interface Kitchen {
 }
 
 export default function ChefProfileView({ kitchen }: { kitchen: Kitchen }) {
-  const [isEditMode, setIsEditMode] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("menu");
   const [kitchenData, setKitchenData] = useState(kitchen);
@@ -50,98 +51,41 @@ export default function ChefProfileView({ kitchen }: { kitchen: Kitchen }) {
 
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
-      {/* Header Section with Edit Button */}
-      <div className="relative h-64 bg-gray-300 overflow-hidden group">
-        <Image
-          src={kitchenData.image}
-          alt={kitchenData.name}
-          fill
-          className="object-cover"
-        />
-        
-        {/* Edit Button on Cover */}
+      {kitchenData.isOpen === false && (
+        <div className="bg-red-500 text-white py-3 px-4 text-center">
+          <p className="font-semibold">🔒 This kitchen is currently closed</p>
+        </div>
+      )}
+
+      <div className="relative">
+        <KitchenHeader kitchen={kitchenData} />
         <button
           onClick={() => setIsEditModalOpen(true)}
-          className="absolute top-4 right-4 bg-white rounded-full p-2.5 shadow-lg hover:bg-gray-100 transition z-10 flex items-center gap-2 px-4"
+          className="absolute top-6 right-6 bg-white rounded-full px-4 py-2.5 shadow-lg hover:bg-gray-100 transition z-20 flex items-center gap-2"
         >
           <Edit2 size={18} className="text-teal-600" />
-          <span className="text-sm font-medium text-gray-900">Edit</span>
+          <span className="text-sm font-medium text-gray-900">Edit Profile</span>
         </button>
-
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
       </div>
 
-      {/* Kitchen Info Section */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8">
-        <div className="relative -mt-24 mb-8 flex flex-col md:flex-row md:items-end gap-6">
-          {/* Profile Image */}
-          <div className="relative w-32 h-32 rounded-2xl overflow-hidden border-4 border-white shadow-lg bg-gray-200 flex-shrink-0">
-            <Image
-              src={kitchenData.profileImage || "/placeholder-kitchen.jpg"}
-              alt={kitchenData.name}
-              fill
-              className="object-cover"
-            />
-          </div>
-
-          {/* Info */}
-          <div className="flex-1 pb-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              {kitchenData.name}
-            </h1>
-            <p className="text-gray-600 mb-4">{kitchenData.type}</p>
-            <div className="flex items-center gap-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-orange-500">
-                  {kitchenData.rating.toFixed(1)}
-                </span>
-                <span className="text-gray-500">({kitchenData.reviewCount} reviews)</span>
-              </div>
-              <div className="text-sm text-gray-600">
-                {kitchenData.location} • {kitchenData.area}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation Tabs */}
+      <div className="max-w-[1280px] mx-auto px-4 lg:px-8">
         <div className="flex items-center gap-8 border-b border-gray-200 mb-8 overflow-x-auto scrollbar-hide">
-          <button
-            onClick={() => setActiveTab("menu")}
-            className={`flex items-center gap-2 px-1 py-4 border-b-2 font-bold transition-all whitespace-nowrap ${
-              activeTab === "menu"
-                ? "border-teal-700 text-teal-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Menu
-          </button>
-          <button
-            onClick={() => setActiveTab("about")}
-            className={`flex items-center gap-2 px-1 py-4 border-b-2 font-bold transition-all whitespace-nowrap ${
-              activeTab === "about"
-                ? "border-teal-700 text-teal-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            About Kitchen
-          </button>
-          <button
-            onClick={() => setActiveTab("gallery")}
-            className={`flex items-center gap-2 px-1 py-4 border-b-2 font-bold transition-all whitespace-nowrap ${
-              activeTab === "gallery"
-                ? "border-teal-700 text-teal-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Gallery
-          </button>
+          {["menu", "about", "gallery"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex items-center gap-2 px-1 py-4 border-b-2 font-bold transition-all whitespace-nowrap ${
+                activeTab === tab
+                  ? "border-teal-700 text-teal-700"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              {tab === "menu" ? "Menu" : tab === "about" ? "About Kitchen" : "Gallery"}
+            </button>
+          ))}
         </div>
 
-        {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Main Content */}
           <div className="lg:col-span-8">
             {activeTab === "menu" && <MenuSection data={kitchenData} isOwnProfile={true} />}
 
@@ -191,9 +135,11 @@ export default function ChefProfileView({ kitchen }: { kitchen: Kitchen }) {
             )}
           </div>
 
-          {/* Sidebar */}
           <aside className="lg:col-span-4 space-y-6">
-            {/* Performance Stats */}
+            {kitchenData.gallery.length > 0 && (
+              <KitchenGallery images={kitchenData.gallery} />
+            )}
+
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
               <h3 className="font-bold text-xs text-gray-400 uppercase tracking-widest mb-4">
                 Performance
@@ -234,7 +180,6 @@ export default function ChefProfileView({ kitchen }: { kitchen: Kitchen }) {
         </div>
       </div>
 
-      {/* Edit Modal */}
       {isEditModalOpen && (
         <ChefProfileEditModal
           kitchen={kitchenData}

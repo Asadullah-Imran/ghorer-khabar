@@ -6,7 +6,10 @@ import pg from 'pg'
 config()
 
 const connectionString = process.env.DATABASE_URL
-const pool = new pg.Pool({ connectionString })
+const pool = new pg.Pool({
+  connectionString,
+  ssl: { rejectUnauthorized: false },
+})
 const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
 
@@ -14,7 +17,7 @@ async function main() {
   console.log('🌱 Seeding inventory items...')
 
   // Placeholder User ID - REPLACE THIS WITH A REAL SELLER/CHEF USER ID FROM YOUR DATABASE
-  const SELLER_ID = process.env.TEMP_Seller_ID || "6d7c0ce7-7317-4c07-90f5-ff6b8ce0497e"
+  const SELLER_ID = process.env.TEMP_Seller_ID || "ad5f641d-5ac2-46d9-88f9-80a4acf5c73b"
 
   // Verify seller exists
   const seller = await prisma.user.findUnique({

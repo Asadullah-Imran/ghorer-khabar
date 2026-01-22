@@ -1,16 +1,16 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
 import { createClient } from "@/lib/supabase/client";
-import Image from "next/image";
 import {
-  ChefHat,
-  Loader2,
-  Lock,
-  Mail,
-  ShoppingBag,
-  User,
-  UtensilsCrossed,
+    Loader2,
+    Lock,
+    Mail,
+    ShoppingBag,
+    User,
+    UtensilsCrossed
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -42,6 +42,7 @@ function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
+  const toast = useToast();
 
   useEffect(() => {
     const roleParam = searchParams.get("role");
@@ -73,14 +74,14 @@ function RegisterContent() {
     });
 
     if (error) {
-      alert("Error logging in with Google: " + error.message);
+      toast.error("Google Login Failed", error.message);
     }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match!");
+      toast.warning("Validation Error", "Passwords do not match!");
       return;
     }
 
@@ -100,16 +101,17 @@ function RegisterContent() {
       const result = await res.json();
 
       if (res.ok) {
-        alert(
-          "Registration successful! Please check your email to verify your account. Check spam folder if you don't see it."
+        toast.success(
+          "Registration Successful",
+          "Please check your email to verify your account. Check spam folder if you don't see it."
         );
         router.push(`/login?registered=true`);
       } else {
-        alert(result.error || "Registration failed");
+        toast.error("Registration Failed", result.error || "Registration failed");
       }
     } catch (error) {
       console.error("Registration error:", error);
-      alert("An unexpected error occurred.");
+      toast.error("Registration Error", "An unexpected error occurred.");
     } finally {
       setLoading(false);
     }

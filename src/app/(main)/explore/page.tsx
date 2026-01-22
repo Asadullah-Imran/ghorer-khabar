@@ -4,7 +4,7 @@ import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard";
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import {
-  CATEGORIES
+    CATEGORIES
 } from "@/lib/dummy-data/explore";
 import { prisma } from "@/lib/prisma/prisma";
 
@@ -37,6 +37,16 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
         { name: { contains: query, mode: "insensitive" } },
         { users: { kitchens: { some: { name: { contains: query, mode: "insensitive" } } } } }
       ] : undefined,
+      // Kitchen status filter
+      users: {
+        kitchens: {
+          some: {
+            isActive: true,
+            isOpen: true,
+            isVerified: true,
+          },
+        },
+      },
     };
 
     // Category logic
@@ -85,6 +95,12 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
   if (tab === "subscriptions") {
     const where: any = {
       is_active: true,
+      // Kitchen status filter
+      kitchen: {
+        isActive: true,
+        isOpen: true,
+        isVerified: true,
+      },
       // Search logic
       OR: query ? [
         { name: { contains: query, mode: "insensitive" } },
@@ -135,6 +151,7 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
   if (tab === "kitchens") {
     const where: any = {
       isActive: true,
+      isVerified: true,
       // Search logic
       OR: query ? [
         { name: { contains: query, mode: "insensitive" } },
@@ -160,7 +177,8 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
       rating: Number(k.rating) || 0,
       reviews: k.reviewCount,
       image: k.coverImage || "/placeholder-kitchen.jpg",
-      specialty: k.type || "Home Kitchen"
+      specialty: k.type || "Home Kitchen",
+      isOpen: k.isOpen,
     }));
   }
 

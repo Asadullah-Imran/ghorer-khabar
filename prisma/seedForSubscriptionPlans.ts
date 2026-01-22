@@ -6,7 +6,10 @@ import { PrismaClient } from '../generated/prisma/client'
 config()
 
 const connectionString = process.env.DATABASE_URL
-const pool = new pg.Pool({ connectionString })
+const pool = new pg.Pool({
+  connectionString,
+  ssl: { rejectUnauthorized: false },
+})
 const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
 
@@ -26,7 +29,7 @@ async function main() {
 
   // REPLACE THIS WITH YOUR ACTUAL SELLER/USER ID
   // You can find this by querying: SELECT id FROM users WHERE role = 'SELLER' LIMIT 1;
-  const SELLER_ID = process.env.TEMP_Seller_ID || "cmkgtg8ow0001h495l0q1hquu"
+  const SELLER_ID = process.env.TEMP_Seller_ID || "ad5f641d-5ac2-46d9-88f9-80a4acf5c73b"
 
   // Verify seller exists
   const seller = await prisma.user.findUnique({

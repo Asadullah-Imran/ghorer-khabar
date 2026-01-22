@@ -1,7 +1,8 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
+import { AlertTriangle, CheckCircle2, MoreVertical, Star, X } from "lucide-react";
 import { useState } from "react";
-import { X, Star, AlertTriangle, CheckCircle2, MoreVertical } from "lucide-react";
 
 interface MenuItem {
   id?: string;
@@ -51,6 +52,7 @@ export default function MenuInsightsModal({
   );
   const [appealModalId, setAppealModalId] = useState<string | null>(null);
   const [appealText, setAppealText] = useState("");
+  const toast = useToast();
 
   if (!isOpen) return null;
 
@@ -77,7 +79,7 @@ export default function MenuInsightsModal({
       setAppealedReviews((prev) => new Set([...prev, reviewId]));
       setAppealModalId(null);
       setAppealText("");
-      alert("Appeal submitted successfully. Admin will review this within 24 hours.");
+      toast.success("Appeal Submitted", "Appeal submitted successfully. Admin will review this within 24 hours.");
     }
   };
 

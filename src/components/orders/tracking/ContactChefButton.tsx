@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
 import { useState } from "react";
 
 interface ContactChefButtonProps {
@@ -9,13 +10,14 @@ interface ContactChefButtonProps {
 
 export default function ContactChefButton({ kitchenId, chefName }: ContactChefButtonProps) {
   const [isContacting, setIsContacting] = useState(false);
+  const toast = useToast();
 
   const handleContact = async () => {
     setIsContacting(true);
     
     // TODO: Implement chat/contact functionality
-    // For now, just show an alert
-    alert(`Contact feature coming soon! Kitchen ID: ${kitchenId}`);
+    // For now, just show a toast
+    toast.info("Coming Soon", "Contact feature will be available soon!");
     
     setTimeout(() => setIsContacting(false), 1000);
   };

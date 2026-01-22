@@ -1,4 +1,5 @@
 import FeedGreeting from "@/components/feed/FeedGreeting";
+import TabbedRecommendations from "@/components/feed/TabbedRecommendations";
 import DishCard from "@/components/shared/DishCard";
 import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard";
@@ -32,6 +33,15 @@ export default async function FeedPage() {
   const newDishesData = await prisma.menu_items.findMany({
     where: {
       isAvailable: true,
+      users: {
+        kitchens: {
+          some: {
+            isActive: true,
+            isOpen: true,
+            isVerified: true,
+          },
+        },
+      },
     },
     include: {
       menu_item_images: true,
@@ -73,7 +83,16 @@ export default async function FeedPage() {
             createdAt: { gte: sevenDaysAgo }
           }
         }
-      }
+      },
+      users: {
+        kitchens: {
+          some: {
+            isActive: true,
+            isOpen: true,
+            isVerified: true,
+          },
+        },
+      },
     },
     include: {
       menu_item_images: true,
@@ -95,7 +114,16 @@ export default async function FeedPage() {
     const additionalDishes = await prisma.menu_items.findMany({
       where: {
         isAvailable: true,
-        id: { notIn: weeklyBestDishes.map(d => d.id) }
+        id: { notIn: weeklyBestDishes.map(d => d.id) },
+        users: {
+          kitchens: {
+            some: {
+              isActive: true,
+              isOpen: true,
+              isVerified: true,
+            },
+          },
+        },
       },
       include: {
         menu_item_images: true,
@@ -133,7 +161,14 @@ export default async function FeedPage() {
 
   // Fetch featured subscription plans from database
   const subscriptionPlans = await prisma.subscription_plans.findMany({
-    where: { is_active: true },
+    where: { 
+      is_active: true,
+      kitchen: {
+        isActive: true,
+        isOpen: true,
+        isVerified: true,
+      },
+    },
     include: {
       kitchen: {
         select: {
@@ -180,7 +215,8 @@ export default async function FeedPage() {
     rating: Number(kitchen.rating) || 0,
     reviews: kitchen.reviewCount,
     image: kitchen.coverImage || "/placeholder-kitchen.jpg",
-    specialty: kitchen.type || "Home Kitchen"
+    specialty: kitchen.type || "Home Kitchen",
+    isOpen: kitchen.isOpen,
   }));
 
   // Fetch user's favorites once to avoid multiple API calls
@@ -209,7 +245,16 @@ export default async function FeedPage() {
   const recommendedDishesData = await prisma.menu_items.findMany({
     where: {
       isAvailable: true,
-      id: { notIn: dishes.map(d => d.id) } // Exclude weekly best dishes
+      id: { notIn: dishes.map(d => d.id) }, // Exclude weekly best dishes
+      users: {
+        kitchens: {
+          some: {
+            isActive: true,
+            isOpen: true,
+            isVerified: true,
+          },
+        },
+      },
     },
     include: {
       menu_item_images: true,
@@ -332,30 +377,27 @@ export default async function FeedPage() {
           </div>
         </section>
 
-        {/* 6. Recommended For You (Grid) */}
+        {/* 6. Recommended For You (Tabbed) - ML Powered */}
         <section className="px-4 md:px-0">
           <SectionHeader
             title="Recommended For You"
-            subtitle="Fresh picks tailored just for you"
+            subtitle="AI-powered personalized recommendations"
             href="/explore?tab=dishes&filter=recommended"
           />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {recommendedDishes.map((dish) => (
-              <DishCard 
-                key={dish.id} 
-                data={dish} 
-                isFavorite={favoriteDishIds.has(dish.id)}
-                currentUserId={userId}
-                userRole={userRole}
-              />
-            ))}
-          </div>
+          <TabbedRecommendations
+            userId={userId}
+            userRole={userRole}
+            favoriteDishIds={favoriteDishIds}
+            favoriteKitchenIds={favoriteKitchenIds}
+            favoritePlanIds={favoritePlanIds}
+            excludeDishIds={[...dishes.map(d => d.id), ...newDishes.map(d => d.id)]}
+          />
           <div className="mt-8 text-center">
             <a
               href="/explore"
               className="inline-block px-8 py-3 bg-white border border-gray-200 text-gray-600 font-medium rounded-full hover:bg-gray-50 transition shadow-sm"
             >
-              Explore All Dishes
+              Explore All
             </a>
           </div>
         </section>

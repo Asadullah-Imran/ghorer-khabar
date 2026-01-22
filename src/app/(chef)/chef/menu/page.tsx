@@ -1,11 +1,12 @@
 "use client";
 
-import MenuItemCard from "@/components/chef/Menu/MenuItemCard";
+import { MenuItemCard } from "@/components/chef/Menu/MenuItemCard.memo";
 import MenuItemForm from "@/components/chef/Menu/MenuItemForm";
 import DeleteConfirmDialog from "@/components/chef/Menu/DeleteConfirmDialog";
 import MenuInsightsModal from "@/components/chef/Menu/MenuInsightsModal";
 import { Filter, Plus, Search, Loader2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useChefMenu } from "@/lib/hooks/useChefMenu";
 
 interface MenuItem {
   id?: string;
@@ -24,7 +25,16 @@ interface MenuItem {
 }
 
 export default function MenuPage() {
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const {
+    menuItems,
+    loading,
+    error,
+    saving,
+    saveMenuItem,
+    deleteMenuItem,
+    toggleAvailability,
+  } = useChefMenu();
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | undefined>();
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,221 +43,56 @@ export default function MenuPage() {
   const [insightsItemId, setInsightsItemId] = useState<string | null>(null);
   const [insightsReviews, setInsightsReviews] = useState<any[]>([]);
   const [loadingInsights, setLoadingInsights] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  // Fetch menu items on mount
-  useEffect(() => {
-    fetchMenuItems();
-  }, []);
+  // Memoize filtered items to prevent recalculation
+  const filteredItems = useMemo(() => {
+    return menuItems.filter((item) => {
+      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = categoryFilter === "All" || item.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+  }, [menuItems, searchQuery, categoryFilter]);
 
-  const fetchMenuItems = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const res = await fetch("/api/chef/menu");
-      const data = await res.json();
+  // Memoize stats to prevent recalculation
+  const stats = useMemo(() => {
+    return {
+      total: menuItems.length,
+      available: menuItems.filter((i) => i.isAvailable).length,
+      unavailable: menuItems.filter((i) => !i.isAvailable).length,
+      avgPrice: menuItems.length > 0
+        ? Math.round(menuItems.reduce((sum, i) => sum + i.price, 0) / menuItems.length)
+        : 0,
+    };
+  }, [menuItems]);
 
-      //console.log("=== FETCH MENU ITEMS RESPONSE ===");
-      //console.log("Status:", res.status);
-     // console.log("Response data:", data);
-      // if (data.data) {
-      //  // console.log("Menu items count:", data.data.length);
-      //   // data.data.forEach((item: any, idx: number) => {
-      //   //   // console.log(`Item ${idx}:`, {
-      //   //   //   id: item.id,
-      //   //   //   name: item.name,
-      //   //   //   images: item.menu_item_images,
-      //   //   //   imagesCount: item.menu_item_images?.length || 0,
-      //   //   // });
-      //   // });
-      // }
-
-      if (data.success) {
-        setMenuItems(data.data || []);
-      } else {
-        setError(data.error || "Failed to fetch menu items");
-      }
-    } catch (err) {
-      setError("Failed to fetch menu items");
-      console.error(err);
-    } finally {
-      setLoading(false);
+  const handleSave = useCallback(async (formItem: MenuItem) => {
+    const success = await saveMenuItem(formItem, editingItem?.id);
+    if (success) {
+      setIsFormOpen(false);
+      setEditingItem(undefined);
     }
-  };
+  }, [saveMenuItem, editingItem?.id]);
 
-  // Filter menu items
-  const filteredItems = menuItems.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === "All" || item.category === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
-
-  const handleSave = async (formItem: MenuItem) => {
-    try {
-      setSaving(true);
-      setError(null);
-
-      console.log("\n=== FRONTEND: handleSave STARTED ===");
-      console.log("Mode:", editingItem?.id ? "EDIT" : "CREATE");
-      console.log("Form Item Data:", {
-        name: formItem.name,
-        category: formItem.category,
-        price: formItem.price,
-        description: formItem.description,
-        prepTime: formItem.prepTime,
-        calories: formItem.calories,
-        spiciness: formItem.spiciness,
-        isVegetarian: formItem.isVegetarian,
-        ingredientsCount: formItem.ingredients?.length || 0,
-        imagesCount: formItem.images?.length || 0,
-      });
-
-      const formData = new FormData();
-      formData.append("name", formItem.name);
-      formData.append("description", formItem.description || "");
-      formData.append("category", formItem.category);
-      formData.append("price", formItem.price.toString());
-      formData.append("prepTime", (formItem.prepTime || 0).toString());
-      formData.append("calories", (formItem.calories || 0).toString());
-      formData.append("spiciness", formItem.spiciness || "Medium");
-      formData.append("isVegetarian", (formItem.isVegetarian || false).toString());
-      formData.append("ingredients", JSON.stringify(formItem.ingredients || []));
-      console.log("Ingredients being sent:", formItem.ingredients || []);
-      
-      // Send deleted image IDs
-      if (formItem.deletedImageIds && formItem.deletedImageIds.length > 0) {
-        formItem.deletedImageIds.forEach(id => formData.append("deleteImages", id));
-        console.log("Deleted image IDs:", formItem.deletedImageIds);
-      }
-
-      // Handle images (prefer the File object from the form; fallback to preview blob)
-      let newImagesCount = 0;
-      if (formItem.images) {
-        for (const img of formItem.images as any[]) {
-          if (img.id === undefined) {
-            let fileToUpload: File | null = img.file ?? null;
-
-            // Fallback: fetch from preview URL if the File is missing
-            if (!fileToUpload && img.preview) {
-              console.log("Processing new image from preview:", img.preview);
-              const blob = await fetch(img.preview).then((res) => res.blob());
-              fileToUpload = new File([blob], `image-${Date.now()}.png`, {
-                type: blob.type || "image/png",
-              });
-            }
-
-            if (fileToUpload) {
-              formData.append("images", fileToUpload);
-              newImagesCount++;
-            } else {
-              console.warn("Skipping image without file/preview", img);
-            }
-          }
-        }
-      }
-      console.log("Total new images to upload:", newImagesCount);
-
-      const url = editingItem?.id ? `/api/chef/menu/${editingItem.id}` : "/api/chef/menu";
-      const method = editingItem ? "PUT" : "POST";
-      console.log("API Endpoint:", method, url);
-      console.log("Sending FormData to backend...");
-
-      const res = await fetch(url, {
-        method,
-        body: formData,
-      });
-
-      console.log("Response status:", res.status);
-      const data = await res.json();
-      console.log("Response data:", data);
-
-      if (data.success) {
-        console.log("Menu item saved successfully!", data.data);
-        await fetchMenuItems();
-        setIsFormOpen(false);
-        setEditingItem(undefined);
-      } else {
-        console.error("Backend returned error:", data.error);
-        setError(data.error || "Failed to save menu item");
-      }
-    } catch (err) {
-      console.error("Error in handleSave:", err);
-      setError("Failed to save menu item");
-      console.error(err);
-    } finally {
-      setSaving(false);
-      console.log("=== FRONTEND: handleSave ENDED ===");
-    }
-  };
-
-  const handleEdit = (item: MenuItem) => {
+  const handleEdit = useCallback((item: MenuItem) => {
     setEditingItem(item);
     setIsFormOpen(true);
-  };
+  }, []);
 
-  const handleDelete = (item: MenuItem) => {
+  const handleDelete = useCallback((item: MenuItem) => {
     setItemToDelete(item);
-  };
+  }, []);
 
-  const confirmDelete = async () => {
+  const confirmDelete = useCallback(async () => {
     if (!itemToDelete?.id) return;
-
-    try {
-      setSaving(true);
-      setError(null);
-
-      const res = await fetch(`/api/chef/menu/${itemToDelete.id}`, {
-        method: "DELETE",
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        await fetchMenuItems();
-        setItemToDelete(null);
-      } else {
-        setError(data.error || "Failed to delete menu item");
-      }
-    } catch (err) {
-      setError("Failed to delete menu item");
-      console.error(err);
-    } finally {
-      setSaving(false);
+    const success = await deleteMenuItem(itemToDelete.id);
+    if (success) {
+      setItemToDelete(null);
     }
-  };
+  }, [itemToDelete?.id, deleteMenuItem]);
 
-  const handleToggleAvailability = async (id: string) => {
-    const item = menuItems.find((i) => i.id === id);
-    if (!item) return;
-
-    try {
-      setSaving(true);
-      setError(null);
-
-      const res = await fetch(`/api/chef/menu/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          isAvailable: !item.isAvailable,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        await fetchMenuItems();
-      } else {
-        setError(data.error || "Failed to update availability");
-      }
-    } catch (err) {
-      setError("Failed to update availability");
-      console.error(err);
-    } finally {
-      setSaving(false);
-    }
-  };
+  const handleToggleAvailabilityCallback = useCallback(async (id: string) => {
+    await toggleAvailability(id);
+  }, [toggleAvailability]);
 
   const fetchReviewsForItem = async (menuItemId: string) => {
     try {
@@ -348,30 +193,19 @@ export default function MenuPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-white border border-gray-200 rounded-lg p-4">
               <p className="text-sm text-gray-500 mb-1">Total Items</p>
-              <p className="text-2xl font-bold text-gray-900">{menuItems.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
             </div>
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <p className="text-sm text-green-600 mb-1">Available</p>
-              <p className="text-2xl font-bold text-green-700">
-                {menuItems.filter((i) => i.isAvailable).length}
-              </p>
+              <p className="text-2xl font-bold text-green-700">{stats.available}</p>
             </div>
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <p className="text-sm text-red-600 mb-1">Unavailable</p>
-              <p className="text-2xl font-bold text-red-700">
-                {menuItems.filter((i) => !i.isAvailable).length}
-              </p>
+              <p className="text-2xl font-bold text-red-700">{stats.unavailable}</p>
             </div>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-600 mb-1">Avg Price</p>
-              <p className="text-2xl font-bold text-blue-700">
-                ৳
-                {menuItems.length > 0
-                  ? Math.round(
-                      menuItems.reduce((sum, i) => sum + i.price, 0) / menuItems.length
-                    )
-                  : 0}
-              </p>
+              <p className="text-2xl font-bold text-blue-700">৳{stats.avgPrice}</p>
             </div>
           </div>
 
@@ -384,7 +218,7 @@ export default function MenuPage() {
                   item={item}
                   onEdit={() => handleEdit(item)}
                   onDelete={() => handleDelete(item)}
-                  onToggleAvailability={() => item.id && handleToggleAvailability(item.id)}
+                  onToggleAvailability={() => item.id && handleToggleAvailabilityCallback(item.id)}
                   onViewInsights={async () => {
                     if (item.id) {
                       setInsightsItemId(item.id);

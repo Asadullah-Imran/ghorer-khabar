@@ -1,12 +1,14 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
 import { PauseCircle, XCircle } from "lucide-react";
 
 export default function SubscriptionSettings() {
+  const toast = useToast();
   const handlePause = () =>
-    alert("Pause logic: Opens date picker to select pause duration.");
+    toast.info("Coming Soon", "Pause feature will be available soon!");
   const handleCancel = () =>
-    alert("Cancel logic: Opens survey 'Why are you leaving?'");
+    toast.info("Coming Soon", "Cancel feature will be available soon!");
 
   return (
     <div className="pt-8 border-t border-gray-200">
