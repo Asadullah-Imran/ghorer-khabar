@@ -1,4 +1,4 @@
-import { Phone, ShoppingBag, Truck } from "lucide-react";
+import { Phone, ShoppingBag, Truck, Clock, Calendar } from "lucide-react";
 import TimerBadge from "./TimerBadge";
 
 interface OrderItem {
@@ -18,6 +18,9 @@ interface Order {
   specialNotes?: string;
   createdAt: Date;
   prepTime: number;
+  deliveryDate?: string | null;
+  deliveryTimeSlot?: string | null;
+  deliveryTimeDisplay?: string;
   userId: string;
 }
 
@@ -51,6 +54,23 @@ export default function OrderCard({ order, onMove, onReject }: OrderCardProps) {
           <span>{order.customerPhone}</span>
         </div>
       </div>
+
+      {/* Delivery Time - Prominent Display */}
+      {order.deliveryTimeDisplay && (
+        <div className="mb-3 p-2.5 bg-teal-50 border-2 border-teal-200 rounded-lg">
+          <div className="flex items-center gap-2">
+            <Clock size={16} className="text-teal-700" />
+            <div className="flex-1">
+              <p className="text-xs font-semibold text-teal-900 uppercase tracking-wide">
+                Delivery Time
+              </p>
+              <p className="text-sm font-bold text-teal-700 mt-0.5">
+                {order.deliveryTimeDisplay}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Items List */}
       <div className="mb-3 pb-3 border-b border-gray-100">

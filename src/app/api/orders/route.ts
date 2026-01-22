@@ -1,6 +1,8 @@
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
 import { NextResponse } from "next/server";
+import { validateOrder } from "@/lib/services/orderValidation";
+import { MealTimeSlot } from "@/lib/constants/mealTimeSlots";
 
 export async function POST(req: Request) {
   try {
@@ -12,11 +14,44 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { items, notes, deliveryDetails } = body;
+    const { items, notes, deliveryDetails, deliveryDate, deliveryTimeSlot } = body;
 
     // Basic validation
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "No items in order" }, { status: 400 });
+    }
+
+    // Validate delivery date and time slot
+    if (!deliveryDate) {
+      return NextResponse.json(
+        { error: "deliveryDate is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!deliveryTimeSlot) {
+      return NextResponse.json(
+        { error: "deliveryTimeSlot is required (BREAKFAST, LUNCH, SNACKS, or DINNER)" },
+        { status: 400 }
+      );
+    }
+
+    // Validate time slot enum
+    const validTimeSlots: MealTimeSlot[] = ["BREAKFAST", "LUNCH", "SNACKS", "DINNER"];
+    if (!validTimeSlots.includes(deliveryTimeSlot)) {
+      return NextResponse.json(
+        { error: "Invalid deliveryTimeSlot. Must be BREAKFAST, LUNCH, SNACKS, or DINNER" },
+        { status: 400 }
+      );
+    }
+
+    // Parse delivery date
+    const deliveryDateParsed = new Date(deliveryDate);
+    if (isNaN(deliveryDateParsed.getTime())) {
+      return NextResponse.json(
+        { error: "Invalid deliveryDate format. Use ISO date string." },
+        { status: 400 }
+      );
     }
 
     // 1. Fetch items from DB to get real prices and kitchenId
@@ -54,7 +89,22 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3. Calculate Total
+    // 3. Validate order (timing, capacity, prep time)
+    const validation = await validateOrder(
+      kitchenId,
+      itemIds,
+      deliveryDateParsed,
+      deliveryTimeSlot
+    );
+
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: validation.error || "Order validation failed" },
+        { status: 400 }
+      );
+    }
+
+    // 4. Calculate Total
     let calculatedTotal = 0;
     const orderItemsData = dbItems.map((dbItem) => {
       const qty = items.find((i: any) => i.id === dbItem.id)?.quantity || 0;
@@ -71,7 +121,7 @@ export async function POST(req: Request) {
     const PLATFORM_FEE = 10;
     const finalTotal = calculatedTotal + DELIVERY_FEE + PLATFORM_FEE;
 
-    // 4. Create Order
+    // 5. Create Order
     const order = await prisma.order.create({
       data: {
         userId: userId,
@@ -79,6 +129,8 @@ export async function POST(req: Request) {
         total: finalTotal,
         status: "PENDING",
         notes: notes || "", // Handle null/undefined notes safely
+        deliveryDate: deliveryDateParsed,
+        deliveryTimeSlot: deliveryTimeSlot,
         items: {
           create: orderItemsData,
         },
