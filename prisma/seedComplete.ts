@@ -49,9 +49,18 @@ const pickRandom = <T,>(arr: T[], count: number): T[] => {
   return shuffled.slice(0, Math.min(count, arr.length))
 }
 
-// Helper function to round prices to 2 decimal places
-const roundPrice = (price: number): number => {
-  return Math.round(price * 100) / 100
+// Helper function to generate prices ending in .00 or .99
+const generatePrice = (min: number, max: number): number => {
+  const basePrice = Math.floor(Math.random() * (max - min) + min)
+  const endsWith99 = Math.random() > 0.5
+  return endsWith99 ? basePrice + 0.99 : basePrice + 0.00
+}
+
+// Helper function to round prices to end in .00 or .99
+const roundPriceToEndDigits = (price: number): number => {
+  const base = Math.floor(price)
+  const decimal = price - base
+  return decimal < 0.5 ? base + 0.00 : base + 0.99
 }
 
 // Helper function to create proper weekly schedule for subscription plans
@@ -82,50 +91,51 @@ const createWeeklySchedule = (dishes: any[], mealsPerDay: number): Record<string
   return schedule
 }
 
-// Curated image pools for a consistent, professional look
+// Professional food images from Pexels - high-quality, reliable, and free
+// All images are real photos with proper licensing
 const kitchenCoverImages = [
-  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1400&q=80',
-  'https://images.unsplash.com/photo-1504674900247-72717c7b74c4?auto=format&fit=crop&w=1400&q=80',
-  'https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=1400&q=80',
-  'https://images.unsplash.com/photo-1504674900247-08e25c57b0b2?auto=format&fit=crop&w=1400&q=80',
-  'https://images.unsplash.com/photo-1504674900247-33e9f9d02c51?auto=format&fit=crop&w=1400&q=80',
+  'https://images.pexels.com/photos/1410235/pexels-photo-1410235.jpeg?auto=compress&cs=tinysrgb&w=1400&h=800&fit=crop',
+  'https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg?auto=compress&cs=tinysrgb&w=1400&h=800&fit=crop',
+  'https://images.pexels.com/photos/821365/pexels-photo-821365.jpeg?auto=compress&cs=tinysrgb&w=1400&h=800&fit=crop',
+  'https://images.pexels.com/photos/1624487/pexels-photo-1624487.jpeg?auto=compress&cs=tinysrgb&w=1400&h=800&fit=crop',
+  'https://images.pexels.com/photos/1624500/pexels-photo-1624500.jpeg?auto=compress&cs=tinysrgb&w=1400&h=800&fit=crop',
 ]
 
 const dishImageBank: Record<string, string[]> = {
-  'Hyderabadi Chicken Biryani': ['https://images.unsplash.com/photo-1604908177425-9f3c89c1f7af?auto=format&fit=crop&w=1200&q=80'],
-  'Beef Bhuna Khichuri': ['https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=1200&q=80'],
-  'Mutton Kacchi Biryani': ['https://images.unsplash.com/photo-1525755662778-989d0524087e?auto=format&fit=crop&w=1200&q=80'],
-  'Chicken Korma': ['https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80'],
-  'Shorshe Ilish': ['https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1200&q=80'],
-  'Vegetable Khichuri': ['https://images.unsplash.com/photo-1504674900247-08e25c57b0b2?auto=format&fit=crop&w=1200&q=80'],
-  'Rui Macher Kalia': ['https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=1200&q=80'],
-  'Chingri Malai Curry': ['https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80'],
-  'Chicken Rezala': ['https://images.unsplash.com/photo-1481931098730-318b6f776db0?auto=format&fit=crop&w=1200&q=80'],
-  'Paneer Butter Masala': ['https://images.unsplash.com/photo-1604908177520-4027c9948431?auto=format&fit=crop&w=1200&q=80'],
-  'Aloo Paratha with Curd': ['https://images.unsplash.com/photo-1612874472278-5c1b0133a05c?auto=format&fit=crop&w=1200&q=80'],
-  'Egg Bhurji with Ruti': ['https://images.unsplash.com/photo-1504674900247-33e9f9d02c51?auto=format&fit=crop&w=1200&q=80'],
-  'Puri with Aloo Bhaji': ['https://images.unsplash.com/photo-1525755662778-989d0524087e?auto=format&fit=crop&w=1200&q=80'],
-  'Dal Tadka': ['https://images.unsplash.com/photo-1504674900247-72717c7b74c4?auto=format&fit=crop&w=1200&q=80'],
-  'Mixed Vegetable Bhaji': ['https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=1200&q=80'],
-  'Begun Bhaji': ['https://images.unsplash.com/photo-1484981184820-2e84ea0b1b2e?auto=format&fit=crop&w=1200&q=80'],
-  'Raita': ['https://images.unsplash.com/photo-1523983300916-5e2212b8b043?auto=format&fit=crop&w=1200&q=80'],
-  'Payesh': ['https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=1200&q=80'],
-  'Mishti Doi': ['https://images.unsplash.com/photo-1511910849309-0dffb8785146?auto=format&fit=crop&w=1200&q=80'],
-  'Rosogolla': ['https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=1200&q=80'],
-  'Gulab Jamun': ['https://images.unsplash.com/photo-1548943487-a2e4e43b4853?auto=format&fit=crop&w=1200&q=80'],
+  'Hyderabadi Chicken Biryani': ['https://images.pexels.com/photos/1624487/pexels-photo-1624487.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Beef Bhuna Khichuri': ['https://images.pexels.com/photos/3026808/pexels-photo-3026808.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Mutton Kacchi Biryani': ['https://images.pexels.com/photos/821365/pexels-photo-821365.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Chicken Korma': ['https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Shorshe Ilish': ['https://images.pexels.com/photos/1028714/pexels-photo-1028714.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Vegetable Khichuri': ['https://images.pexels.com/photos/1410235/pexels-photo-1410235.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Rui Macher Kalia': ['https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Chingri Malai Curry': ['https://images.pexels.com/photos/1028714/pexels-photo-1028714.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Chicken Rezala': ['https://images.pexels.com/photos/3026808/pexels-photo-3026808.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Paneer Butter Masala': ['https://images.pexels.com/photos/1624500/pexels-photo-1624500.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Aloo Paratha with Curd': ['https://images.pexels.com/photos/1410235/pexels-photo-1410235.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Egg Bhurji with Ruti': ['https://images.pexels.com/photos/821365/pexels-photo-821365.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Puri with Aloo Bhaji': ['https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Dal Tadka': ['https://images.pexels.com/photos/1410235/pexels-photo-1410235.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Mixed Vegetable Bhaji': ['https://images.pexels.com/photos/1028714/pexels-photo-1028714.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Begun Bhaji': ['https://images.pexels.com/photos/821365/pexels-photo-821365.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Raita': ['https://images.pexels.com/photos/3026808/pexels-photo-3026808.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Payesh': ['https://images.pexels.com/photos/1624500/pexels-photo-1624500.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Mishti Doi': ['https://images.pexels.com/photos/1410235/pexels-photo-1410235.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Rosogolla': ['https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
+  'Gulab Jamun': ['https://images.pexels.com/photos/821365/pexels-photo-821365.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop'],
 }
 
 const dishImageFallbacks = [
-  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1200&q=80',
-  'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=1200&q=80',
-  'https://images.unsplash.com/photo-1481931098730-318b6f776db0?auto=format&fit=crop&w=1200&q=80',
+  'https://images.pexels.com/photos/1624487/pexels-photo-1624487.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop',
+  'https://images.pexels.com/photos/1028714/pexels-photo-1028714.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop',
+  'https://images.pexels.com/photos/3026808/pexels-photo-3026808.jpeg?auto=compress&cs=tinysrgb&w=1200&h=800&fit=crop',
 ]
 
 const planCoverImages = [
-  'https://images.unsplash.com/photo-1504674900247-083b8b43c0f8?auto=format&fit=crop&w=1400&q=80',
-  'https://images.unsplash.com/photo-1478145046317-39f10e56b5e9?auto=format&fit=crop&w=1400&q=80',
-  'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=1400&q=80',
-  'https://images.unsplash.com/photo-1504674900247-508b5e07f2b3?auto=format&fit=crop&w=1400&q=80',
+  'https://images.pexels.com/photos/1410235/pexels-photo-1410235.jpeg?auto=compress&cs=tinysrgb&w=1400&h=800&fit=crop',
+  'https://images.pexels.com/photos/1092730/pexels-photo-1092730.jpeg?auto=compress&cs=tinysrgb&w=1400&h=800&fit=crop',
+  'https://images.pexels.com/photos/1028714/pexels-photo-1028714.jpeg?auto=compress&cs=tinysrgb&w=1400&h=800&fit=crop',
+  'https://images.pexels.com/photos/821365/pexels-photo-821365.jpeg?auto=compress&cs=tinysrgb&w=1400&h=800&fit=crop',
 ]
 
 const getKitchenCoverImage = (index: number) => kitchenCoverImages[index % kitchenCoverImages.length]
@@ -339,7 +349,7 @@ async function main() {
           name: `${dishTemplate.name}`,
           description: descriptions[Math.floor(Math.random() * descriptions.length)],
           category: dishTemplate.category,
-          price: roundPrice(dishTemplate.price + (Math.random() * 50 - 25)),
+          price: generatePrice(dishTemplate.price - 25, dishTemplate.price + 25),
           prepTime: dishTemplate.prepTime,
           calories: dishTemplate.calories,
           spiciness: dishTemplate.spiciness,
@@ -419,12 +429,12 @@ async function main() {
           kitchen_id: kitchen.id,
           name: planTemplate.name,
           description: planTemplate.description,
-          price: planTemplate.price,
+          price: generatePrice(planTemplate.price - 50, planTemplate.price + 50),
           meals_per_day: planTemplate.mealsPerDay,
           servings_per_meal: planTemplate.servingsPerMeal,
           is_active: true,
           subscriber_count: Math.floor(Math.random() * 20),
-          monthly_revenue: planTemplate.price * Math.floor(Math.random() * 20),
+          monthly_revenue: generatePrice(5000, 10000),
           rating: randomRating(4.0, 5.0),
           calories: 600 * planTemplate.mealsPerDay,
           protein: '30g',
@@ -508,10 +518,10 @@ async function main() {
       const orderItems = orderedDishes.map(dish => ({
         menuItemId: dish.id,
         quantity: 1 + Math.floor(Math.random() * 3), // 1-3 quantity
-        price: roundPrice(dish.price),
+        price: dish.price,
       }))
       
-      const total = roundPrice(orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0))
+      const total = roundPriceToEndDigits(orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0))
       
       // Order created 1-30 days ago
       const daysAgo = Math.floor(Math.random() * 30) + 1
@@ -695,8 +705,8 @@ async function main() {
           useChefContainers: Math.random() > 0.3,
           monthlyPrice: plan.price,
           deliveryFee: 50,
-          discount: Math.random() > 0.7 ? 500 : 0,
-          totalAmount: plan.price + 50 - (Math.random() > 0.7 ? 500 : 0),
+          discount: Math.random() > 0.7 ? generatePrice(100, 500) : 0,
+          totalAmount: plan.price + 50,
           confirmedAt: status === 'ACTIVE' ? startDate : null,
         },
       })
