@@ -1,8 +1,43 @@
 "use client";
 
-import React, { useState, useCallback, memo } from "react";
-import { TrendingUp, DollarSign, ShoppingBag, Star, Brain, Calendar, ThumbsUp, ThumbsDown, Sparkles, RefreshCw } from "lucide-react";
 import { ANALYTICS_DATA } from "@/lib/dummy-data/chef";
+import { AlertTriangle, Brain, Calendar, DollarSign, Lightbulb, MessageSquare, RefreshCw, ShoppingBag, Sparkles, Star, ThumbsUp, TrendingUp } from "lucide-react";
+import React, { memo, useCallback, useState } from "react";
+
+// Types for AI insights
+interface PositiveTheme {
+  theme: string;
+  count: number;
+  keywords: string[];
+}
+
+interface ImprovementArea {
+  issue: string;
+  count: number;
+  sample_review: string;
+  suggestion: string;
+  affected_dishes: string[];
+}
+
+interface ReviewInsights {
+  summary: {
+    total_reviews: number;
+    positive_count: number;
+    negative_count: number;
+    neutral_count: number;
+    avg_rating: number;
+  };
+  positive_themes: PositiveTheme[];
+  improvement_areas: ImprovementArea[];
+}
+
+interface KitchenInsight {
+  type: string;
+  priority: string;
+  title: string;
+  description: string;
+  metric: Record<string, any>;
+}
 
 // Memoized KPI Card Component
 const KPICard = memo(({ icon: Icon, label, value, growth, color, isLoading }: {
@@ -129,8 +164,12 @@ export default function AnalyticsPage() {
   const [kpiData, setKpiData] = useState(ANALYTICS_DATA.kpis);
   const [chartData, setChartData] = useState(ANALYTICS_DATA.revenueChart);
   const [topDishes, setTopDishes] = useState(ANALYTICS_DATA.topDishes);
-  const [sentiment, setSentiment] = useState(ANALYTICS_DATA.sentiment);
-  const [insights, setInsights] = useState(ANALYTICS_DATA.aiInsights);
+  const [reviewInsights, setReviewInsights] = useState<ReviewInsights>({
+    summary: { total_reviews: 0, positive_count: 0, negative_count: 0, neutral_count: 0, avg_rating: 0 },
+    positive_themes: [],
+    improvement_areas: []
+  });
+  const [kitchenInsights, setKitchenInsights] = useState<KitchenInsight[]>([]);
   const [additionalStats, setAdditionalStats] = useState({
     customerRetention: 78,
     avgOrderValue: 352,
@@ -146,7 +185,7 @@ export default function AnalyticsPage() {
           fetch('/api/chef/analytics/kpis?days=30'),
           fetch('/api/chef/analytics/chart?days=30'),
           fetch('/api/chef/analytics/dishes?days=30'),
-          fetch('/api/chef/analytics/insights?days=30'),
+          fetch('/api/chef/analytics/ai-insights?days=30'),
         ]);
 
         // Process KPIs
@@ -170,11 +209,15 @@ export default function AnalyticsPage() {
         }
         setDishesLoading(false);
 
-        // Process Insights
+        // Process AI Insights from ML service
         if (insightsRes.ok) {
           const insightsData = await insightsRes.json();
-          setSentiment(insightsData.sentiment);
-          setInsights(insightsData.aiInsights);
+          if (insightsData.review_insights) {
+            setReviewInsights(insightsData.review_insights);
+          }
+          if (insightsData.kitchen_insights) {
+            setKitchenInsights(insightsData.kitchen_insights);
+          }
         }
         setInsightsLoading(false);
 
@@ -241,11 +284,15 @@ export default function AnalyticsPage() {
   const refreshInsights = useCallback(async () => {
     setInsightsLoading(true);
     try {
-      const response = await fetch('/api/chef/analytics/insights?days=30');
+      const response = await fetch('/api/chef/analytics/ai-insights?days=30');
       if (response.ok) {
         const data = await response.json();
-        setSentiment(data.sentiment);
-        setInsights(data.aiInsights);
+        if (data.review_insights) {
+          setReviewInsights(data.review_insights);
+        }
+        if (data.kitchen_insights) {
+          setKitchenInsights(data.kitchen_insights);
+        }
       }
     } catch (error) {
       console.error('Failed to refresh insights:', error);
@@ -412,7 +459,14 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Review Sentiment Analysis */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">What Customers Are Saying</h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">What Customers Are Saying</h3>
+              {reviewInsights.summary.total_reviews > 0 && (
+                <span className="text-sm text-gray-500">
+                  {reviewInsights.summary.total_reviews} reviews
+                </span>
+              )}
+            </div>
             
             {insightsLoading ? (
               <div className="space-y-4">
@@ -420,80 +474,134 @@ export default function AnalyticsPage() {
                 <div className="h-20 bg-gray-200 animate-pulse rounded"></div>
               </div>
             ) : (
-              <div className="space-y-4">
-                {/* Positive Sentiment */}
+              <div className="space-y-5">
+                {/* Positive Themes */}
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <ThumbsUp className="text-green-600" size={18} />
-                    <span className="font-semibold text-green-700">Positive Feedback</span>
+                    <span className="font-semibold text-green-700">
+                      Positive Feedback ({reviewInsights.summary.positive_count})
+                    </span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {sentiment.positive.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-3 py-1.5 bg-green-100 text-green-700 text-sm font-semibold rounded-full"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                  {reviewInsights.positive_themes.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {reviewInsights.positive_themes.map((theme) => (
+                        <span
+                          key={theme.theme}
+                          className="px-3 py-1.5 bg-green-100 text-green-700 text-sm font-semibold rounded-full"
+                          title={`${theme.count} mentions`}
+                        >
+                          {theme.theme}
+                          <span className="ml-1 text-green-600 text-xs">({theme.count})</span>
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No positive feedback themes detected yet.</p>
+                  )}
                 </div>
 
-                {/* Negative Sentiment */}
+                {/* Improvement Areas with Suggestions */}
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <ThumbsDown className="text-red-600" size={18} />
-                    <span className="font-semibold text-red-700">Areas for Improvement</span>
+                    <AlertTriangle className="text-amber-600" size={18} />
+                    <span className="font-semibold text-amber-700">
+                      Areas for Improvement ({reviewInsights.summary.negative_count})
+                    </span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {sentiment.negative.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-3 py-1.5 bg-red-100 text-red-700 text-sm font-semibold rounded-full"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                  {reviewInsights.improvement_areas.length > 0 ? (
+                    <div className="space-y-3">
+                      {reviewInsights.improvement_areas.map((area) => (
+                        <div 
+                          key={area.issue}
+                          className="p-3 bg-amber-50 border border-amber-200 rounded-lg"
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-amber-800 text-sm">
+                              {area.issue}
+                            </span>
+                            <span className="text-xs text-amber-600">
+                              ({area.count} {area.count === 1 ? 'mention' : 'mentions'})
+                            </span>
+                          </div>
+                          {area.sample_review && (
+                            <div className="flex items-start gap-2 mb-2">
+                              <MessageSquare className="text-gray-400 mt-0.5" size={14} />
+                              <p className="text-xs text-gray-600 italic">
+                                "{area.sample_review}..."
+                              </p>
+                            </div>
+                          )}
+                          <div className="flex items-start gap-2">
+                            <Lightbulb className="text-amber-500 mt-0.5 flex-shrink-0" size={14} />
+                            <p className="text-xs text-amber-700 font-medium">
+                              {area.suggestion}
+                            </p>
+                          </div>
+                          {area.affected_dishes.length > 0 && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              Affected: {area.affected_dishes.join(", ")}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      No major issues detected. Great job!
+                    </p>
+                  )}
                 </div>
               </div>
             )}
           </div>
 
-          {/* AI Recommendations */}
+          {/* Kitchen Insights */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Actionable Insights</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Kitchen Insights</h3>
             
             {insightsLoading ? (
               <div className="space-y-4">
-                <div className="h-32 bg-gray-200 animate-pulse rounded"></div>
-                <div className="h-32 bg-gray-200 animate-pulse rounded"></div>
+                <div className="h-24 bg-gray-200 animate-pulse rounded"></div>
+                <div className="h-24 bg-gray-200 animate-pulse rounded"></div>
               </div>
-            ) : (
+            ) : kitchenInsights.length > 0 ? (
               <div className="space-y-4">
-                {insights.map((insight) => (
+                {kitchenInsights.map((insight, index) => (
                   <div
-                    key={insight.id}
-                    className="p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 border-l-4 border-yellow-400 rounded-lg"
+                    key={`${insight.type}-${index}`}
+                    className={`p-4 rounded-lg border-l-4 ${
+                      insight.priority === "high"
+                        ? "bg-gradient-to-r from-yellow-50 to-yellow-100 border-yellow-400"
+                        : insight.priority === "medium"
+                        ? "bg-gradient-to-r from-blue-50 to-blue-100 border-blue-400"
+                        : "bg-gradient-to-r from-gray-50 to-gray-100 border-gray-400"
+                    }`}
                   >
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <h4 className="font-bold text-gray-900">{insight.title}</h4>
                       <span
                         className={`px-2 py-0.5 text-xs font-bold rounded ${
-                          insight.impact === "high"
+                          insight.priority === "high"
                             ? "bg-red-100 text-red-700"
-                            : "bg-orange-100 text-orange-700"
+                            : insight.priority === "medium"
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-gray-200 text-gray-600"
                         }`}
                       >
-                        {insight.impact.toUpperCase()}
+                        {insight.priority.toUpperCase()}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-700 mb-3">{insight.description}</p>
-                    <button className="px-4 py-2 bg-yellow-400 text-gray-900 font-semibold rounded-lg hover:bg-yellow-500 transition text-sm">
-                      Apply Suggestion
-                    </button>
+                    <p className="text-sm text-gray-700">{insight.description}</p>
                   </div>
                 ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Brain className="mx-auto text-gray-300 mb-3" size={48} />
+                <p className="text-gray-500">
+                  Start receiving orders to see AI-powered insights here.
+                </p>
               </div>
             )}
           </div>
