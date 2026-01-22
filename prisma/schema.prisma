@@ -33,8 +33,8 @@ model User {
   notifications      Notification[]
   orders             Order[]
   reviews            Review[]
-  user_subscriptions user_subscriptions[]
   supportTickets     SupportTicket[]
+  user_subscriptions user_subscriptions[]
 
   @@map("users")
 }
@@ -359,17 +359,18 @@ model user_subscriptions {
 }
 
 model SupportTicket {
-  id           String               @id @default(cuid())
-  userId       String?              @map("user_id")
-  topic        String
-  orderNumber  String?              @map("order_number")
-  message      String
-  status       SupportTicketStatus  @default(OPEN)
-  adminReply   String?              @map("admin_reply")
-  resolvedAt   DateTime?            @map("resolved_at")
-  resolvedBy   String?              @map("resolved_by")
-  updatedAt    DateTime             @updatedAt @map("updated_at")
-  user         User?                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String              @id @default(cuid())
+  userId      String?             @map("user_id")
+  topic       String
+  orderNumber String?             @map("order_number")
+  message     String
+  status      SupportTicketStatus @default(OPEN)
+  adminReply  String?             @map("admin_reply")
+  resolvedAt  DateTime?           @map("resolved_at")
+  resolvedBy  String?             @map("resolved_by")
+  created_at  DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt @map("updated_at")
+  user        User?               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([status])
