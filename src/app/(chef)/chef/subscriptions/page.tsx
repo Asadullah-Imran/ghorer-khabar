@@ -6,6 +6,7 @@ import { useConfirmation } from "@/contexts/ConfirmationContext";
 import { useToast } from "@/contexts/ToastContext";
 import { AlertCircle, ChefHat, DollarSign, Edit, Plus, Power, Trash2, TrendingUp, Users } from "lucide-react";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface MenuItem {
   id: string;
@@ -288,16 +289,25 @@ export default function SubscriptionsPage() {
           <h1 className="text-4xl font-black text-gray-900">Subscription Plans</h1>
           <p className="text-gray-500 mt-2">Configure and manage your recurring meal packages.</p>
         </div>
-        <button
-          onClick={() => {
-            setEditingSubscription(undefined);
-            setIsModalOpen(true);
-          }}
-          className="px-6 py-3 bg-yellow-400 text-gray-900 font-semibold rounded-lg hover:bg-yellow-500 transition shadow-md flex items-center gap-2"
-        >
-          <Plus size={20} />
-          Create New Plan
-        </button>
+        <div className="flex gap-3">
+          <Link
+            href="/chef/subscriptions/requests"
+            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition shadow-md flex items-center gap-2"
+          >
+            <Users size={20} />
+            View Requests
+          </Link>
+          <button
+            onClick={() => {
+              setEditingSubscription(undefined);
+              setIsModalOpen(true);
+            }}
+            className="px-6 py-3 bg-yellow-400 text-gray-900 font-semibold rounded-lg hover:bg-yellow-500 transition shadow-md flex items-center gap-2"
+          >
+            <Plus size={20} />
+            Create New Plan
+          </button>
+        </div>
       </div>
 
       {/* Metrics Grid */}
