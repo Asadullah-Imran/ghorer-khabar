@@ -106,6 +106,31 @@ const getPlanCoverImage = () => planCoverImages[Math.floor(Math.random() * planC
 async function main() {
   console.log('🌱 Starting complete seed process...\n')
 
+  // ==================== STEP 0: Cleanup Existing Data ====================
+  console.log('🧹 Cleaning up existing seed data...')
+  
+  // Delete in correct order (respecting foreign key constraints)
+  await prisma.review.deleteMany({})
+  await prisma.favorite.deleteMany({})
+  await prisma.user_subscriptions.deleteMany({})
+  await prisma.orderItem.deleteMany({})
+  await prisma.order.deleteMany({})
+  await prisma.subscription_plans.deleteMany({})
+  await prisma.ingredients.deleteMany({})
+  await prisma.menu_item_images.deleteMany({})
+  await prisma.menu_items.deleteMany({})
+  await prisma.kitchenGallery.deleteMany({})
+  await prisma.kitchen.deleteMany({})
+  await prisma.address.deleteMany({})
+  await prisma.user.deleteMany({})
+  
+  console.log('✅ Cleanup completed\n')
+
+  // Hash the common password for all users (testing purposes)
+  const commonPassword = 'asdfasdf'
+  const hashedPassword = await bcrypt.hash(commonPassword, 10)
+  console.log(`🔐 Using password: "${commonPassword}" (hashed with bcrypt)\n`)
+
   // ==================== STEP 1: Create 5 Sellers/Chefs ====================
   console.log('👨‍🍳 Creating 5 sellers/chefs...')
   
@@ -152,7 +177,6 @@ async function main() {
     },
   ]
 
-  const hashedPassword = await bcrypt.hash('Chef123!@#', 10)
   const sellers: any[] = []
   const kitchens: any[] = []
 
@@ -208,9 +232,9 @@ async function main() {
         reviewCount: Math.floor(Math.random() * 50) + 10,
         totalOrders: Math.floor(Math.random() * 200) + 50,
         totalRevenue: Math.floor(Math.random() * 100000) + 50000,
-        satisfactionRate: randomRating(85, 98),
+        satisfactionRate: randomRating(0.85, 0.98), // 85%-98% as decimal
         responseTime: Math.floor(Math.random() * 30) + 5, // 5-35 minutes
-        deliveryRate: randomRating(90, 99),
+        deliveryRate: randomRating(0.90, 0.99), // 90%-99% as decimal
         coverImage: getKitchenCoverImage(sellerIndex),
         profileImage: `https://ui-avatars.com/api/?name=${encodeURIComponent(sellerData.kitchenName)}&background=random`,
       },
@@ -398,7 +422,6 @@ async function main() {
   const firstNames = ['Rahim', 'Karim', 'Jamal', 'Farhan', 'Imran', 'Sadiq', 'Tanvir', 'Rashid', 'Habib', 'Nasir', 'Ayesha', 'Fatima', 'Zara', 'Nadia', 'Samira', 'Lubna', 'Sadia', 'Rabia', 'Amina', 'Mariam', 'Tasnim', 'Farah', 'Sabrina', 'Riya', 'Priya']
   const lastNames = ['Rahman', 'Ahmed', 'Khan', 'Islam', 'Hossain', 'Ali', 'Begum', 'Akter', 'Uddin', 'Chowdhury']
   
-  const customerPassword = await bcrypt.hash('Customer123!', 10)
   const customers: any[] = []
 
   for (let i = 0; i < 25; i++) {
@@ -414,7 +437,7 @@ async function main() {
         id: `customer_${Math.random().toString(36).substring(7)}`,
         name: fullName,
         email: email,
-        password: customerPassword,
+        password: hashedPassword,
         role: 'BUYER',
         emailVerified: true,
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=random`,
@@ -470,6 +493,13 @@ async function main() {
       const orderDate = new Date()
       orderDate.setDate(orderDate.getDate() - daysAgo)
       
+      // Delivery date is 1-2 days after order for completed, or future for pending
+      const deliveryDate = new Date(orderDate)
+      deliveryDate.setDate(deliveryDate.getDate() + (Math.random() > 0.5 ? 1 : 2))
+      
+      const mealSlots = ['BREAKFAST', 'LUNCH', 'DINNER']
+      const deliveryTimeSlot = mealSlots[Math.floor(Math.random() * mealSlots.length)]
+      
       const status = orderStatuses[Math.floor(Math.random() * orderStatuses.length)]
       
       const order = await prisma.order.create({
@@ -478,6 +508,8 @@ async function main() {
           kitchenId: kitchen.id,
           total: total,
           status: status as any,
+          delivery_date: deliveryDate,
+          delivery_time_slot: deliveryTimeSlot as any,
           notes: Math.random() > 0.7 ? 'Please deliver before 2 PM' : null,
           createdAt: orderDate,
           updatedAt: orderDate,
@@ -590,8 +622,7 @@ async function main() {
   console.log(`📅 Subscriptions: ${totalSubscriptions}`)
   console.log('='.repeat(50))
   console.log('\n📝 Login Credentials:')
-  console.log('   Chefs: chef-email@ghorerkhabar.com / Chef123!@#')
-  console.log('   Customers: firstname.lastname#@customer.com / Customer123!')
+  console.log(`   Password (all users): ${commonPassword}`)
   console.log('\n💡 Example emails:')
   console.log('   Chef: fatima.rahman@ghorerkhabar.com')
   console.log('   Customer: rahim.rahman0@customer.com')
