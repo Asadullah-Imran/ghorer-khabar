@@ -2,7 +2,7 @@
 
 import AdminHeader from "@/components/admin/AdminHeader";
 import { useConfirmation } from "@/contexts/ConfirmationContext";
-import { Eye, Mail, Search, Shield } from "lucide-react";
+import { Eye, Mail, Search, Shield, Download } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface User {
@@ -94,6 +94,23 @@ export default function UsersPage() {
       } finally {
         setConfirmLoading(false);
       }
+    }
+  };
+
+  const handleExportUserOrders = async (userId: string, userName: string) => {
+    try {
+      const res = await fetch(`/api/user/export-orders?buyerId=${userId}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `orders-${userName.replace(/\s+/g, "-")}-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to export user orders:", error);
     }
   };
 
@@ -216,12 +233,23 @@ export default function UsersPage() {
                         {new Date(user.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
-                        <button
-                          onClick={() => setSelectedUser(user)}
-                          className="text-primary hover:text-primary/80 transition-colors"
-                        >
-                          <Eye size={18} />
-                        </button>
+                        <div className="flex items-center gap-3">
+                          {user.role === "BUYER" && (
+                            <button
+                              onClick={() => handleExportUserOrders(user.id, user.name)}
+                              title="Export user's orders"
+                              className="text-primary hover:text-primary/80 transition-colors"
+                            >
+                              <Download size={18} />
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setSelectedUser(user)}
+                            className="text-primary hover:text-primary/80 transition-colors"
+                          >
+                            <Eye size={18} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))

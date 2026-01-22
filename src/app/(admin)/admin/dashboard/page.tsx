@@ -72,6 +72,8 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dateRange, setDateRange] = useState<"1week" | "1month">("1month");
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -88,20 +90,24 @@ export default function AdminDashboard() {
     fetchStats();
   }, []);
 
-  const handleExport = async () => {
+  const handleExport = async (range: "1week" | "1month") => {
     try {
-      const res = await fetch("/api/admin/export");
+      setExporting(true);
+      const res = await fetch(`/api/admin/export?dateRange=${range}`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `dashboard-report-${new Date().toISOString().split("T")[0]}.csv`;
+      const rangeLabel = range === "1week" ? "7-days" : "30-days";
+      a.download = `dashboard-report-${rangeLabel}-${new Date().toISOString().split("T")[0]}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Failed to export report:", error);
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -172,12 +178,58 @@ export default function AdminDashboard() {
               Real-time analytics and insights
             </p>
           </div>
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-background-dark font-bold rounded-lg text-sm shadow-[0_0_15px_rgba(17,212,180,0.3)] hover:shadow-[0_0_25px_rgba(17,212,180,0.5)]"
-          >
-            <Download size={16} /> Export Report
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Date Range Selector */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDateRange("1week")}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                  dateRange === "1week"
+                    ? "bg-primary text-background-dark"
+                    : "bg-neutral-700 text-white hover:bg-neutral-600"
+                }`}
+              >
+                Last 7 Days
+              </button>
+              <button
+                onClick={() => setDateRange("1month")}
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                  dateRange === "1month"
+                    ? "bg-primary text-background-dark"
+                    : "bg-neutral-700 text-white hover:bg-neutral-600"
+                }`}
+              >
+                Last 30 Days
+              </button>
+            </div>
+            {/* Export Dropdown */}
+            <div className="relative group">
+              <button
+                disabled={exporting}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-background-dark font-bold rounded-lg text-sm shadow-[0_0_15px_rgba(17,212,180,0.3)] hover:shadow-[0_0_25px_rgba(17,212,180,0.5)] disabled:opacity-50"
+              >
+                <Download size={16} />
+                {exporting ? "Exporting..." : "Export Report"}
+              </button>
+              {/* Dropdown Menu */}
+              <div className="absolute right-0 top-full mt-1 w-48 bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                <button
+                  onClick={() => handleExport("1week")}
+                  disabled={exporting}
+                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-neutral-700 first:rounded-t-lg disabled:opacity-50"
+                >
+                  Last 7 Days Report
+                </button>
+                <button
+                  onClick={() => handleExport("1month")}
+                  disabled={exporting}
+                  className="w-full text-left px-4 py-2 text-sm text-white hover:bg-neutral-700 last:rounded-b-lg disabled:opacity-50"
+                >
+                  Last 30 Days Report
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Stats Grid */}
