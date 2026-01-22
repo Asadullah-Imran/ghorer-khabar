@@ -8,6 +8,7 @@ export async function GET(req: NextRequest) {
     const take = parseInt(searchParams.get("take") || "10");
     const role = searchParams.get("role");
     const search = searchParams.get("search");
+    const top = searchParams.get("top"); // "buyer" | "seller"
 
     const where: any = {};
     if (role) where.role = role;
@@ -16,6 +17,87 @@ export async function GET(req: NextRequest) {
         { name: { contains: search, mode: "insensitive" } },
         { email: { contains: search, mode: "insensitive" } },
       ];
+    }
+
+    // If requesting top sellers or buyers, compute based on aggregates
+    if (top === "seller") {
+      // Aggregate across kitchens by sellerId, order by totalRevenue desc
+      const topSellerAgg = await prisma.kitchen.groupBy({
+        by: ["sellerId"],
+        _sum: { totalRevenue: true, totalOrders: true },
+        orderBy: { _sum: { totalRevenue: "desc" } },
+        take,
+      });
+
+      const sellerIds = topSellerAgg.map((s) => s.sellerId);
+      let users = await prisma.user.findMany({
+        where: { id: { in: sellerIds } },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          emailVerified: true,
+          avatar: true,
+          phone: true,
+        },
+      });
+      // Preserve ranking order
+      const orderMap = new Map(sellerIds.map((id, idx) => [id, idx]));
+      users = users.sort((a, b) => (orderMap.get(a.id)! - orderMap.get(b.id)!));
+
+      // Apply optional search filter client-side here
+      if (search) {
+        const s = search.toLowerCase();
+        users = users.filter(
+          (u) =>
+            (u.name || "").toLowerCase().includes(s) ||
+            (u.email || "").toLowerCase().includes(s)
+        );
+      }
+
+      return NextResponse.json({ users, total: users.length });
+    }
+
+    if (top === "buyer") {
+      // Aggregate orders by userId on COMPLETED orders
+      const topBuyerAgg = await prisma.order.groupBy({
+        by: ["userId"],
+        where: { status: "COMPLETED" },
+        _sum: { total: true },
+        _count: true,
+        orderBy: { _sum: { total: "desc" } },
+        take,
+      });
+
+      const buyerIds = topBuyerAgg.map((b) => b.userId);
+      let users = await prisma.user.findMany({
+        where: { id: { in: buyerIds } },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          emailVerified: true,
+          avatar: true,
+          phone: true,
+        },
+      });
+      const orderMap = new Map(buyerIds.map((id, idx) => [id, idx]));
+      users = users.sort((a, b) => (orderMap.get(a.id)! - orderMap.get(b.id)!));
+
+      if (search) {
+        const s = search.toLowerCase();
+        users = users.filter(
+          (u) =>
+            (u.name || "").toLowerCase().includes(s) ||
+            (u.email || "").toLowerCase().includes(s)
+        );
+      }
+
+      return NextResponse.json({ users, total: users.length });
     }
 
     const [users, total] = await Promise.all([

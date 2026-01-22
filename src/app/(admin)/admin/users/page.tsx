@@ -21,16 +21,22 @@ export default function UsersPage() {
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("ALL");
+  const [topFilter, setTopFilter] = useState<string>("NONE"); // NONE | TOP_BUYER | TOP_SELLER
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
-    fetchUsers();
+    fetchUsers({ take: 200 });
   }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (opts?: { role?: string; search?: string; take?: number }) => {
     try {
-      const res = await fetch("/api/admin/users");
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (opts?.role) params.set("role", opts.role);
+      if (opts?.search) params.set("search", opts.search);
+      params.set("take", String(opts?.take ?? 200));
+      const res = await fetch(`/api/admin/users?${params.toString()}`);
       const data = await res.json();
       setUsers(data.users);
       setFilteredUsers(data.users);
@@ -43,12 +49,54 @@ export default function UsersPage() {
 
   const handleSearch = (value: string) => {
     setSearch(value);
-    applyFilters(value, roleFilter);
+    // If top filter is active, refetch from API with search
+    if (topFilter === "TOP_BUYER" || topFilter === "TOP_SELLER") {
+      fetchTopUsers(topFilter === "TOP_BUYER" ? "buyer" : "seller", value);
+    } else {
+      const roleParam = roleFilter !== "ALL" ? roleFilter : undefined;
+      fetchUsers({ role: roleParam, search: value, take: 200 });
+    }
   };
 
   const handleRoleFilter = (role: string) => {
     setRoleFilter(role);
-    applyFilters(search, role);
+    // Role filter applies only when not using top ranking
+    if (topFilter === "NONE") {
+      const roleParam = role !== "ALL" ? role : undefined;
+      fetchUsers({ role: roleParam, search, take: 200 });
+    }
+  };
+
+  const handleTopFilter = (value: string) => {
+    setTopFilter(value);
+    if (value === "NONE") {
+      // Reset to full list from server, honoring current role & search
+      const roleParam = roleFilter !== "ALL" ? roleFilter : undefined;
+      fetchUsers({ role: roleParam, search, take: 200 });
+    } else {
+      // Align role filter visually
+      if (value === "TOP_BUYER") setRoleFilter("BUYER");
+      if (value === "TOP_SELLER") setRoleFilter("SELLER");
+      fetchTopUsers(value === "TOP_BUYER" ? "buyer" : "seller", search);
+    }
+  };
+
+  const fetchTopUsers = async (top: "buyer" | "seller", searchValue?: string) => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      params.set("top", top);
+      params.set("take", "20");
+      if (searchValue) params.set("search", searchValue);
+      const res = await fetch(`/api/admin/users?${params.toString()}`);
+      const data = await res.json();
+      setUsers(data.users);
+      setFilteredUsers(data.users);
+    } catch (error) {
+      console.error("Failed to fetch top users:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const applyFilters = (searchValue: string, role: string) => {
@@ -169,12 +217,24 @@ export default function UsersPage() {
           <select
             value={roleFilter}
             onChange={(e) => handleRoleFilter(e.target.value)}
+            disabled={topFilter !== "NONE"}
             className="bg-surface-dark bg-neutral-900 border border-border-dark rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none text-white"
           >
             <option value="ALL">All Roles</option>
             <option value="BUYER">Buyers</option>
             <option value="SELLER">Sellers</option>
             <option value="ADMIN">Admins</option>
+          </select>
+
+          {/* Top Filter */}
+          <select
+            value={topFilter}
+            onChange={(e) => handleTopFilter(e.target.value)}
+            className="bg-surface-dark bg-neutral-900 border border-border-dark rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none text-white"
+          >
+            <option value="NONE">All Users</option>
+            <option value="TOP_BUYER">Top Buyers</option>
+            <option value="TOP_SELLER">Top Sellers</option>
           </select>
         </div>
 
