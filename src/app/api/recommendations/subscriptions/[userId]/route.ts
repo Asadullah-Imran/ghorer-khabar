@@ -24,29 +24,79 @@ export async function GET(
     if (maxPrice) queryParams.append('max_price', maxPrice);
     if (mealsPerDay) queryParams.append('meals_per_day', mealsPerDay);
     
+    // Check if ML service is configured
+    if (!ML_SERVICE_URL || !ML_SERVICE_API_KEY) {
+      console.error('ML Service not configured. ML_SERVICE_URL or ML_SERVICE_API_KEY missing.');
+      return NextResponse.json({
+        user_id: userId,
+        recommendations: [],
+        metadata: {
+          algorithm: 'fallback',
+          cold_start: true,
+          generated_at: new Date().toISOString(),
+          total_candidates: 0
+        }
+      });
+    }
+
     // Call ML service
-    const response = await fetch(
-      `${ML_SERVICE_URL}/api/v1/recommendations/subscriptions/${userId}?${queryParams.toString()}`,
-      {
-        headers: {
-          'X-API-Key': ML_SERVICE_API_KEY as string,
-        },
-        cache: 'no-store',
+    let response;
+    try {
+      response = await fetch(
+        `${ML_SERVICE_URL}/api/v1/recommendations/subscriptions/${userId}?${queryParams.toString()}`,
+        {
+          headers: {
+            'X-API-Key': ML_SERVICE_API_KEY as string,
+          },
+          cache: 'no-store',
+          signal: AbortSignal.timeout(10000), // 10 second timeout
+        }
+      );
+    } catch (fetchError: any) {
+      console.error('Error connecting to ML service:', fetchError);
+      if (fetchError.name === 'AbortError' || fetchError.message?.includes('ECONNREFUSED')) {
+        return NextResponse.json({
+          user_id: userId,
+          recommendations: [],
+          metadata: {
+            algorithm: 'fallback',
+            cold_start: true,
+            generated_at: new Date().toISOString(),
+            total_candidates: 0
+          }
+        });
       }
-    );
+      throw fetchError;
+    }
     
     if (!response.ok) {
-      throw new Error(`ML Service error: ${response.status}`);
+      console.error(`ML Service error ${response.status}`);
+      return NextResponse.json({
+        user_id: userId,
+        recommendations: [],
+        metadata: {
+          algorithm: 'fallback',
+          cold_start: true,
+          generated_at: new Date().toISOString(),
+          total_candidates: 0
+        }
+      });
     }
     
     const data = await response.json();
     
     return NextResponse.json(data);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching subscription recommendations:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch recommendations' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      user_id: userId || 'unknown',
+      recommendations: [],
+      metadata: {
+        algorithm: 'fallback',
+        cold_start: true,
+        generated_at: new Date().toISOString(),
+        total_candidates: 0
+      }
+    });
   }
 }
