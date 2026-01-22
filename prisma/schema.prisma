@@ -148,8 +148,6 @@ model Kitchen {
   responseTime        Int?
   deliveryRate        Decimal?             @db.Decimal(3, 2)
   operatingDays       Json?
-  max_capacity        Int                  @default(6)
-  min_prep_time_hours Int                  @default(4)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   latitude            Float?
@@ -231,7 +229,6 @@ model Order {
   @@index([userId])
   @@index([kitchenId])
   @@index([subscriptionId])
-  @@index([delivery_date, delivery_time_slot, kitchenId])
   @@map("orders")
 }
 

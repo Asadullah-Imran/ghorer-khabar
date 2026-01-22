@@ -47,20 +47,30 @@ export default function MenuManagement() {
   const [filteredItems, setFilteredItems] = useState<MenuItem[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [selectedChef, setSelectedChef] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("all");
   const [chefs, setChefs] = useState<Array<{ id: string; name: string }>>([]);
   const [categories, setCategories] = useState<string[]>([]);
+  const [skip, setSkip] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
 
   useEffect(() => {
-    fetchMenuItems();
+    setSkip(0);
+    setMenuItems([]);
+    setFilteredItems([]);
+    fetchMenuItems(0);
   }, [selectedChef, selectedCategory, sortBy]);
 
-  const fetchMenuItems = async () => {
+  const fetchMenuItems = async (skipValue: number = 0) => {
     try {
+      skipValue === 0 ? setLoading(true) : setLoadingMore(true);
+      
       const params = new URLSearchParams();
+      params.append("skip", skipValue.toString());
+      params.append("take", "10");
       if (selectedChef) params.append("chefId", selectedChef);
       if (selectedCategory) params.append("category", selectedCategory);
       if (sortBy !== "all") params.append("sortBy", sortBy);
@@ -71,24 +81,36 @@ export default function MenuManagement() {
         throw new Error(error.error || "Failed to fetch menu items");
       }
       const data = await res.json();
-      setMenuItems(data.menuItems);
-      setFilteredItems(data.menuItems);
       
-      // Extract unique chefs and categories
-      const uniqueChefs = Array.from(
-        new Map(data.menuItems.map((item: MenuItem) => [item.users.id, item.users])).values()
-      );
-      setChefs(uniqueChefs as Array<{ id: string; name: string }>);
+      if (skipValue === 0) {
+        setMenuItems(data.menuItems);
+        setFilteredItems(data.menuItems);
+      } else {
+        setMenuItems((prev) => [...prev, ...data.menuItems]);
+        setFilteredItems((prev) => [...prev, ...data.menuItems]);
+      }
       
-      const uniqueCategories = Array.from(
-        new Set(data.menuItems.map((item: MenuItem) => item.category))
-      ).sort();
-      setCategories(uniqueCategories as string[]);
+      setHasMore(data.hasMore);
+      setSkip(skipValue + 10);
+      
+      // Extract unique chefs and categories only on first load
+      if (skipValue === 0) {
+        const uniqueChefs = Array.from(
+          new Map(data.menuItems.map((item: MenuItem) => [item.users.id, item.users])).values()
+        );
+        setChefs(uniqueChefs as Array<{ id: string; name: string }>);
+        
+        const uniqueCategories = Array.from(
+          new Set(data.menuItems.map((item: MenuItem) => item.category))
+        ).sort();
+        setCategories(uniqueCategories as string[]);
+      }
     } catch (error) {
       console.error("Failed to fetch menu items:", error);
       toast.error("Failed to load menu items", error instanceof Error ? error.message : "");
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -187,7 +209,7 @@ export default function MenuManagement() {
     }
   };
 
-  if (loading) {
+  if (loading && menuItems.length === 0) {
     return (
       <main className="flex-1 flex items-center justify-center">
         <div className="text-center">
@@ -347,7 +369,14 @@ export default function MenuManagement() {
 
         {/* Menu Items Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredItems.length === 0 ? (
+          {loading && menuItems.length === 0 ? (
+            <div className="lg:col-span-3 text-center py-12">
+              <div className="inline-block">
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-primary mb-4"></div>
+                <p className="text-text-muted">Loading menu items...</p>
+              </div>
+            </div>
+          ) : filteredItems.length === 0 ? (
             <div className="lg:col-span-3 text-center py-12 bg-surface-dark border border-border-dark rounded-xl">
               <p className="text-text-muted text-lg">No menu items found</p>
             </div>
@@ -462,6 +491,19 @@ export default function MenuManagement() {
             ))
           )}
         </div>
+
+        {/* Load More Button */}
+        {hasMore && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={() => fetchMenuItems(skip)}
+              disabled={loadingMore}
+              className="px-8 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loadingMore ? "Loading..." : `See More`}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Detail Modal */}

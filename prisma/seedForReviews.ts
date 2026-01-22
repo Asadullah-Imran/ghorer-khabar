@@ -94,12 +94,19 @@ async function seedReviews() {
     
     for (let i = orders.length; i < SAMPLE_REVIEWS.length; i++) {
       const menuItem = menuItems[i % menuItems.length];
+      // Set delivery date to tomorrow from now
+      const deliveryDate = new Date();
+      deliveryDate.setDate(deliveryDate.getDate() + 1);
+      deliveryDate.setHours(13, 0, 0, 0); // Default to lunch time (1 PM)
+
       const order = await prisma.order.create({
         data: {
           userId: buyerUser.id,
           kitchenId: kitchen.id,
           status: OrderStatus.COMPLETED,
           total: Number(menuItem.price),
+          deliveryDate: deliveryDate,
+          deliveryTimeSlot: "LUNCH", // Default to lunch for seed data
           items: {
             create: {
               menuItemId: menuItem.id,

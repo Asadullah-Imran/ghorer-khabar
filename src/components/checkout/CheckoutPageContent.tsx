@@ -13,11 +13,14 @@ import {
     MapPin,
     ShieldCheck,
     Truck,
-    UserCheck
+    UserCheck,
+    Calendar,
+    UtensilsCrossed
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { MealTimeSlot, MEAL_TIME_SLOTS, getAllMealSlots } from "@/lib/constants/mealTimeSlots";
 
 export default function CheckoutPageContent({ userData }: { userData: any }) {
   const router = useRouter();
@@ -93,7 +96,59 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
     phone: userData.phone,
     address: userData.savedAddress || "",
     note: "",
+    deliveryDate: "", // Will be set to tomorrow
+    deliveryTimeSlot: "" as MealTimeSlot | "",
   });
+
+  // Available time slots
+  const [availableSlots, setAvailableSlots] = useState<any[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+
+  // Set default delivery date to tomorrow
+  useEffect(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+    const dateString = tomorrow.toISOString().split("T")[0];
+    setFormData(prev => ({ ...prev, deliveryDate: dateString }));
+  }, []);
+
+  // Fetch available time slots when items or delivery date changes
+  useEffect(() => {
+    const fetchAvailableSlots = async () => {
+      if (!kitchenId || items.length === 0 || !formData.deliveryDate) {
+        return;
+      }
+
+      try {
+        setLoadingSlots(true);
+        const menuItemIds = items.map(item => item.id);
+        
+        const response = await fetch(
+          `/api/orders/available-slots?kitchenId=${kitchenId}&menuItemIds=${JSON.stringify(menuItemIds)}&deliveryDate=${formData.deliveryDate}`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setAvailableSlots(data.data?.slots || []);
+          
+          // Auto-select first available slot if none selected
+          if (!formData.deliveryTimeSlot) {
+            const firstAvailable = data.data?.slots?.find((slot: any) => slot.available);
+            if (firstAvailable) {
+              setFormData(prev => ({ ...prev, deliveryTimeSlot: firstAvailable.slot }));
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch available slots:", error);
+      } finally {
+        setLoadingSlots(false);
+      }
+    };
+
+    fetchAvailableSlots();
+  }, [kitchenId, items, formData.deliveryDate]);
 
   const handleLocationSelect = (lat: number, lng: number, address?: string) => {
     if (address) {
@@ -103,6 +158,18 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate delivery date and time slot
+    if (!formData.deliveryDate) {
+      toast.error("Validation Error", "Please select a delivery date");
+      return;
+    }
+
+    if (!formData.deliveryTimeSlot) {
+      toast.error("Validation Error", "Please select a delivery time slot");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -112,6 +179,8 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
             body: JSON.stringify({
                 items: items.map(i => ({ id: i.id, quantity: i.quantity })),
                 notes: formData.note,
+                deliveryDate: formData.deliveryDate,
+                deliveryTimeSlot: formData.deliveryTimeSlot,
                 deliveryDetails: {
                     name: formData.name,
                     phone: formData.phone,
@@ -261,6 +330,129 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
                     <MapPin size={20} />
                  </button>
                </div>
+            </div>
+
+            {/* Delivery Date & Time Slot */}
+            <div className="flex flex-col gap-4">
+              <div>
+                <span className="text-gray-900 text-sm font-semibold pb-2 block">
+                  Delivery Date & Time
+                </span>
+                <p className="text-xs text-gray-500 mb-3">
+                  Orders must be placed at least 36 hours before delivery
+                </p>
+              </div>
+
+              {/* Delivery Date */}
+              <div>
+                <label className="flex flex-col">
+                  <span className="text-xs text-gray-600 mb-2">Delivery Date</span>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <input
+                      required
+                      type="date"
+                      min={(() => {
+                        const tomorrow = new Date();
+                        tomorrow.setDate(tomorrow.getDate() + 1);
+                        return tomorrow.toISOString().split("T")[0];
+                      })()}
+                      className="w-full rounded-lg border border-gray-300 bg-white h-12 pl-10 pr-4 text-base focus:border-teal-600 focus:ring-1 focus:ring-teal-600 outline-none transition-all"
+                      value={formData.deliveryDate}
+                      onChange={(e) => {
+                        setFormData({ ...formData, deliveryDate: e.target.value, deliveryTimeSlot: "" });
+                      }}
+                    />
+                  </div>
+                </label>
+              </div>
+
+              {/* Time Slot Selector */}
+              <div>
+                <label className="flex flex-col">
+                  <span className="text-xs text-gray-600 mb-2">Meal Time</span>
+                  {loadingSlots ? (
+                    <div className="flex items-center justify-center h-12 border border-gray-300 rounded-lg bg-gray-50">
+                      <Loader2 className="animate-spin text-teal-600" size={20} />
+                      <span className="ml-2 text-sm text-gray-600">Loading available slots...</span>
+                    </div>
+                  ) : availableSlots.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-3">
+                      {availableSlots.map((slot) => (
+                        <button
+                          key={slot.slot}
+                          type="button"
+                          onClick={() => {
+                            if (slot.available) {
+                              setFormData({ ...formData, deliveryTimeSlot: slot.slot });
+                            }
+                          }}
+                          disabled={!slot.available}
+                          className={`p-4 rounded-lg border-2 transition-all text-left ${
+                            formData.deliveryTimeSlot === slot.slot
+                              ? "border-teal-600 bg-teal-50"
+                              : slot.available
+                              ? "border-gray-200 hover:border-teal-300 hover:bg-gray-50"
+                              : "border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <UtensilsCrossed
+                                size={16}
+                                className={
+                                  formData.deliveryTimeSlot === slot.slot
+                                    ? "text-teal-600"
+                                    : "text-gray-400"
+                                }
+                              />
+                              <span
+                                className={`text-sm font-bold ${
+                                  formData.deliveryTimeSlot === slot.slot
+                                    ? "text-teal-700"
+                                    : slot.available
+                                    ? "text-gray-900"
+                                    : "text-gray-500"
+                                }`}
+                              >
+                                {slot.displayName}
+                              </span>
+                            </div>
+                            {formData.deliveryTimeSlot === slot.slot && (
+                              <BadgeCheck size={16} className="text-teal-600" />
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-600">{slot.time}</span>
+                            {slot.available ? (
+                              <span className="text-xs text-green-600 font-medium">
+                                {slot.capacity} slots left
+                              </span>
+                            ) : (
+                              <span className="text-xs text-red-600 font-medium">
+                                {slot.reason || "Unavailable"}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-lg border border-gray-300 bg-gray-50 text-center">
+                      <p className="text-sm text-gray-600">No time slots available</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Please check back later or try a different date
+                      </p>
+                    </div>
+                  )}
+                </label>
+                {formData.deliveryTimeSlot && (
+                  <p className="text-xs text-teal-600 mt-2 flex items-center gap-1">
+                    <Info size={12} />
+                    Selected: {MEAL_TIME_SLOTS[formData.deliveryTimeSlot as MealTimeSlot].displayName} at {MEAL_TIME_SLOTS[formData.deliveryTimeSlot as MealTimeSlot].time}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Note */}
