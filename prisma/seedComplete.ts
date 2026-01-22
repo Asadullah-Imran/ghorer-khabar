@@ -173,6 +173,21 @@ async function main() {
   const commonPassword = 'asdfasdf'
   const hashedPassword = await bcrypt.hash(commonPassword, 10)
   console.log(`🔐 Using password: "${commonPassword}" (hashed with bcrypt)\n`)
+  // ==================== STEP 0.5: Create Admin User ====================
+  console.log('👤 Creating admin user...')
+  const admin = await prisma.user.create({
+    data: {
+      id: `admin_${Math.random().toString(36).substring(7)}`,
+      name: 'Admin',
+      email: 'admin@ghorerkhabar.com',
+      password: hashedPassword,
+      role: 'ADMIN',
+      emailVerified: true,
+      avatar: 'https://ui-avatars.com/api/?name=Admin&background=FF6B6B',
+    },
+  })
+  console.log(`✅ Admin created: ${admin.email}\n`)
+
 
   // ==================== STEP 1: Create 5 Sellers/Chefs ====================
   console.log('👨‍🍳 Creating 5 sellers/chefs...')
