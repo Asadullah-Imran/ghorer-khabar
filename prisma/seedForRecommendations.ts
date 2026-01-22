@@ -167,8 +167,8 @@ async function main() {
           status: orderData.status,
           createdAt: orderDate,
           updatedAt: orderDate,
-          deliveryDate: deliveryDate,
-          deliveryTimeSlot: "LUNCH", // Default to lunch for seed data
+          delivery_date: deliveryDate,
+          delivery_time_slot: "LUNCH", // Default to lunch for seed data
           items: {
             create: orderData.items.map(item => ({
               menuItemId: item.id,

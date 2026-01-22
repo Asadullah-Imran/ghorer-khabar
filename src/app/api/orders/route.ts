@@ -129,8 +129,8 @@ export async function POST(req: Request) {
         total: finalTotal,
         status: "PENDING",
         notes: notes || "", // Handle null/undefined notes safely
-        deliveryDate: deliveryDateParsed,
-        deliveryTimeSlot: deliveryTimeSlot,
+        delivery_date: deliveryDateParsed,
+        delivery_time_slot: deliveryTimeSlot,
         items: {
           create: orderItemsData,
         },
