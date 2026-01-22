@@ -211,21 +211,27 @@ model subscription_plans {
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  userId    String      @map("user_id")
-  kitchenId String      @map("kitchen_id")
-  total     Float
-  status    OrderStatus @default(PENDING)
-  notes     String?
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  items     OrderItem[]
-  kitchen   Kitchen     @relation(fields: [kitchenId], references: [id])
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  reviews   Review[]
+  id                 String              @id @default(cuid())
+  userId             String              @map("user_id")
+  kitchenId          String              @map("kitchen_id")
+  subscription_id    String?
+  total              Float
+  status             OrderStatus         @default(PENDING)
+  notes              String?
+  delivery_date      DateTime
+  delivery_time_slot MealType?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  items              OrderItem[]
+  kitchen            Kitchen             @relation(fields: [kitchenId], references: [id])
+  user_subscriptions user_subscriptions? @relation(fields: [subscription_id], references: [id])
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviews            Review[]
 
   @@index([userId])
   @@index([kitchenId])
+  @@index([delivery_date, delivery_time_slot, kitchenId])
+  @@index([subscription_id])
   @@map("orders")
 }
 

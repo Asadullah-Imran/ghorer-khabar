@@ -49,6 +49,39 @@ const pickRandom = <T,>(arr: T[], count: number): T[] => {
   return shuffled.slice(0, Math.min(count, arr.length))
 }
 
+// Helper function to round prices to 2 decimal places
+const roundPrice = (price: number): number => {
+  return Math.round(price * 100) / 100
+}
+
+// Helper function to create proper weekly schedule for subscription plans
+const createWeeklySchedule = (dishes: any[], mealsPerDay: number): Record<string, any> => {
+  const days = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
+  const mealTypes = ['breakfast', 'lunch', 'snacks', 'dinner']
+  const mealTimes: Record<string, string> = {
+    breakfast: '08:30',
+    lunch: '13:00',
+    snacks: '16:00',
+    dinner: '20:00',
+  }
+  
+  const schedule: Record<string, any> = {}
+  
+  for (const day of days) {
+    schedule[day] = {}
+    const selectedMeals = pickRandom(mealTypes, mealsPerDay)
+    
+    for (const meal of selectedMeals) {
+      schedule[day][meal] = {
+        time: mealTimes[meal],
+        dishIds: pickRandom(dishes, 2).map((d: any) => d.id),
+      }
+    }
+  }
+  
+  return schedule
+}
+
 // Curated image pools for a consistent, professional look
 const kitchenCoverImages = [
   'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1400&q=80',
@@ -306,7 +339,7 @@ async function main() {
           name: `${dishTemplate.name}`,
           description: descriptions[Math.floor(Math.random() * descriptions.length)],
           category: dishTemplate.category,
-          price: dishTemplate.price + (Math.random() * 50 - 25), // Add some price variation
+          price: roundPrice(dishTemplate.price + (Math.random() * 50 - 25)),
           prepTime: dishTemplate.prepTime,
           calories: dishTemplate.calories,
           spiciness: dishTemplate.spiciness,
@@ -379,15 +412,7 @@ async function main() {
         return d.chef_id === seller?.id
       })
       
-      const weeklySchedule = {
-        MONDAY: { LUNCH: pickRandom(kitchenDishes, 2).map(d => d.id) },
-        TUESDAY: { LUNCH: pickRandom(kitchenDishes, 2).map(d => d.id) },
-        WEDNESDAY: { LUNCH: pickRandom(kitchenDishes, 2).map(d => d.id) },
-        THURSDAY: { LUNCH: pickRandom(kitchenDishes, 2).map(d => d.id) },
-        FRIDAY: { LUNCH: pickRandom(kitchenDishes, 2).map(d => d.id) },
-        SATURDAY: { LUNCH: pickRandom(kitchenDishes, 2).map(d => d.id) },
-        SUNDAY: { LUNCH: pickRandom(kitchenDishes, 2).map(d => d.id) },
-      }
+      const weeklySchedule = createWeeklySchedule(kitchenDishes, planTemplate.mealsPerDay)
       
       const plan = await prisma.subscription_plans.create({
         data: {
@@ -483,10 +508,10 @@ async function main() {
       const orderItems = orderedDishes.map(dish => ({
         menuItemId: dish.id,
         quantity: 1 + Math.floor(Math.random() * 3), // 1-3 quantity
-        price: dish.price,
+        price: roundPrice(dish.price),
       }))
       
-      const total = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      const total = roundPrice(orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0))
       
       // Order created 1-30 days ago
       const daysAgo = Math.floor(Math.random() * 30) + 1
@@ -521,7 +546,6 @@ async function main() {
       
       totalOrders++
       
-      // ==================== STEP 6: Create Reviews for Completed Orders ====================
       // If order is completed, create reviews for each dish (80% chance)
       if (status === 'COMPLETED' && Math.random() > 0.2) {
         for (const item of orderItems) {
@@ -543,22 +567,96 @@ async function main() {
             'Good food but portion could be bigger.',
           ]
           
-          await prisma.review.create({
-            data: {
-              userId: customer.id,
-              menuItemId: item.menuItemId,
-              orderId: order.id,
-              rating: 3 + Math.floor(Math.random() * 3), // 3-5 stars
-              comment: reviewTexts[Math.floor(Math.random() * reviewTexts.length)],
-              createdAt: new Date(orderDate.getTime() + 24 * 60 * 60 * 1000), // 1 day after order
-            },
-          })
+          try {
+            await prisma.review.create({
+              data: {
+                userId: customer.id,
+                menuItemId: item.menuItemId,
+                orderId: order.id,
+                rating: 3 + Math.floor(Math.random() * 3), // 3-5 stars
+                comment: reviewTexts[Math.floor(Math.random() * reviewTexts.length)],
+                createdAt: new Date(orderDate.getTime() + 24 * 60 * 60 * 1000), // 1 day after order
+              },
+            })
+          } catch (e) {
+            // Skip if review already exists
+          }
         }
       }
     }
   }
   
   console.log(`✅ Created ${totalOrders} orders with reviews`)
+
+  // ==================== STEP 6: Ensure at least 10 reviews per dish ====================
+  console.log('\n⭐ Ensuring minimum 10 reviews per dish...')
+  
+  const reviewTexts = [
+    'Absolutely delicious! Will order again.',
+    'Great taste and portion size. Highly recommend!',
+    'Good food, but could use a bit more spice.',
+    'Excellent quality and packaging. Very satisfied.',
+    'Amazing flavors! Just like homemade.',
+    'Pretty good, but delivery was a bit slow.',
+    'Fantastic meal! Worth every taka.',
+    'Nice food, fresh ingredients used.',
+    'Loved it! The chef really knows their craft.',
+    'Good value for money. Will be a regular customer.',
+    'Delicious and authentic taste.',
+    'Very tasty! Perfectly cooked.',
+    'Great experience overall. Food was hot and fresh.',
+    'Enjoyed every bite! Highly recommended.',
+    'Good food but portion could be bigger.',
+    'Perfectly spiced, just the way I like it.',
+    'Can\'t wait to order again!',
+    'Reminded me of home-cooked meals.',
+    'Best meal I\'ve had this month.',
+    'Quality is unmatched in this price range.',
+  ]
+  
+  let reviewsAdded = 0
+  
+  for (const dish of allDishes) {
+    // Count existing reviews
+    const existingReviews = await prisma.review.count({
+      where: { menuItemId: dish.id }
+    })
+    
+    if (existingReviews < 10) {
+      // Need to add more reviews
+      const reviewsNeeded = 10 - existingReviews
+      
+      for (let i = 0; i < reviewsNeeded; i++) {
+        const randomCustomer = customers[Math.floor(Math.random() * customers.length)]
+        const randomOrder = await prisma.order.findFirst({
+          where: {
+            userId: randomCustomer.id,
+            status: 'COMPLETED',
+          },
+        })
+        
+        if (randomOrder) {
+          try {
+            await prisma.review.create({
+              data: {
+                userId: randomCustomer.id,
+                menuItemId: dish.id,
+                orderId: randomOrder.id,
+                rating: 3 + Math.floor(Math.random() * 3), // 3-5 stars
+                comment: reviewTexts[Math.floor(Math.random() * reviewTexts.length)],
+                createdAt: new Date(randomOrder.createdAt.getTime() + Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000),
+              },
+            })
+            reviewsAdded++
+          } catch (e) {
+            // Skip if review already exists
+          }
+        }
+      }
+    }
+  }
+  
+  console.log(`✅ Added ${reviewsAdded} additional reviews`)
 
   // ==================== STEP 7: Create Subscriptions ====================
   console.log('\n📅 Creating user subscriptions...')
@@ -637,3 +735,4 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
+
