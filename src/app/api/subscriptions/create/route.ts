@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
             isActive: true,
             isOpen: true,
             isVerified: true,
+            sellerId: true,
           },
         },
       },
@@ -122,6 +123,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "This kitchen is not verified yet" },
         { status: 400 }
+      );
+    }
+
+    // Check if user is trying to subscribe to their own kitchen's plan
+    if (plan.kitchen.sellerId === userId) {
+      console.log("[Subscription API] User trying to subscribe to their own kitchen's plan");
+      return NextResponse.json(
+        { error: "You cannot subscribe to your own kitchen's meal plans" },
+        { status: 403 }
       );
     }
 

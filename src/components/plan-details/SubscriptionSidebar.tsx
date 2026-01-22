@@ -4,7 +4,16 @@ import SubscriptionFlowManager from "@/components/subscriptions/SubscriptionFlow
 import { ShieldCheck } from "lucide-react";
 import Image from "next/image";
 
-export default function SubscriptionSidebar({ plan }: { plan: any }) {
+export default function SubscriptionSidebar({ 
+  plan, 
+  kitchenSellerId, 
+  currentUserId 
+}: { 
+  plan: any;
+  kitchenSellerId?: string | null;
+  currentUserId?: string | null;
+}) {
+  const isOwnKitchen = !!(currentUserId && kitchenSellerId && currentUserId === kitchenSellerId);
   return (
     <aside className="w-full lg:w-[360px] space-y-6">
       {/* Pricing Card */}
@@ -42,6 +51,7 @@ export default function SubscriptionSidebar({ plan }: { plan: any }) {
           kitchenArea={plan.kitchen?.area}
           mealsPerDay={plan.mealsPerDay}
           servingsPerMeal={plan.servingsPerMeal}
+          isOwnKitchen={isOwnKitchen}
         />
         <p className="text-center text-xs text-gray-400 mt-4">
           Next delivery starts from Monday, 8:00 AM

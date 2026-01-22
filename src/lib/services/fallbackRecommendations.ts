@@ -132,13 +132,14 @@ export async function getFallbackKitchenRecommendations(
     });
 
     return kitchens.map((kitchen) => {
-      const score = (kitchen.rating || 0) / 5.0 || 0.5;
+      const ratingValue = kitchen.rating ? Number(kitchen.rating) : 0;
+      const score = ratingValue / 5.0 || 0.5;
       const adjustedScore = score * (kitchen.isOpen ? 1.2 : 0.8);
       
       return {
         item_id: kitchen.id,
         kitchen_name: kitchen.name,
-        rating: kitchen.rating || 0,
+        rating: ratingValue,
         review_count: kitchen.reviewCount || 0,
         cover_image: kitchen.coverImage || '/placeholder-kitchen.jpg',
         specialty: kitchen.type || 'Home Kitchen',
@@ -188,7 +189,8 @@ export async function getFallbackSubscriptionRecommendations(
     });
 
     return plans.map((plan) => {
-      const score = (plan.rating || 0) / 5.0 || 0.5;
+      const ratingValue = plan.rating ? Number(plan.rating) : 0;
+      const score = ratingValue / 5.0 || 0.5;
       
       return {
         item_id: plan.id,
@@ -197,7 +199,7 @@ export async function getFallbackSubscriptionRecommendations(
         price: Number(plan.price),
         meals_per_day: plan.meals_per_day || 1,
         servings_per_meal: plan.servings_per_meal || 1,
-        rating: plan.rating || 0,
+        rating: ratingValue,
         image_url: plan.cover_image || '/placeholder-plan.jpg',
         kitchen_name: plan.kitchen?.name || 'Unknown Kitchen',
         reason: 'Popular subscription plan',

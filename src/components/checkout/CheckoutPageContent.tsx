@@ -73,7 +73,11 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
           // Auto-select default address if exists
           const defaultAddr = data.addresses.find((a: any) => a.isDefault);
           if (defaultAddr) {
-             setFormData(prev => ({ ...prev, address: defaultAddr.address }));
+             setFormData(prev => ({ 
+               ...prev, 
+               address: defaultAddr.address,
+               addressId: defaultAddr.id 
+             }));
           }
         }
       } catch (error) {
@@ -85,9 +89,22 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
     fetchAddresses();
   }, []);
   
+  // Delivery charge state
+  const [deliveryInfo, setDeliveryInfo] = useState<{
+    distance: number | null;
+    charge: number | null;
+    available: boolean;
+    error?: string;
+  }>({
+    distance: null,
+    charge: 60, // Default fallback
+    available: true,
+  });
+  const [loadingDelivery, setLoadingDelivery] = useState(false);
+
   // Calculate totals
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const delivery = 60; // Fixed for now
+  const delivery = deliveryInfo.charge ?? 60; // Use calculated charge or fallback
   const total = subtotal + delivery;
 
   // Form State
@@ -95,6 +112,7 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
     name: userData.fullName,
     phone: userData.phone,
     address: userData.savedAddress || "",
+    addressId: "" as string | "",
     note: "",
     deliveryDate: "", // Will be set to tomorrow
     deliveryTimeSlot: "" as MealTimeSlot | "",
@@ -103,6 +121,12 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
   // Available time slots
   const [availableSlots, setAvailableSlots] = useState<any[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
+
+  // Selected location from map picker
+  const [selectedLocation, setSelectedLocation] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
 
   // Set default delivery date to tomorrow
   useEffect(() => {
@@ -150,9 +174,98 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
     fetchAvailableSlots();
   }, [kitchenId, items, formData.deliveryDate]);
 
-  const handleLocationSelect = (lat: number, lng: number, address?: string) => {
+  // Fetch delivery charge when address or kitchen changes
+  useEffect(() => {
+    const fetchDeliveryCharge = async () => {
+      if (!kitchenId) {
+        // Reset to default if no kitchen
+        setDeliveryInfo({
+          distance: null,
+          charge: 60,
+          available: true,
+        });
+        return;
+      }
+
+      // If addressId is available, use it
+      if (formData.addressId) {
+        try {
+          setLoadingDelivery(true);
+          const response = await fetch(
+            `/api/orders/calculate-delivery?kitchenId=${kitchenId}&addressId=${formData.addressId}`
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            setDeliveryInfo(data.data);
+          } else {
+            const errorData = await response.json();
+            setDeliveryInfo({
+              distance: null,
+              charge: 60,
+              available: false,
+              error: errorData.error || "Failed to calculate delivery charge",
+            });
+          }
+        } catch (error) {
+          console.error("Failed to fetch delivery charge:", error);
+          setDeliveryInfo({
+            distance: null,
+            charge: 60,
+            available: true,
+          });
+        } finally {
+          setLoadingDelivery(false);
+        }
+      } 
+      // If location is selected from map, use lat/lng
+      else if (selectedLocation) {
+        try {
+          setLoadingDelivery(true);
+          const response = await fetch(
+            `/api/orders/calculate-delivery?kitchenId=${kitchenId}&lat=${selectedLocation.lat}&lng=${selectedLocation.lng}`
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            setDeliveryInfo(data.data);
+          } else {
+            const errorData = await response.json();
+            setDeliveryInfo({
+              distance: null,
+              charge: 60,
+              available: false,
+              error: errorData.error || "Failed to calculate delivery charge",
+            });
+          }
+        } catch (error) {
+          console.error("Failed to fetch delivery charge:", error);
+          setDeliveryInfo({
+            distance: null,
+            charge: 60,
+            available: true,
+          });
+        } finally {
+          setLoadingDelivery(false);
+        }
+      }
+      // No address selected
+      else {
+        setDeliveryInfo({
+          distance: null,
+          charge: 60,
+          available: true,
+        });
+      }
+    };
+
+    fetchDeliveryCharge();
+  }, [kitchenId, formData.addressId, selectedLocation]);
+
+  const handleLocationSelect = async (lat: number, lng: number, address?: string) => {
     if (address) {
-        setFormData(prev => ({ ...prev, address }));
+        setFormData(prev => ({ ...prev, address, addressId: "" }));
+        setSelectedLocation({ lat, lng });
     }
   };
 
@@ -170,6 +283,20 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
       return;
     }
 
+    // Validate delivery availability
+    if (!deliveryInfo.available) {
+      toast.error(
+        "Delivery Unavailable", 
+        deliveryInfo.error || "Delivery is not available for this distance. Please select a different address."
+      );
+      return;
+    }
+
+    if (!formData.addressId && !selectedLocation) {
+      toast.error("Validation Error", "Please select a delivery address with location using the map or saved addresses");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -181,6 +308,9 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
                 notes: formData.note,
                 deliveryDate: formData.deliveryDate,
                 deliveryTimeSlot: formData.deliveryTimeSlot,
+                addressId: formData.addressId || undefined,
+                deliveryLat: selectedLocation?.lat,
+                deliveryLng: selectedLocation?.lng,
                 deliveryDetails: {
                     name: formData.name,
                     phone: formData.phone,
@@ -286,17 +416,21 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
                         {addresses.map((addr) => (
                             <div 
                                 key={addr.id}
-                                onClick={() => setFormData({ ...formData, address: addr.address })}
+                                onClick={() => setFormData({ 
+                                  ...formData, 
+                                  address: addr.address,
+                                  addressId: addr.id 
+                                })}
                                 className={`p-3 rounded-lg border-2 cursor-pointer flex items-start gap-3 transition-colors ${
-                                    formData.address === addr.address 
+                                    formData.addressId === addr.id 
                                     ? "border-teal-600 bg-teal-50/50" 
                                     : "border-gray-200 hover:border-gray-300"
                                 }`}
                             >
                                 <div className={`mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                                     formData.address === addr.address ? "border-teal-600" : "border-gray-300"
+                                     formData.addressId === addr.id ? "border-teal-600" : "border-gray-300"
                                 }`}>
-                                    {formData.address === addr.address && <div className="w-2 h-2 rounded-full bg-teal-600" />}
+                                    {formData.addressId === addr.id && <div className="w-2 h-2 rounded-full bg-teal-600" />}
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-gray-900">{addr.label}</p>
@@ -316,9 +450,10 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
                      className="w-full rounded-lg border border-gray-300 bg-white h-12 px-4 text-base focus:border-teal-600 focus:ring-1 focus:ring-teal-600 outline-none transition-all placeholder:text-gray-400"
                      placeholder="House No, Road No, Area..."
                      value={formData.address}
-                     onChange={(e) =>
-                       setFormData({ ...formData, address: e.target.value })
-                     }
+                     onChange={(e) => {
+                       setFormData({ ...formData, address: e.target.value, addressId: "" });
+                       setSelectedLocation(null); // Clear map selection when typing
+                     }}
                    />
                  </div>
                  <button
@@ -330,6 +465,12 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
                     <MapPin size={20} />
                  </button>
                </div>
+               {!formData.addressId && !selectedLocation && (
+                 <p className="text-xs text-amber-600 flex items-center gap-1 mt-1">
+                   <Info size={12} />
+                   Select a saved address or use the map to get accurate delivery charges
+                 </p>
+               )}
             </div>
 
             {/* Delivery Date & Time Slot */}
@@ -572,9 +713,34 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
               <span>৳{subtotal}</span>
             </div>
             <div className="flex justify-between text-sm text-gray-500">
-              <span>Delivery Fee</span>
-              <span>৳{delivery}</span>
+              <div className="flex flex-col">
+                <span>Delivery Fee</span>
+                {deliveryInfo.distance !== null && (
+                  <span className="text-xs text-gray-400">
+                    {deliveryInfo.distance.toFixed(2)} km away
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-col items-end">
+                {loadingDelivery ? (
+                  <Loader2 className="animate-spin text-gray-400" size={14} />
+                ) : (
+                  <>
+                    <span className={deliveryInfo.available ? "" : "text-red-600"}>
+                      ৳{delivery}
+                    </span>
+                    {!deliveryInfo.available && (
+                      <span className="text-xs text-red-600">Unavailable</span>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
+            {!deliveryInfo.available && deliveryInfo.error && (
+              <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-xs text-red-700 font-medium">{deliveryInfo.error}</p>
+              </div>
+            )}
             <div className="flex justify-between text-base font-bold text-gray-900 pt-2 mt-2 border-t border-gray-100">
               <span>Total Payable</span>
               <span className="text-teal-700 text-xl">
@@ -586,8 +752,8 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
           {/* CTA Button */}
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="mt-6 w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-4 px-6 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed"
+            disabled={isSubmitting || !deliveryInfo.available || loadingDelivery}
+            className="mt-6 w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-4 px-6 rounded-lg shadow-md transition-all flex items-center justify-center gap-2 group disabled:opacity-70 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:hover:bg-gray-400"
           >
             {isSubmitting ? (
               <>

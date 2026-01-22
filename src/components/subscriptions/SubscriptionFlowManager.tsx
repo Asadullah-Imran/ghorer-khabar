@@ -13,6 +13,7 @@ interface SubscriptionFlowManagerProps {
   kitchenArea?: string;
   mealsPerDay: number;
   servingsPerMeal: number;
+  isOwnKitchen?: boolean;
 }
 
 export default function SubscriptionFlowManager({
@@ -24,6 +25,7 @@ export default function SubscriptionFlowManager({
   kitchenArea,
   mealsPerDay,
   servingsPerMeal,
+  isOwnKitchen = false,
 }: SubscriptionFlowManagerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
@@ -112,12 +114,18 @@ export default function SubscriptionFlowManager({
   return (
     <>
       {/* Subscribe Button */}
-      <button
-        onClick={handleSubscribeClick}
-        className="w-full py-3 bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all"
-      >
-        <span>Subscribe</span>
-      </button>
+      {isOwnKitchen ? (
+        <div className="w-full py-3 bg-gray-300 text-gray-600 font-bold rounded-lg flex items-center justify-center gap-2 cursor-not-allowed">
+          <span>Your Own Plan</span>
+        </div>
+      ) : (
+        <button
+          onClick={handleSubscribeClick}
+          className="w-full py-3 bg-amber-400 hover:bg-amber-500 text-gray-900 font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all"
+        >
+          <span>Subscribe</span>
+        </button>
+      )}
 
       {/* Modal Overlay */}
 {isOpen && (

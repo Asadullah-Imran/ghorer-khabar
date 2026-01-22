@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
             },
           },
         },
-        orderBy: { createdAt: "desc" },
+        orderBy: { created_at: "desc" },
       }),
       prisma.supportTicket.count({ where }),
     ]);

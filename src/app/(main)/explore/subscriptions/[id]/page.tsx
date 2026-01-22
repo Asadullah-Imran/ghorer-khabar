@@ -4,6 +4,7 @@ import PlanStats from "@/components/plan-details/PlanStats";
 import SubscriptionSidebar from "@/components/plan-details/SubscriptionSidebar";
 import WeeklySchedule from "@/components/plan-details/WeeklySchedule";
 import { prisma } from "@/lib/prisma/prisma";
+import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -112,6 +113,7 @@ export default async function PlanDetailsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const currentUserId = await getAuthUserId();
   
   // Fetch subscription plan from database
   const planData = await prisma.subscription_plans.findUnique({
@@ -126,6 +128,7 @@ export default async function PlanDetailsPage({
           area: true,
           reviewCount: true,
           coverImage: true,
+          sellerId: true,
           seller: {
             select: {
               name: true,
@@ -230,7 +233,7 @@ export default async function PlanDetailsPage({
           </div>
 
           {/* Right Column: Sticky Sidebar */}
-          <SubscriptionSidebar plan={plan} />
+          <SubscriptionSidebar plan={plan} kitchenSellerId={planData.kitchen?.sellerId} currentUserId={currentUserId} />
         </div>
       </div>
     </main>
