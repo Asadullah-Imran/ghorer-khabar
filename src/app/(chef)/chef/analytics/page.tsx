@@ -1,7 +1,7 @@
 "use client";
 
 import { ANALYTICS_DATA } from "@/lib/dummy-data/chef";
-import { AlertTriangle, Brain, Calendar, DollarSign, Lightbulb, MessageSquare, RefreshCw, ShoppingBag, Sparkles, Star, ThumbsUp, TrendingUp } from "lucide-react";
+import { AlertTriangle, Brain, Calendar, CheckCircle, DollarSign, Lightbulb, MessageSquare, RefreshCw, ShoppingBag, Sparkles, Star, ThumbsUp, TrendingUp, Users } from "lucide-react";
 import React, { memo, useCallback, useState } from "react";
 
 // Types for AI insights
@@ -48,23 +48,20 @@ const KPICard = memo(({ icon: Icon, label, value, growth, color, isLoading }: {
   color: string;
   isLoading?: boolean;
 }) => (
-  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-    <div className="flex items-start justify-between mb-3">
-      <div className={`p-2 ${color} rounded-lg`}>
-        <Icon className={color.replace('bg-', 'text-').replace('100', '600')} size={24} />
+  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+    <p className="text-xs text-gray-600 mb-3">{label}</p>
+    <div className="flex items-center gap-3">
+      <div className={`p-2 ${color} rounded-lg flex-shrink-0`}>
+        <Icon className={color.replace('bg-', 'text-').replace('100', '600')} size={20} />
       </div>
-      {growth && (
-        <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">
-          +{growth}%
-        </span>
-      )}
+      <div className="flex-1 min-w-0">
+        {isLoading ? (
+          <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
+        ) : (
+          <p className="text-2xl font-black text-gray-900 truncate">{value}</p>
+        )}
+      </div>
     </div>
-    <p className="text-sm text-gray-600 mb-1">{label}</p>
-    {isLoading ? (
-      <div className="h-9 bg-gray-200 animate-pulse rounded"></div>
-    ) : (
-      <p className="text-3xl font-black text-gray-900">{value}</p>
-    )}
   </div>
 ));
 
@@ -171,9 +168,9 @@ export default function AnalyticsPage() {
   });
   const [kitchenInsights, setKitchenInsights] = useState<KitchenInsight[]>([]);
   const [additionalStats, setAdditionalStats] = useState({
-    customerRetention: 78,
-    avgOrderValue: 352,
-    fulfillmentRate: 96,
+    customerRetention: 0,
+    avgOrderValue: 0,
+    fulfillmentRate: 0,
   });
 
   // Fetch all analytics data on component mount
@@ -192,6 +189,10 @@ export default function AnalyticsPage() {
         if (kpiRes.ok) {
           const kpiData = await kpiRes.json();
           setKpiData(kpiData);
+          // Load additional stats from KPIs response
+          if (kpiData.additionalStats) {
+            setAdditionalStats(kpiData.additionalStats);
+          }
         }
         setKpisLoading(false);
 
@@ -243,6 +244,9 @@ export default function AnalyticsPage() {
       if (response.ok) {
         const data = await response.json();
         setKpiData(data);
+        if (data.additionalStats) {
+          setAdditionalStats(data.additionalStats);
+        }
       }
     } catch (error) {
       console.error('Failed to refresh KPIs:', error);
@@ -302,7 +306,7 @@ export default function AnalyticsPage() {
   }, []);
 
   return (
-    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -329,7 +333,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* KPI Overview - 4 Cards */}
+      {/* KPI Overview - All 6 Cards */}
       <div className="relative">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-bold text-gray-900">Key Performance Indicators</h2>
@@ -342,28 +346,18 @@ export default function AnalyticsPage() {
             Refresh
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <KPICard
             icon={DollarSign}
             label="Total Revenue"
             value={`৳${kpiData.totalRevenue.toLocaleString()}`}
-            growth={kpiData.revenueGrowth}
             color="bg-yellow-100"
-            isLoading={kpisLoading}
-          />
-          <KPICard
-            icon={TrendingUp}
-            label="Est. Profit"
-            value={`৳${kpiData.netProfit.toLocaleString()}`}
-            growth={kpiData.profitGrowth}
-            color="bg-teal-100"
             isLoading={kpisLoading}
           />
           <KPICard
             icon={ShoppingBag}
             label="Total Orders"
             value={kpiData.totalOrders.toString()}
-            growth={kpiData.ordersGrowth}
             color="bg-blue-100"
             isLoading={kpisLoading}
           />
@@ -374,6 +368,51 @@ export default function AnalyticsPage() {
             color="bg-orange-100"
             isLoading={kpisLoading}
           />
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <p className="text-xs text-gray-600 mb-3">Customer Retention</p>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-teal-100 rounded-lg flex-shrink-0">
+                <Users className="text-teal-600" size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                {kpisLoading ? (
+                  <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
+                ) : (
+                  <p className="text-2xl font-black text-gray-900">{additionalStats.customerRetention}%</p>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <p className="text-xs text-gray-600 mb-3">Avg. Order Value</p>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-yellow-100 rounded-lg flex-shrink-0">
+                <ShoppingBag className="text-yellow-600" size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                {kpisLoading ? (
+                  <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
+                ) : (
+                  <p className="text-2xl font-black text-gray-900 truncate">৳{additionalStats.avgOrderValue}</p>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <p className="text-xs text-gray-600 mb-3">Fulfillment Rate</p>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
+                <CheckCircle className="text-green-600" size={20} />
+              </div>
+              <div className="flex-1 min-w-0">
+                {kpisLoading ? (
+                  <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
+                ) : (
+                  <p className="text-2xl font-black text-gray-900">{additionalStats.fulfillmentRate}%</p>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -605,22 +644,6 @@ export default function AnalyticsPage() {
               </div>
             )}
           </div>
-        </div>
-      </div>
-
-      {/* Additional Stats Footer */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 text-center">
-          <p className="text-sm text-gray-600 mb-1">Customer Retention</p>
-          <p className="text-3xl font-black text-teal-600">{additionalStats.customerRetention}%</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 text-center">
-          <p className="text-sm text-gray-600 mb-1">Avg. Order Value</p>
-          <p className="text-3xl font-black text-yellow-500">৳{additionalStats.avgOrderValue}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 text-center">
-          <p className="text-sm text-gray-600 mb-1">Fulfillment Rate</p>
-          <p className="text-3xl font-black text-green-600">{additionalStats.fulfillmentRate}%</p>
         </div>
       </div>
     </div>

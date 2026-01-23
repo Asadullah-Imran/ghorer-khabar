@@ -74,39 +74,80 @@ export async function GET(req: NextRequest) {
           gte: startDate,
         },
       },
-      select: {
-        total: true,
-        createdAt: true,
+      include: {
+        items: {
+          include: {
+            menuItem: {
+              include: {
+                ingredients: {
+                  select: {
+                    cost: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
-    // Generate weekly data
-    const weeksCount = Math.ceil(days / 7);
-    const weeklyData = Array.from({ length: Math.min(weeksCount, 4) }, (_, i) => {
-      const weekStart = new Date(startDate);
-      weekStart.setDate(startDate.getDate() + (i * 7));
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 7);
+    // Generate monthly data
+    const monthlyData: Array<{
+      month: string;
+      revenue: number;
+      profit: number;
+    }> = [];
 
-      const weekOrders = orders.filter((o: any) => {
-        const orderDate = new Date(o.created_at);
-        return orderDate >= weekStart && orderDate < weekEnd;
+    // Group orders by month
+    const monthMap = new Map<string, any[]>();
+
+    orders.forEach((order: any) => {
+      const orderDate = new Date(order.createdAt);
+      const monthKey = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
+      if (!monthMap.has(monthKey)) {
+        monthMap.set(monthKey, []);
+      }
+      monthMap.get(monthKey)!.push(order);
+    });
+
+    // Process each month
+    const sortedMonths = Array.from(monthMap.keys()).sort();
+    sortedMonths.forEach((monthKey) => {
+      const monthOrders = monthMap.get(monthKey)!;
+      const [year, month] = monthKey.split('-');
+      const monthDate = new Date(parseInt(year), parseInt(month) - 1);
+      const monthName = monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+      // Calculate total revenue and cost for the month
+      let monthRevenue = 0;
+      let monthCost = 0;
+
+      monthOrders.forEach((order: any) => {
+        monthRevenue += order.total;
+
+        // Calculate cost from ingredients
+        order.items.forEach((item: any) => {
+          const ingredientCost = item.menuItem.ingredients.reduce(
+            (sum: number, ing: any) => sum + (ing.cost || 0),
+            0
+          );
+          monthCost += ingredientCost * item.quantity;
+        });
       });
 
-      const weekRevenue = weekOrders.reduce((sum: number, order: any) => sum + order.total, 0);
-      const weekProfit = Math.round(weekRevenue * 0.35);
+      const monthProfit = Math.round(monthRevenue - monthCost);
 
-      return {
-        week: `Week ${i + 1}`,
-        revenue: Math.round(weekRevenue),
-        profit: weekProfit,
-      };
+      monthlyData.push({
+        month: monthName,
+        revenue: Math.round(monthRevenue),
+        profit: monthProfit,
+      });
     });
 
     return NextResponse.json({
-      weeks: weeklyData.map(w => w.week),
-      revenue: weeklyData.map(w => w.revenue),
-      profit: weeklyData.map(w => w.profit),
+      weeks: monthlyData.map(m => m.month),
+      revenue: monthlyData.map(m => m.revenue),
+      profit: monthlyData.map(m => m.profit),
     });
   } catch (error) {
     console.error("Error fetching chart data:", error);
