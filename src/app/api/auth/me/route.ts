@@ -31,6 +31,7 @@ export async function GET() {
         id: true,
         email: true,
         name: true,
+        avatar: true, // Include avatar
         role: true,
         emailVerified: true,
         kitchens: {
@@ -60,7 +61,18 @@ export async function GET() {
         : undefined,
     };
 
-    return NextResponse.json({ user: userWithKitchen }, { status: 200 });
+    // Add cache control headers to prevent stale data
+    return NextResponse.json(
+      { user: userWithKitchen },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0",
+        },
+      }
+    );
   } catch (error) {
     console.error("Get current user error:", error);
     return NextResponse.json(

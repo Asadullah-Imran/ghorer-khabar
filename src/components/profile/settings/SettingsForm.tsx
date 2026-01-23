@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 interface UserProfile {
@@ -31,6 +32,7 @@ interface PasswordData {
 
 export default function SettingsForm() {
   const { user, refreshUser, signOut } = useAuth();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"general" | "security" | "danger">(
     "general"
   );
@@ -214,12 +216,19 @@ export default function SettingsForm() {
       });
       
       // Refresh user data in auth context to update UI immediately
-      await refreshUser();
+      try {
+        await refreshUser();
+        // Wait a moment for the refresh to propagate
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } catch (error) {
+        console.error("Error refreshing user:", error);
+      }
 
-      // Redirect to profile page after short delay
+      // Redirect with full page reload to ensure fresh data
       setTimeout(() => {
-         window.location.href = "/profile"; 
-      }, 1000);
+         // Use window.location.href to force full page reload and clear cache
+         window.location.href = "/profile";
+      }, 2000);
     } catch (error: any) {
       console.error("Error updating profile:", error);
       setMessage({
