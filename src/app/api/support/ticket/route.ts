@@ -66,6 +66,7 @@ export async function POST(req: NextRequest) {
           orderNumber ? ` (Order: ${orderNumber})` : ""
         }`,
         read: false,
+        type: "SUPPORT_TICKET",
       },
     });
 

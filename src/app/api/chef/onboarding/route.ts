@@ -245,6 +245,18 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      // Notify admins about a new seller approval request
+      await tx.adminNotification.create({
+        data: {
+          // Reusing supportTicketId column to store the onboarding request (kitchen) id for traceability
+          supportTicketId: kitchen.id,
+          title: "Seller approval request",
+          message: `${existingUser.name || "Seller"} submitted onboarding for ${validatedData.kitchenName}`,
+          read: false,
+          type: "SELLER_APPROVAL",
+        },
+      });
+
       // Create kitchen gallery images
       if (validatedData.kitchenImages.length > 0) {
         await tx.kitchenGallery.createMany({
