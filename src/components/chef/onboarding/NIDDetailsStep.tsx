@@ -8,6 +8,7 @@ interface NIDDetailsStepProps {
   onNidNameChange: (value: string) => void;
   onPhoneChange: (value: string) => void;
   errors?: { nidName?: string; phone?: string };
+  phoneFromProfile?: boolean; // Indicates if phone is from user profile
 }
 
 export default function NIDDetailsStep({
@@ -16,6 +17,7 @@ export default function NIDDetailsStep({
   onNidNameChange,
   onPhoneChange,
   errors,
+  phoneFromProfile = false,
 }: NIDDetailsStepProps) {
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
@@ -66,6 +68,11 @@ export default function NIDDetailsStep({
             className="block text-sm font-medium text-gray-700"
           >
             Phone Number <span className="text-red-500">*</span>
+            {phoneFromProfile && (
+              <span className="ml-2 text-xs font-normal text-gray-500">
+                (from your profile)
+              </span>
+            )}
           </label>
           <div className="relative">
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
@@ -76,6 +83,7 @@ export default function NIDDetailsStep({
               id="phone"
               value={phone}
               onChange={(e) => {
+                if (phoneFromProfile) return; // Prevent changes if from profile
                 let value = e.target.value.replace(/\D/g, ""); // Remove non-digits
                 if (value.startsWith("880")) {
                   value = value.slice(3);
@@ -85,21 +93,31 @@ export default function NIDDetailsStep({
                 }
                 onPhoneChange(value);
               }}
+              disabled={phoneFromProfile}
               placeholder="1XXXXXXXXX"
               className={`
                 w-full pl-10 pr-4 py-3 rounded-lg border-2 transition-colors
                 focus:outline-none focus:ring-2 focus:ring-[#477e77]/20
                 ${
-                  errors?.phone
+                  phoneFromProfile
+                    ? "bg-gray-50 border-gray-300 cursor-not-allowed"
+                    : errors?.phone
                     ? "border-red-500"
                     : "border-gray-200 focus:border-[#477e77]"
                 }
               `}
             />
           </div>
-          <p className="text-xs text-gray-500">
-            Format: 1XXXXXXXXX (11 digits starting with 1)
-          </p>
+          {phoneFromProfile ? (
+            <p className="text-xs text-teal-600 flex items-center gap-1">
+              <span>✓</span>
+              <span>This phone number is from your profile and cannot be changed</span>
+            </p>
+          ) : (
+            <p className="text-xs text-gray-500">
+              Format: 1XXXXXXXXX (11 digits starting with 1)
+            </p>
+          )}
           {errors?.phone && (
             <p className="text-sm text-red-500">{errors.phone}</p>
           )}

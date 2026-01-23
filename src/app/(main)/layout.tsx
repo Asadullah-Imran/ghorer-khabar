@@ -27,8 +27,14 @@ export default async function RootLayout({
     if (user?.role === "SELLER") {
       const kitchen = user.kitchens[0]; // Assuming one kitchen per user for now
       if (!kitchen || !kitchen.onboardingCompleted) {
+        // Not completed onboarding - redirect to onboarding
         redirect("/chef-onboarding");
+      } else if (!kitchen.isVerified) {
+        // Completed onboarding but not verified - allow browsing as buyer
+        // Don't redirect, let them browse the main app
+        // They can access buyer routes but chef routes are protected by ChefGuard
       }
+      // If verified, they can access both buyer and chef routes
     }
   }
 
