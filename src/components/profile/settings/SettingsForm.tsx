@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
 import {
   AlertCircle,
   Bell,
@@ -35,13 +36,12 @@ interface PasswordData {
 export default function SettingsForm() {
   const { user, refreshUser, signOut } = useAuth();
   const router = useRouter();
+  const { confirm, setLoading: setConfirmLoading } = useConfirmation();
   const [activeTab, setActiveTab] = useState<"general" | "security" | "danger">(
     "general"
   );
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState<{
@@ -297,15 +297,21 @@ export default function SettingsForm() {
   const dismissMessage = () => setMessage(null);
 
   const handleAccountDelete = async () => {
-    if (deleteConfirmText !== "DELETE") {
-      setMessage({
-        type: "error",
-        text: "Please type DELETE to confirm",
-      });
+    // Show confirmation modal
+    const confirmed = await confirm({
+      title: "Delete Account",
+      message: "Are you sure you want to delete your account? This action cannot be undone. All your data will be permanently removed.",
+      confirmLabel: "Delete Account",
+      cancelLabel: "Cancel",
+      variant: "danger",
+    });
+
+    if (!confirmed) {
       return;
     }
 
     setIsSaving(true);
+    setConfirmLoading(true);
     setMessage(null);
 
     try {
@@ -313,8 +319,21 @@ export default function SettingsForm() {
         method: "DELETE",
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("Failed to delete account");
+        // Check if it's an active orders error
+        if (data.hasActiveOrders) {
+          setMessage({
+            type: "error",
+            text: data.message || "You have active orders that must be completed before deleting your account.",
+          });
+        } else {
+          throw new Error(data.error || data.message || "Failed to delete account");
+        }
+        setIsSaving(false);
+        setConfirmLoading(false);
+        return;
       }
 
       // Clear local storage and redirect to home
@@ -328,6 +347,7 @@ export default function SettingsForm() {
         text: error.message || "Failed to delete account. Please try again.",
       });
       setIsSaving(false);
+      setConfirmLoading(false);
     }
   };
 
@@ -661,54 +681,19 @@ export default function SettingsForm() {
               </h3>
               <p className="text-sm text-red-700 mb-4">
                 Once you delete your account, there is no going back. Please be
-                certain.
+                certain. You cannot delete your account if you have active orders that are being prepared or delivered.
               </p>
 
-              {!showDeleteConfirm ? (
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors"
-                >
-                  Delete Account
-                </button>
-              ) : (
-                <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">
-                      To confirm, type "DELETE" below
-                    </label>
-                    <input
-                      type="text"
-                      value={deleteConfirmText}
-                      onChange={(e) => setDeleteConfirmText(e.target.value)}
-                      className="w-full px-4 py-2 rounded-lg border border-red-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
-                      placeholder="DELETE"
-                    />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={handleAccountDelete}
-                      disabled={deleteConfirmText !== "DELETE" || isSaving}
-                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      {isSaving && (
-                        <Loader2 className="animate-spin" size={16} />
-                      )}
-                      Confirm Delete
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowDeleteConfirm(false);
-                        setDeleteConfirmText("");
-                      }}
-                      disabled={isSaving}
-                      className="px-4 py-2 text-gray-600 font-bold text-sm hover:text-gray-800"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
+              <button
+                onClick={handleAccountDelete}
+                disabled={isSaving}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isSaving && (
+                  <Loader2 className="animate-spin" size={16} />
+                )}
+                Delete Account
+              </button>
             </div>
           </div>
         )}
