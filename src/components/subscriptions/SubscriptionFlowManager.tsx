@@ -17,6 +17,7 @@ interface SubscriptionFlowManagerProps {
   servingsPerMeal: number;
   isOwnKitchen?: boolean;
   kitchenId?: string;
+  weeklySchedule?: any; // Weekly schedule to calculate deliveries per month
 }
 
 export default function SubscriptionFlowManager({
@@ -30,6 +31,7 @@ export default function SubscriptionFlowManager({
   servingsPerMeal,
   isOwnKitchen = false,
   kitchenId,
+  weeklySchedule = {},
 }: SubscriptionFlowManagerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
@@ -176,10 +178,32 @@ export default function SubscriptionFlowManager({
     fetchDeliveryCharge();
   }, [kitchenId, selectedAddressId, selectedLocation]);
 
+  // Calculate deliveries per month from weekly schedule
+  const calculateDeliveriesPerMonth = (schedule: any): number => {
+    if (!schedule || typeof schedule !== 'object') return 0;
+    
+    // Count how many days per week have at least one meal
+    const daysWithMeals = Object.values(schedule).filter((daySchedule: any) => {
+      if (!daySchedule || typeof daySchedule !== 'object') return false;
+      // Check if any meal type (breakfast, lunch, snacks, dinner) has dishes
+      return ['breakfast', 'lunch', 'snacks', 'dinner'].some(mealType => {
+        const meal = daySchedule[mealType];
+        return meal && meal.dishIds && Array.isArray(meal.dishIds) && meal.dishIds.length > 0;
+      });
+    }).length;
+    
+    // Deliveries per month = days per week × 4 weeks
+    return daysWithMeals * 4;
+  };
+
+  const deliveriesPerMonth = calculateDeliveriesPerMonth(weeklySchedule);
+  
   // Calculate pricing
-  const deliveryFee = deliveryInfo.charge ?? 300; // Use calculated charge or fallback
-  const discount = 0;
-  const totalAmount = planPrice + deliveryFee - discount;
+  const singleDeliveryFee = deliveryInfo.charge ?? 300; // Single delivery charge
+  const totalDeliveryFee = singleDeliveryFee * deliveriesPerMonth; // Total for all deliveries
+  const subtotal = planPrice + totalDeliveryFee;
+  const discount = Math.round(subtotal * 0.1); // 10% discount
+  const totalAmount = subtotal - discount;
 
   const handleLocationSelect = async (lat: number, lng: number, address?: string) => {
     setSelectedLocation({ lat, lng });
@@ -408,15 +432,21 @@ export default function SubscriptionFlowManager({
                           </span>
                         </div>
                         <div className="flex justify-between items-center mt-1">
-                          <span className="text-sm text-gray-700">Delivery Fee</span>
+                          <span className="text-sm text-gray-700">Delivery Fee (per delivery)</span>
                           {loadingDelivery ? (
                             <Loader2 className="animate-spin text-gray-400" size={14} />
                           ) : (
                             <span className={`text-sm font-bold ${deliveryInfo.available ? "text-teal-700" : "text-red-600"}`}>
-                              ৳{deliveryFee}
+                              ৳{singleDeliveryFee}
                             </span>
                           )}
                         </div>
+                        {deliveriesPerMonth > 0 && (
+                          <div className="flex justify-between items-center mt-1 text-xs text-gray-600">
+                            <span>{deliveriesPerMonth} deliveries/month</span>
+                            <span className="font-semibold">৳{totalDeliveryFee} total</span>
+                          </div>
+                        )}
                         {!deliveryInfo.available && deliveryInfo.error && (
                           <p className="text-xs text-red-600 mt-2">{deliveryInfo.error}</p>
                         )}
@@ -483,6 +513,11 @@ export default function SubscriptionFlowManager({
                               {deliveryInfo.distance.toFixed(2)} km away
                             </span>
                           )}
+                          {deliveriesPerMonth > 0 && (
+                            <span className="text-xs text-gray-400">
+                              {deliveriesPerMonth} deliveries/month
+                            </span>
+                          )}
                         </div>
                         <div className="flex flex-col items-end">
                           {loadingDelivery ? (
@@ -490,7 +525,7 @@ export default function SubscriptionFlowManager({
                           ) : (
                             <>
                               <span className={`font-medium ${deliveryInfo.available ? "text-gray-900" : "text-red-600"}`}>
-                                ৳ {deliveryFee}
+                                ৳ {totalDeliveryFee}
                               </span>
                               {!deliveryInfo.available && (
                                 <span className="text-xs text-red-600">Unavailable</span>
@@ -505,7 +540,7 @@ export default function SubscriptionFlowManager({
                         </div>
                       )}
                       <div className="flex justify-between text-sm">
-                        <span className="text-green-600">Chef's Discount</span>
+                        <span className="text-green-600">Subscription Discount (10%)</span>
                         <span className="font-medium text-green-600">- ৳ {discount}</span>
                       </div>
                     </div>
