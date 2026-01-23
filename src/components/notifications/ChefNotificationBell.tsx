@@ -58,7 +58,11 @@ export default function ChefNotificationBell() {
 
   const handleNotificationClick = (notification: any) => {
     if (!notification.read) {
-      handleMarkAsRead(notification.id, new MouseEvent('click') as any);
+      // Create a synthetic event for handleMarkAsRead
+      const syntheticEvent = {
+        stopPropagation: () => {},
+      } as React.MouseEvent;
+      handleMarkAsRead(notification.id, syntheticEvent);
     }
     if (notification.actionUrl) {
       setIsOpen(false);
@@ -86,11 +90,11 @@ export default function ChefNotificationBell() {
       {/* Bell Icon */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-text-muted hover:text-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg transition-colors"
+        className="relative p-2 text-gray-600 hover:text-brand-teal hover:bg-teal-50 rounded-lg transition-colors"
       >
         <Bell size={20} />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+          <span className="absolute top-0 right-0 w-5 h-5 bg-brand-teal text-white text-xs font-bold rounded-full flex items-center justify-center">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
@@ -98,12 +102,12 @@ export default function ChefNotificationBell() {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-96 bg-background-dark border border-border-dark rounded-lg shadow-xl z-50">
+        <div className="absolute right-0 mt-2 w-96 bg-white border border-gray-200 rounded-lg shadow-xl z-50">
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-border-dark">
-            <h3 className="text-sm font-semibold text-white">Notifications</h3>
+          <div className="flex items-center justify-between p-4 border-b border-gray-100">
+            <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
             {unreadCount > 0 && (
-              <span className="text-xs text-text-muted">
+              <span className="text-xs text-gray-500">
                 {unreadCount} unread
               </span>
             )}
@@ -112,7 +116,7 @@ export default function ChefNotificationBell() {
           {/* Notifications List */}
           <div className="max-h-96 overflow-y-auto">
             {notifications.length === 0 ? (
-              <div className="p-8 text-center text-text-muted">
+              <div className="p-8 text-center text-gray-500">
                 <Bell size={32} className="mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No notifications yet</p>
               </div>
@@ -121,27 +125,27 @@ export default function ChefNotificationBell() {
                 <div
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification)}
-                  className={`p-4 border-b border-border-dark cursor-pointer transition-colors hover:bg-background-dark/60 ${
-                    !notification.read ? "bg-primary/5" : ""
+                  className={`p-4 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50 ${
+                    !notification.read ? "bg-teal-50/50" : ""
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     {/* Indicator */}
                     {!notification.read && (
-                      <div className="mt-1 w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
+                      <div className="mt-1 w-2 h-2 rounded-full bg-brand-teal flex-shrink-0" />
                     )}
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium truncate ${
-                        !notification.read ? "text-white" : "text-text-muted"
+                      <p className={`text-sm font-medium ${
+                        !notification.read ? "text-gray-900" : "text-gray-600"
                       }`}>
                         {notification.title}
                       </p>
-                      <p className="text-xs text-text-muted mt-1 line-clamp-2">
+                      <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                         {notification.message}
                       </p>
-                      <div className="flex items-center gap-1 text-xs text-text-muted mt-2">
+                      <div className="flex items-center gap-1 text-xs text-gray-400 mt-2">
                         <Clock size={12} />
                         {formatTime(notification.timestamp)}
                       </div>
@@ -150,7 +154,7 @@ export default function ChefNotificationBell() {
                     {/* Delete Button */}
                     <button
                       onClick={(e) => handleDelete(notification.id, e)}
-                      className="p-1 text-text-muted hover:text-red-500 transition flex-shrink-0"
+                      className="p-1 text-gray-400 hover:text-red-500 transition flex-shrink-0"
                       title="Delete"
                     >
                       <Trash2 size={16} />
@@ -166,7 +170,7 @@ export default function ChefNotificationBell() {
             <Link href="/chef/dashboard">
               <div
                 onClick={() => setIsOpen(false)}
-                className="p-3 text-center border-t border-border-dark text-primary text-sm font-medium hover:bg-background-dark/50 cursor-pointer transition"
+                className="p-3 text-center border-t border-gray-100 text-brand-teal text-sm font-medium hover:bg-gray-50 cursor-pointer transition"
               >
                 View all →
               </div>

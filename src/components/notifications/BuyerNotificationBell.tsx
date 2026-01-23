@@ -137,11 +137,11 @@ export default function BuyerNotificationBell() {
       {/* Bell Icon */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-gray-600 hover:text-brand-teal transition"
+        className="relative p-2 text-gray-600 hover:text-brand-teal transition-colors"
       >
         <Bell size={24} />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+          <span className="absolute top-0 right-0 w-5 h-5 bg-brand-teal text-white text-xs font-bold rounded-full flex items-center justify-center">
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
@@ -175,13 +175,13 @@ export default function BuyerNotificationBell() {
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification)}
                   className={`p-4 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50 ${
-                    !notification.read ? "bg-blue-50" : ""
+                    !notification.read ? "bg-brand-teal/5" : ""
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     {/* Indicator */}
                     {!notification.read && (
-                      <div className="mt-1 w-2 h-2 rounded-full bg-blue-500 flex-shrink-0" />
+                      <div className="mt-1 w-2 h-2 rounded-full bg-brand-teal flex-shrink-0" />
                     )}
 
                     {/* Content */}
@@ -206,7 +206,7 @@ export default function BuyerNotificationBell() {
                         e.stopPropagation();
                         handleDelete(notification.id);
                       }}
-                      className="p-1 text-gray-400 hover:text-red-500 transition flex-shrink-0"
+                      className="p-1 text-gray-400 hover:text-red-600 transition-colors flex-shrink-0"
                       title="Delete"
                     >
                       <Trash2 size={16} />
@@ -222,7 +222,7 @@ export default function BuyerNotificationBell() {
             <Link href="/notifications">
               <div
                 onClick={() => setIsOpen(false)}
-                className="p-3 text-center border-t border-gray-100 text-brand-teal text-sm font-medium hover:bg-gray-50 cursor-pointer transition"
+                className="p-3 text-center border-t border-gray-100 text-brand-teal text-sm font-medium hover:bg-brand-teal/5 cursor-pointer transition-colors"
               >
                 View all notifications →
               </div>
