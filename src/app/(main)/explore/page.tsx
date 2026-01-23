@@ -24,6 +24,7 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
   const category = (params.category as string) || "All";
   const sort = (params.sort as string) || "recommended";
   const query = (params.q as string) || "";
+  const zone = (params.zone as string) || "";
 
   // --- SERVER SIDE FETCHING ---
   
@@ -44,6 +45,12 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
             isActive: true,
             isOpen: true,
             isVerified: true,
+            // Zone filter logic
+            ...(zone && {
+              address: {
+                zone: zone,
+              },
+            }),
           },
         },
       },

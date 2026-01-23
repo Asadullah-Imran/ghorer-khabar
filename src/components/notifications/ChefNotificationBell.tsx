@@ -86,7 +86,7 @@ export default function ChefNotificationBell() {
       {/* Bell Icon */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-text-muted hover:text-white hover:bg-surface-dark rounded-lg transition-colors"
+        className="relative p-2 text-text-muted hover:text-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg transition-colors"
       >
         <Bell size={20} />
         {unreadCount > 0 && (
