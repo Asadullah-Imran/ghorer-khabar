@@ -90,9 +90,12 @@ export default function SettingsPage() {
         setPhoneNumber(data.phoneNumber || "");
 
         // Parse operating days from database
+        // Check if operatingDays exists and has data (not null, not undefined, not empty object)
         const hasOperatingDays =
-          data.operatingDays &&
+          data.operatingDays !== null &&
+          data.operatingDays !== undefined &&
           typeof data.operatingDays === "object" &&
+          !Array.isArray(data.operatingDays) &&
           Object.keys(data.operatingDays).length > 0;
         
         console.log("Frontend: hasOperatingDays:", hasOperatingDays);

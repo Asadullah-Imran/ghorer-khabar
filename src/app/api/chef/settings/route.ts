@@ -154,6 +154,12 @@ export async function GET() {
     console.log("Final operatingDaysData keys:", operatingDaysData ? Object.keys(operatingDaysData) : 'null');
     console.log("==============================\n");
 
+    // Return null if no data, empty object if empty, or the actual data
+    // Frontend will check Object.keys().length > 0 to determine if data exists
+    const responseOperatingDays = operatingDaysData && Object.keys(operatingDaysData).length > 0 
+      ? operatingDaysData 
+      : null;
+
     return NextResponse.json({
       success: true,
       data: {
@@ -162,7 +168,7 @@ export async function GET() {
         address: fullAddress,
         ownerName: user.name || "",
         phoneNumber: user.phone || "",
-        operatingDays: operatingDaysData || {},
+        operatingDays: responseOperatingDays,
         nidNumber: maskedNID,
         isVerified: kitchen.isVerified,
       },
