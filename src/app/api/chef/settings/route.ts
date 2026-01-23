@@ -260,6 +260,12 @@ export async function PUT(req: NextRequest) {
     };
 
     // If operating days provided, validate and update
+    console.log("=== PUT /api/chef/settings ===");
+    console.log("Received operatingDays:", operatingDays);
+    console.log("operatingDays type:", typeof operatingDays);
+    console.log("operatingDays is undefined?", operatingDays === undefined);
+    console.log("operatingDays is null?", operatingDays === null);
+    
     if (operatingDays !== undefined && operatingDays !== null) {
       // Validate operating days structure
       if (typeof operatingDays !== "object" || Array.isArray(operatingDays)) {
@@ -269,10 +275,21 @@ export async function PUT(req: NextRequest) {
         );
       }
 
-      // Prisma Json type accepts plain JavaScript objects directly
-      // No need for JSON.parse/stringify - Prisma handles serialization
-      console.log("Saving operatingDays to DB:", JSON.stringify(operatingDays, null, 2));
-      updateData.operatingDays = operatingDays as any;
+      // Check if it's an empty object
+      const keys = Object.keys(operatingDays);
+      console.log("operatingDays keys:", keys);
+      console.log("operatingDays keys length:", keys.length);
+      
+      if (keys.length === 0) {
+        console.log("WARNING: operatingDays is an empty object, not saving");
+      } else {
+        // Prisma Json type accepts plain JavaScript objects directly
+        // No need for JSON.parse/stringify - Prisma handles serialization
+        console.log("Saving operatingDays to DB:", JSON.stringify(operatingDays, null, 2));
+        updateData.operatingDays = operatingDays as any;
+      }
+    } else {
+      console.log("operatingDays not provided in request body");
     }
 
     // Prepare user update data if ownerName or phoneNumber provided
@@ -316,6 +333,8 @@ export async function PUT(req: NextRequest) {
 
     // Update kitchen
     console.log("Updating kitchen with data:", JSON.stringify(updateData, null, 2));
+    console.log("updateData.operatingDays:", updateData.operatingDays);
+    console.log("updateData.operatingDays type:", typeof updateData.operatingDays);
     
     const updatedKitchen = await prisma.kitchen.update({
       where: { id: kitchen.id },
@@ -331,6 +350,8 @@ export async function PUT(req: NextRequest) {
 
     console.log("Updated kitchen operatingDays from DB:", updatedKitchen.operatingDays);
     console.log("Type of updated operatingDays:", typeof updatedKitchen.operatingDays);
+    console.log("Is null?", updatedKitchen.operatingDays === null);
+    console.log("Keys:", updatedKitchen.operatingDays && typeof updatedKitchen.operatingDays === 'object' ? Object.keys(updatedKitchen.operatingDays) : 'N/A');
 
     // Construct full address
     const fullAddress = updatedKitchen.area 
