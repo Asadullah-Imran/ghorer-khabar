@@ -151,11 +151,35 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Normalize phone numbers for comparison (remove +, ensure 880 prefix)
+    const normalizePhone = (phone: string | null | undefined): string | null => {
+      if (!phone) return null;
+      // Remove all non-digits
+      let normalized = phone.replace(/\D/g, "");
+      // Ensure it starts with 880 (Bangladesh country code)
+      if (!normalized.startsWith("880")) {
+        // If it starts with 0, remove it
+        if (normalized.startsWith("0")) {
+          normalized = normalized.slice(1);
+        }
+        // Add 880 prefix
+        normalized = "880" + normalized;
+      }
+      return normalized;
+    };
+
+    const normalizedSubmittedPhone = normalizePhone(validatedData.phone);
+    const normalizedExistingPhone = normalizePhone(existingUser.phone);
+
     // VALIDATION FIRST: Check phone number availability BEFORE any database writes
-    if (validatedData.phone && validatedData.phone !== existingUser.phone) {
+    if (normalizedSubmittedPhone && normalizedSubmittedPhone !== normalizedExistingPhone) {
+      // Check if phone exists for another user (using normalized format)
       const phoneExists = await prisma.user.findFirst({
         where: {
-          phone: validatedData.phone,
+          OR: [
+            { phone: normalizedSubmittedPhone },
+            { phone: validatedData.phone }, // Also check original format
+          ],
           id: { not: user.id },
         },
       });
@@ -223,11 +247,11 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Update user's phone number (only if changed)
-      if (validatedData.phone && validatedData.phone !== existingUser.phone) {
+      // Update user's phone number (only if changed, using normalized format)
+      if (normalizedSubmittedPhone && normalizedSubmittedPhone !== normalizedExistingPhone) {
         await tx.user.update({
           where: { id: user.id },
-          data: { phone: validatedData.phone },
+          data: { phone: normalizedSubmittedPhone },
         });
       }
 
