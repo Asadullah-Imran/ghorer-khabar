@@ -275,8 +275,8 @@ model Notification {
   title     String
   message   String
   read      Boolean          @default(false)
-  actionUrl String?          @map("action_url")
   createdAt DateTime         @default(now())
+  actionUrl String?          @map("action_url")
   kitchen   Kitchen?         @relation(fields: [kitchenId], references: [id], onDelete: Cascade)
   user      User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
 
