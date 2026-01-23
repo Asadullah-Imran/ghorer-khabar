@@ -4,9 +4,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ChefHat, Loader2, LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useRoleTransition } from "@/contexts/RoleTransitionContext";
+import { chefNavItems } from "@/lib/navigation/chefNavItems";
 
 interface ChefNavbarProps {
   kitchenName?: string;
@@ -24,6 +25,7 @@ export default function ChefNavbar({
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { signOut, user } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const { startRoleTransition } = useRoleTransition();
   useEffect(() => {}, []);
 
@@ -193,44 +195,54 @@ export default function ChefNavbar({
               </div>
             </div>
 
-            {/* Mobile Menu Items */}
-            <Link
-              href="/chef-profile"
-              className="block px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              View Profile
-            </Link>
-            <Link
-              href="/chef/settings"
-              className="block px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Settings
-            </Link>
-            <Link
-              href="/support"
-              className="block px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Help & Support
-            </Link>
-            <button
-              onClick={() => {
-                setIsMobileMenuOpen(false);
-                startRoleTransition({
-                  fromRole: "SELLER",
-                  toRole: "BUYER",
-                  targetPath: "/feed",
-                  minDurationMs: 2000,
-                  navigateAfterMs: 400,
-                });
-              }}
-              className="w-full px-4 py-3 text-sm font-medium text-teal-600 bg-teal-50 rounded-lg hover:bg-teal-100 transition flex items-center justify-center gap-2"
-            >
-              <ChefHat size={16} />
-              Switch to Buyer
-            </button>
+            {/* Navigation Items from Sidebar */}
+            <div className="space-y-1 pb-4 border-b border-gray-100">
+              {chefNavItems.map((item) => {
+                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition ${
+                      isActive
+                        ? "bg-teal-50 text-teal-700 font-semibold border-l-4 border-teal-600"
+                        : "text-gray-900 bg-gray-50 hover:bg-gray-100"
+                    }`}
+                  >
+                    <span className="flex-shrink-0">{item.icon}</span>
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Profile & Account Actions */}
+            <div className="space-y-1">
+              <Link
+                href="/chef-profile"
+                className="block px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                View Profile
+              </Link>
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  startRoleTransition({
+                    fromRole: "SELLER",
+                    toRole: "BUYER",
+                    targetPath: "/feed",
+                    minDurationMs: 2000,
+                    navigateAfterMs: 400,
+                  });
+                }}
+                className="w-full px-4 py-3 text-sm font-medium text-teal-600 bg-teal-50 rounded-lg hover:bg-teal-100 transition flex items-center justify-center gap-2"
+              >
+                <ChefHat size={16} />
+                Switch to Buyer
+              </button>
+            </div>
           </div>
         </div>
       )}
