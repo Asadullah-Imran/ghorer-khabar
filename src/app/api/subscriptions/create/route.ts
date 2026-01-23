@@ -266,7 +266,7 @@ export async function POST(req: NextRequest) {
         deliveryInstructions: deliveryInstructions || null,
         useChefContainers: useChefContainers ?? true,
         monthlyPrice,
-        deliveryFee: totalDeliveryFee, // Store total delivery fee for all deliveries
+        deliveryFee: totalDeliveryFee, // Store total delivery fee for all deliveries per month
         discount,
         totalAmount,
         status: "PENDING",

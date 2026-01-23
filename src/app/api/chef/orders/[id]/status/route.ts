@@ -169,11 +169,16 @@ export async function PATCH(
 
     // If status is COMPLETED, add revenue to kitchen
     if (status === "COMPLETED") {
+      // Calculate chef revenue: items total - platform fee (৳10)
+      // Import the calculation function
+      const { calculateChefRevenueForOrder } = await import("@/lib/services/revenueCalculation");
+      const chefRevenue = await calculateChefRevenueForOrder(order.id);
+
       await prisma.kitchen.update({
         where: { id: kitchen.id },
         data: {
           totalRevenue: {
-            increment: order.total,
+            increment: chefRevenue, // Only chef revenue, not platform fee
           },
           totalOrders: {
             increment: 1,
@@ -186,7 +191,7 @@ export async function PATCH(
         kitchenId: kitchen.id,
         type: "SUCCESS",
         title: "Payment Received",
-        message: `৳${order.total.toLocaleString()} credited from order ${orderNumber}`,
+        message: `৳${chefRevenue.toLocaleString()} credited from order ${orderNumber}`,
       });
     }
 
