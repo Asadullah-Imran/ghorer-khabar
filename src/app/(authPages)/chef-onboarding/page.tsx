@@ -46,16 +46,23 @@ export default function ChefOnboardingPage() {
         if (response.ok) {
           const data = await response.json();
           if (data.user?.phone) {
-            // Remove country code (880) if present, keep only 11 digits
-            let phoneNumber = data.user.phone.replace(/^880/, "");
-            // Remove leading 0 if present
-            if (phoneNumber.startsWith("0")) {
+            // Extract phone number - remove 880 prefix if present, keep only digits
+            let phoneNumber = data.user.phone.replace(/\D/g, "");
+            // Remove 880 prefix if present
+            if (phoneNumber.startsWith("880")) {
+              phoneNumber = phoneNumber.slice(3);
+            }
+            // If starts with 01, remove the "01" prefix (we'll show it in UI)
+            if (phoneNumber.startsWith("01")) {
+              phoneNumber = phoneNumber.slice(2);
+            } else if (phoneNumber.startsWith("1")) {
+              // If starts with 1, remove it (old format)
               phoneNumber = phoneNumber.slice(1);
             }
-            // Update form data with phone number
+            // Update form data with phone number (9 digits after "01")
             setFormData((prev) => ({
               ...prev,
-              phone: phoneNumber,
+              phone: phoneNumber.slice(0, 9), // Ensure max 9 digits
             }));
             // Mark that phone is from profile
             setPhoneFromProfile(true);
@@ -132,9 +139,10 @@ export default function ChefOnboardingPage() {
         if (!formData.nidName || formData.nidName.length < 2) {
           detailsErrors.nidName = "Name on NID is required";
         }
-        if (!formData.phone.match(/^1[3-9]\d{8}$/)) {
+        // Phone should be 9 digits (after "01" prefix)
+        if (!formData.phone.match(/^\d{9}$/)) {
           detailsErrors.phone =
-            "Valid Bangladesh phone number required (11 digits starting with 1)";
+            "Please enter 11 digits (01 is already included)";
         }
         if (Object.keys(detailsErrors).length > 0) {
           setErrors(detailsErrors);
@@ -186,7 +194,7 @@ export default function ChefOnboardingPage() {
 
     setSubmitting(true);
     try {
-      // Final validation
+      // Final validation - prepend "01" to form phone (9 digits) to make 11 digits
       const validatedData = chefOnboardingSchema.parse({
         kitchenName: formData.kitchenName,
         address: formData.address,
@@ -194,7 +202,7 @@ export default function ChefOnboardingPage() {
         latitude: formData.latitude,
         longitude: formData.longitude,
         nidName: formData.nidName,
-        phone: `880${formData.phone}`,
+        phone: `01${formData.phone}`, // Prepend "01" to make 11 digits
         nidFrontImage: formData.nidFrontImage,
         nidBackImage: formData.nidBackImage,
         kitchenImages: formData.kitchenImages,
