@@ -5,8 +5,8 @@ import { ChefHat, Loader2, LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import RoleTransition from "@/components/common/RoleTransition";
+import { useEffect, useState } from "react";
+import { useRoleTransition } from "@/contexts/RoleTransitionContext";
 
 interface ChefNavbarProps {
   kitchenName?: string;
@@ -22,9 +22,10 @@ export default function ChefNavbar({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [showRoleTransition, setShowRoleTransition] = useState(false);
   const { signOut, user } = useAuth();
   const router = useRouter();
+  const { startRoleTransition } = useRoleTransition();
+  useEffect(() => {}, []);
 
   // Get user avatar from Google or use default
   const userAvatar =
@@ -46,14 +47,6 @@ export default function ChefNavbar({
 
   return (
     <>
-      {/* Role Transition Overlay */}
-      <RoleTransition
-        isVisible={showRoleTransition}
-        fromRole="SELLER"
-        toRole="BUYER"
-        onComplete={() => setShowRoleTransition(false)}
-      />
-
       {/* --- DESKTOP TOP NAVBAR --- */}
       <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm h-16">
         <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
@@ -96,10 +89,13 @@ export default function ChefNavbar({
             {!onToggleEditMode && (
               <button
                 onClick={() => {
-                  setShowRoleTransition(true);
-                  setTimeout(() => {
-                    router.push("/feed");
-                  }, 1400);
+                  startRoleTransition({
+                    fromRole: "SELLER",
+                    toRole: "BUYER",
+                    targetPath: "/feed",
+                    minDurationMs: 2000,
+                    navigateAfterMs: 400,
+                  });
                 }}
                 className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-teal-600 transition"
               >
@@ -209,10 +205,13 @@ export default function ChefNavbar({
             <button
               onClick={() => {
                 setIsMobileMenuOpen(false);
-                setShowRoleTransition(true);
-                setTimeout(() => {
-                  router.push("/feed");
-                }, 1400);
+                startRoleTransition({
+                  fromRole: "SELLER",
+                  toRole: "BUYER",
+                  targetPath: "/feed",
+                  minDurationMs: 2000,
+                  navigateAfterMs: 400,
+                });
               }}
               className="w-full px-4 py-3 text-sm font-medium text-teal-600 bg-teal-50 rounded-lg hover:bg-teal-100 transition flex items-center justify-center gap-2"
             >

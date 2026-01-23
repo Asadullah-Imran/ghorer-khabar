@@ -18,18 +18,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
-import RoleTransition from "@/components/common/RoleTransition";
+import { useRoleTransition } from "@/contexts/RoleTransitionContext";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [showRoleTransition, setShowRoleTransition] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
   const { totalItems } = useCart();
   const { user, role, signOut } = useAuth();
+  const { startRoleTransition } = useRoleTransition();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -85,14 +85,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Role Transition Overlay */}
-      <RoleTransition
-        isVisible={showRoleTransition}
-        fromRole="BUYER"
-        toRole="SELLER"
-        onComplete={() => setShowRoleTransition(false)}
-      />
-
       <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm h-16">
         <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
           {/* Logo */}
@@ -131,10 +123,13 @@ export default function Navbar() {
             {role === "SELLER" && (
               <button
                 onClick={() => {
-                  setShowRoleTransition(true);
-                  setTimeout(() => {
-                    router.push("/chef/dashboard");
-                  }, 1400);
+                  startRoleTransition({
+                    fromRole: "BUYER",
+                    toRole: "SELLER",
+                    targetPath: "/chef/dashboard",
+                    minDurationMs: 2000,
+                    navigateAfterMs: 400,
+                  });
                 }}
                 className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-brand-teal transition"
               >
