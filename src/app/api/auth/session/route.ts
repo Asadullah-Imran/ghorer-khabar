@@ -38,13 +38,6 @@ export async function GET() {
     if (dbUser) {
       const primaryKitchen = dbUser.kitchens[0];
 
-      // console.log("/api/auth/session -> db user", {
-      //   userId: supabaseUser.id,
-      //   email: dbUser.email,
-      //   role: dbUser.role,
-      //   kitchen: primaryKitchen,
-      // });
-
       // Merge Prisma data into the Supabase user object
       // This ensures the frontend gets fresh data even if Supabase metadata is stale
       const mergedUser = {
@@ -63,8 +56,9 @@ export async function GET() {
           ...supabaseUser.user_metadata,
           name: dbUser.name,
           full_name: dbUser.name,
-          avatar_url: dbUser.avatar,
-          picture: dbUser.avatar,
+          // Always use database avatar as source of truth
+          avatar_url: dbUser.avatar || null,
+          picture: dbUser.avatar || null,
           role: dbUser.role,
           kitchen: primaryKitchen
             ? {
@@ -83,7 +77,18 @@ export async function GET() {
       //   kitchen: mergedUser.kitchen,
       // });
 
-      return NextResponse.json({ user: mergedUser }, { status: 200 });
+      // Add cache control headers to prevent stale data
+      return NextResponse.json(
+        { user: mergedUser },
+        {
+          status: 200,
+          headers: {
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0",
+          },
+        }
+      );
     }
 
     // Fallback to Supabase user if no DB record found (should rarely happen)

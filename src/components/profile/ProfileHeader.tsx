@@ -2,16 +2,21 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import Image from "next/image";
+import { useMemo } from "react";
 
 export function ProfileHeader() {
   const { user } = useAuth();
 
-  const userAvatar =
-    user?.user_metadata?.avatar_url ||
-    user?.user_metadata?.picture ||
-    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-      user?.email || "User"
-    )}&background=0D8ABC&color=fff`;
+  // Get avatar URL - useMemo to prevent unnecessary recalculations
+  const userAvatar = useMemo(() => {
+    return (
+      user?.user_metadata?.avatar_url ||
+      user?.user_metadata?.picture ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        user?.email || "User"
+      )}&background=0D8ABC&color=fff`
+    );
+  }, [user?.user_metadata?.avatar_url, user?.user_metadata?.picture, user?.email]);
 
   const userName =
     user?.user_metadata?.full_name ||
@@ -35,10 +40,13 @@ export function ProfileHeader() {
         <div className="flex flex-col items-center -mt-14">
           <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-white shadow-xl bg-white ring-4 ring-[#feb728]/30">
             <Image
+              key={userAvatar} // Force re-render when avatar URL changes
               src={userAvatar}
               alt="Profile"
               fill
               className="object-cover"
+              unoptimized // Disable Next.js image optimization to avoid caching
+              priority // Load immediately
             />
           </div>
 
