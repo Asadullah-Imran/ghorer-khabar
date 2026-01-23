@@ -149,13 +149,13 @@ model Kitchen {
   responseTime        Int?
   deliveryRate        Decimal?             @db.Decimal(3, 2)
   operatingDays       Json?
-  max_capacity        Int                  @default(6)
-  min_prep_time_hours Int                  @default(4)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
+  addressId           String?              @unique @map("address_id")
   latitude            Float?
   longitude           Float?
-  addressId           String?              @unique @map("address_id")
+  max_capacity        Int                  @default(6)
+  min_prep_time_hours Int                  @default(4)
   favorites           Favorite[]
   gallery             KitchenGallery[]
   address             Address?             @relation(fields: [addressId], references: [id])
@@ -215,14 +215,14 @@ model Order {
   id                 String              @id @default(cuid())
   userId             String              @map("user_id")
   kitchenId          String              @map("kitchen_id")
-  subscription_id    String?
   total              Float
   status             OrderStatus         @default(PENDING)
   notes              String?
-  delivery_date      DateTime
-  delivery_time_slot MealType?
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
+  delivery_date      DateTime
+  delivery_time_slot MealType?
+  subscription_id    String?
   items              OrderItem[]
   kitchen            Kitchen             @relation(fields: [kitchenId], references: [id])
   user_subscriptions user_subscriptions? @relation(fields: [subscription_id], references: [id])
@@ -378,13 +378,13 @@ model SupportTicket {
 }
 
 model AdminNotification {
-  id              String                  @id @default(cuid())
-  supportTicketId String                  @map("support_ticket_id")
+  id              String                @id @default(cuid())
+  supportTicketId String                @map("support_ticket_id")
   title           String
   message         String
-  read            Boolean                 @default(false)
-  type            AdminNotificationType   @default(SUPPORT_TICKET)
-  createdAt       DateTime                @default(now())
+  read            Boolean               @default(false)
+  createdAt       DateTime              @default(now())
+  type            AdminNotificationType @default(SUPPORT_TICKET)
 
   @@index([read])
   @@index([createdAt])
