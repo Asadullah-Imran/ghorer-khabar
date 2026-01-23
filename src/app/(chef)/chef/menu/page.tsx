@@ -145,7 +145,13 @@ export default function MenuPage() {
     }
   };
 
-  const categories = ["All", "Rice", "Beef", "Chicken", "Fish", "Vegetarian", "Seafood"];
+  // Dynamically extract unique categories from menu items
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(
+      new Set(menuItems.map((item) => item.category).filter(Boolean))
+    ).sort();
+    return ["All", ...uniqueCategories];
+  }, [menuItems]);
 
   return (
     <div className="p-6 space-y-8">

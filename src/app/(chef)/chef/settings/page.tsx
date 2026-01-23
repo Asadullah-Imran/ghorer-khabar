@@ -9,7 +9,6 @@ import {
     MapPin,
     Phone,
     Save,
-    ShieldCheck,
     Trash2,
     User,
     XCircle,
@@ -30,10 +29,10 @@ export default function SettingsPage() {
   // General Information State
   const [kitchenName, setKitchenName] = useState("");
   const [address, setAddress] = useState("");
-  const [ownerName, setOwnerName] = useState(""); // Read-only
-  const [phoneNumber, setPhoneNumber] = useState(""); // Read-only
+  const [ownerName, setOwnerName] = useState(""); // Editable - syncs to User
+  const [phoneNumber, setPhoneNumber] = useState(""); // Editable - syncs to User
 
-  // Operating Hours State
+  // Operating Hours State - initialized from DB
   const [operatingHours, setOperatingHours] = useState<OperatingDay[]>([
     { day: "MONDAY", isOpen: true, openTime: "10:00", closeTime: "22:00" },
     { day: "TUESDAY", isOpen: true, openTime: "10:00", closeTime: "22:00" },
@@ -43,10 +42,7 @@ export default function SettingsPage() {
     { day: "SATURDAY", isOpen: true, openTime: "09:00", closeTime: "23:00" },
     { day: "SUNDAY", isOpen: false, openTime: "10:00", closeTime: "22:00" },
   ]);
-
-  // Legal & Verification (Read-only)
-  const [verificationStatus, setVerificationStatus] = useState<"verified" | "pending" | "rejected">("pending");
-  const [nidNumber, setNidNumber] = useState("");
+  const [operatingHoursFromDb, setOperatingHoursFromDb] = useState(false);
 
   // Loading and error states
   const [loading, setLoading] = useState(true);
@@ -70,34 +66,69 @@ export default function SettingsPage() {
       setLoading(true);
       setError("");
 
-      const response = await fetch("/api/chef/settings");
-      const result = await response.json();
-
+      const response = await fetch("/api/chef/settings", {
+        credentials: "include",
+      });
+      
       if (!response.ok) {
-        throw new Error(result.error || "Failed to fetch settings");
+        const errorText = await response.text();
+        console.error("Settings API error:", errorText);
+        throw new Error(`Failed to fetch settings: ${response.status}`);
       }
+      
+      const result = await response.json();
 
       if (result.success && result.data) {
         const { data } = result;
+        console.log("Frontend: Received data from API:", data);
+        console.log("Frontend: operatingDays from API:", data.operatingDays);
+        console.log("Frontend: operatingDays type:", typeof data.operatingDays);
+        
         setKitchenName(data.kitchenName || "");
         setAddress(data.address || "");
         setOwnerName(data.ownerName || "");
         setPhoneNumber(data.phoneNumber || "");
-        setNidNumber(data.nidNumber || "");
-        setVerificationStatus(data.isVerified ? "verified" : "pending");
 
-        // Parse operating days
-        if (data.operatingDays && typeof data.operatingDays === "object") {
-          const parsedHours = Object.entries(data.operatingDays).map(([day, hours]) => ({
-            day: day.toUpperCase(),
-            isOpen: (hours as { isOpen?: boolean }).isOpen || false,
-            openTime: (hours as { openTime?: string }).openTime || "10:00",
-            closeTime: (hours as { closeTime?: string }).closeTime || "22:00",
-          }));
-          if (parsedHours.length > 0) {
-            setOperatingHours(parsedHours);
-          }
+        // Parse operating days from database
+        // Check if operatingDays exists and has data (not null, not undefined, not empty object)
+        const hasOperatingDays =
+          data.operatingDays !== null &&
+          data.operatingDays !== undefined &&
+          typeof data.operatingDays === "object" &&
+          !Array.isArray(data.operatingDays) &&
+          Object.keys(data.operatingDays).length > 0;
+        
+        console.log("Frontend: hasOperatingDays:", hasOperatingDays);
+
+        setOperatingHoursFromDb(!!hasOperatingDays);
+
+        if (hasOperatingDays) {
+          // Map database days to our state format
+          const dayOrder = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
+          const parsedHours = dayOrder.map((day) => {
+            const dayData = (data.operatingDays as Record<string, any>)[day] || 
+                           (data.operatingDays as Record<string, any>)[day.toUpperCase()] ||
+                           (data.operatingDays as Record<string, any>)[day.toLowerCase()];
+            
+            if (dayData) {
+              return {
+                day: day,
+                isOpen: dayData.isOpen ?? true,
+                openTime: dayData.openTime || "10:00",
+                closeTime: dayData.closeTime || "22:00",
+              };
+            }
+            // Default values if day not found in DB
+            return {
+              day: day,
+              isOpen: day !== "SUNDAY",
+              openTime: day === "SATURDAY" ? "09:00" : "10:00",
+              closeTime: (day === "FRIDAY" || day === "SATURDAY") ? "23:00" : "22:00",
+            };
+          });
+          setOperatingHours(parsedHours);
         }
+        // If no operatingDays in DB, keep default values (already set in useState)
       }
     } catch (err) {
       console.error("Error fetching settings:", err);
@@ -122,6 +153,21 @@ export default function SettingsPage() {
         setError("Address is required");
         return;
       }
+      if (!ownerName.trim()) {
+        setError("Owner name is required");
+        return;
+      }
+      if (!phoneNumber.trim()) {
+        setError("Phone number is required");
+        return;
+      }
+
+      // Validate phone number format (11 digits starting with 01)
+      const phoneRegex = /^01\d{9}$/;
+      if (!phoneRegex.test(phoneNumber.trim())) {
+        setError("Phone number must be 11 digits starting with 01");
+        return;
+      }
 
       const response = await fetch("/api/chef/settings", {
         method: "PUT",
@@ -129,6 +175,8 @@ export default function SettingsPage() {
         body: JSON.stringify({
           kitchenName: kitchenName.trim(),
           address: address.trim(),
+          ownerName: ownerName.trim(),
+          phoneNumber: phoneNumber.trim(),
         }),
       });
 
@@ -180,9 +228,12 @@ export default function SettingsPage() {
         return acc;
       }, {} as Record<string, { isOpen: boolean; openTime: string; closeTime: string }>);
 
+      console.log("Frontend: Sending operatingDays:", JSON.stringify(operatingDaysObj, null, 2));
+
       const response = await fetch("/api/chef/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           kitchenName,
           address,
@@ -190,11 +241,26 @@ export default function SettingsPage() {
         }),
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        throw new Error(result.error || "Failed to save operating hours");
+        const errorText = await response.text();
+        let errorMessage = "Failed to save operating hours";
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorMessage;
+        } catch {
+          errorMessage = `Server error: ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
+
+      const result = await response.json();
+      console.log("Frontend: Response from save:", result);
+
+      // Mark as coming from DB now (we just saved it)
+      setOperatingHoursFromDb(true);
+
+      // Refresh settings to get the updated data from DB
+      await fetchSettings();
 
       setSuccessMessage("Operating hours saved successfully!");
       setTimeout(() => setSuccessMessage(""), 3000);
@@ -268,7 +334,7 @@ export default function SettingsPage() {
       <div className="mb-8">
         <h1 className="text-4xl font-black text-gray-900">Business Settings</h1>
         <p className="text-gray-500 mt-2">
-          Manage your kitchen profile, hours, and legal details.
+          Manage your kitchen profile and operating hours.
         </p>
       </div>
 
@@ -327,37 +393,48 @@ export default function SettingsPage() {
             />
           </div>
 
-          {/* Owner Name (Read-only) */}
+          {/* Owner Name (Editable - syncs to User) */}
           <div>
             <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
               <User size={16} />
-              Owner Full Name
+              Owner Full Name *
             </label>
             <input
               type="text"
               value={ownerName}
-              disabled
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
+              onChange={(e) => setOwnerName(e.target.value)}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+              placeholder="Enter your full name"
             />
             <p className="text-xs text-gray-500 mt-1">
-              Contact support to update owner name
+              This will update your user profile name
             </p>
           </div>
 
-          {/* Phone Number (Read-only) */}
+          {/* Phone Number (Editable - syncs to User) */}
           <div>
             <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
               <Phone size={16} />
-              Phone Number
+              Phone Number *
             </label>
-            <input
-              type="text"
-              value={phoneNumber}
-              disabled
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed"
-            />
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-2.5 border border-gray-300 rounded-l-lg bg-gray-50 text-gray-600 font-medium">
+                01
+              </span>
+              <input
+                type="text"
+                value={phoneNumber.startsWith("01") ? phoneNumber.slice(2) : phoneNumber}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "").slice(0, 9);
+                  setPhoneNumber("01" + value);
+                }}
+                maxLength={9}
+                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400"
+                placeholder="123456789"
+              />
+            </div>
             <p className="text-xs text-gray-500 mt-1">
-              Contact support to update phone number
+              11 digits total (01 + 9 digits). This will update your user profile phone number.
             </p>
           </div>
 
@@ -377,9 +454,14 @@ export default function SettingsPage() {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <div className="flex items-center gap-2 mb-6">
           <Clock className="text-teal-600" size={24} />
-          <h2 className="text-2xl font-bold text-gray-900">
-            Opening & Closing Hours
-          </h2>
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-gray-900">Opening & Closing Hours</h2>
+            <p className="text-xs text-gray-500 mt-1">
+              {operatingHoursFromDb
+                ? "Loaded from database"
+                : "Showing default hours (not saved yet). Click “Save Operating Hours” to store in database."}
+            </p>
+          </div>
         </div>
 
         <div className="space-y-3">
@@ -455,95 +537,7 @@ export default function SettingsPage() {
         </button>
       </div>
 
-      {/* Section 3: Legal & Verification */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <div className="flex items-center gap-2 mb-6">
-          <ShieldCheck className="text-teal-600" size={24} />
-          <h2 className="text-2xl font-bold text-gray-900">
-            Legal & Verification
-          </h2>
-        </div>
-
-        {/* Verification Status Badge */}
-        <div className="mb-6 p-4 bg-gradient-to-r from-teal-50 to-teal-100 border-2 border-teal-300 rounded-lg">
-          <div className="flex items-center gap-3">
-            {verificationStatus === "verified" && (
-              <>
-                <CheckCircle2 className="text-green-600" size={32} />
-                <div>
-                  <p className="font-bold text-gray-900 text-lg">
-                    Verified Kitchen
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Your kitchen has been verified by our team
-                  </p>
-                </div>
-              </>
-            )}
-            {verificationStatus === "pending" && (
-              <>
-                <AlertTriangle className="text-orange-500" size={32} />
-                <div>
-                  <p className="font-bold text-gray-900 text-lg">
-                    Verification Pending
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Your documents are under review
-                  </p>
-                </div>
-              </>
-            )}
-            {verificationStatus === "rejected" && (
-              <>
-                <XCircle className="text-red-600" size={32} />
-                <div>
-                  <p className="font-bold text-gray-900 text-lg">
-                    Verification Rejected
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    Please contact support for more details
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {/* NID Number */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              NID Number (Masked for Security)
-            </label>
-            <input
-              type="text"
-              value={nidNumber}
-              disabled
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg bg-gray-50 text-gray-600 cursor-not-allowed font-mono"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Only the last 4 digits are shown for security purposes
-            </p>
-          </div>
-
-          {/* Helper Text */}
-          <div className="flex items-start gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <AlertTriangle
-              className="text-blue-600 flex-shrink-0 mt-0.5"
-              size={18}
-            />
-            <p className="text-sm text-blue-800">
-              <strong>Note:</strong> To update your NID or submit new
-              verification documents, please contact our support team at{" "}
-              <a href="mailto:support@ghorerkhabar.com" className="underline">
-                support@ghorerkhabar.com
-              </a>
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Section 4: Danger Zone */}
+      {/* Section 3: Danger Zone */}
       <div className="bg-white rounded-xl border-2 border-red-300 shadow-sm p-6">
         <div className="flex items-center gap-2 mb-4">
           <AlertTriangle className="text-red-600" size={24} />
