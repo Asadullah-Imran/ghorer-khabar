@@ -176,8 +176,8 @@ export default function ChefOnboardingPage() {
       // Clear saved progress
       localStorage.removeItem(STORAGE_KEY);
 
-      // Force hard reload to update auth context with new kitchen status
-      window.location.href = "/chef/dashboard";
+      // Redirect to waiting approval page
+      window.location.href = "/chef/waiting-approval";
     } catch (error) {
       console.error("Submission error:", error);
       if (error instanceof z.ZodError) {
