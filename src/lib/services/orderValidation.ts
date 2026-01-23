@@ -47,32 +47,56 @@ export function getHoursUntilDelivery(
 }
 
 /**
- * Validate order timing (36 hours rule)
+ * Validate order timing (3-day window: today, tomorrow, day after tomorrow)
  */
 export function validateOrderTiming(
   deliveryDate: Date,
   timeSlot: MealTimeSlot
 ): ValidationResult {
-  const hoursUntilDelivery = getHoursUntilDelivery(deliveryDate, timeSlot);
+  const now = new Date();
   
-  if (hoursUntilDelivery < MIN_ORDER_ADVANCE_HOURS) {
+  // Get today, tomorrow, and day after tomorrow (start of day)
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  
+  const dayAfterTomorrow = new Date(today);
+  dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+  
+  const dayAfterTomorrowEnd = new Date(dayAfterTomorrow);
+  dayAfterTomorrowEnd.setHours(23, 59, 59, 999);
+  
+  // Normalize delivery date to start of day for comparison
+  const deliveryDateStart = new Date(deliveryDate);
+  deliveryDateStart.setHours(0, 0, 0, 0);
+  
+  // Check if delivery date is in the past (before today)
+  if (deliveryDateStart < today) {
     return {
       valid: false,
-      error: `Orders must be placed at least ${MIN_ORDER_ADVANCE_HOURS} hours before delivery. Only ${hoursUntilDelivery.toFixed(1)} hours remaining.`,
+      error: "Orders can only be placed for today, tomorrow, or day after tomorrow.",
     };
   }
   
-  // Check if delivery date is in the past
-  const now = new Date();
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
-  
-  if (deliveryDate < tomorrow) {
+  // Check if delivery date is beyond day after tomorrow
+  if (deliveryDateStart > dayAfterTomorrow) {
     return {
       valid: false,
-      error: "Orders can only be placed for tomorrow or later dates.",
+      error: "Orders can only be placed for today, tomorrow, or day after tomorrow.",
     };
+  }
+  
+  // For today's orders, check if the time slot has already passed
+  if (deliveryDateStart.getTime() === today.getTime()) {
+    const hoursUntilDelivery = getHoursUntilDelivery(deliveryDate, timeSlot);
+    if (hoursUntilDelivery < 0) {
+      return {
+        valid: false,
+        error: `The ${MEAL_TIME_SLOTS[timeSlot].displayName} time slot for today has already passed.`,
+      };
+    }
   }
   
   return { valid: true };
@@ -120,6 +144,11 @@ export async function validatePrepTime(
   });
   
   const hoursUntilDelivery = getHoursUntilDelivery(deliveryDate, timeSlot);
+  
+  // If time slot has already passed, don't check prep time (timing validation will catch this)
+  if (hoursUntilDelivery < 0) {
+    return { valid: true }; // Let timing validation handle this
+  }
   
   for (const item of menuItems) {
     const prepTimeMinutes = item.prepTime || 0;
@@ -228,8 +257,9 @@ export async function getAvailableTimeSlots(
   for (const slot of Object.keys(MEAL_TIME_SLOTS) as MealTimeSlot[]) {
     const hoursUntilDelivery = getHoursUntilDelivery(deliveryDate, slot);
     
-    // Check timing (36 hours rule)
-    const timingValid = hoursUntilDelivery >= MIN_ORDER_ADVANCE_HOURS;
+    // Check timing (3-day window: today, tomorrow, day after tomorrow)
+    const timingCheck = validateOrderTiming(deliveryDate, slot);
+    const timingValid = timingCheck.valid;
     
     // Check capacity
     const currentCount = await prisma.order.count({
@@ -247,21 +277,21 @@ export async function getAvailableTimeSlots(
     });
     const capacityAvailable = currentCount < kitchen.max_capacity;
     
-    // Check prep time for all dishes
-    const canPrepareAll = menuItems.every((item) => {
+    // Check prep time for all dishes (only if timing is valid and hoursUntilDelivery > 0)
+    const canPrepareAll = timingValid && hoursUntilDelivery > 0 ? menuItems.every((item) => {
       const prepTimeMinutes = item.prepTime || 0;
       return canOrderDishForSlot(
         prepTimeMinutes,
         kitchen.min_prep_time_hours,
         hoursUntilDelivery
       );
-    });
+    }) : false;
     
     const available = timingValid && capacityAvailable && canPrepareAll;
     
     let reason: string | undefined;
     if (!timingValid) {
-      reason = `Order deadline passed (need ${MIN_ORDER_ADVANCE_HOURS} hours, only ${hoursUntilDelivery.toFixed(1)} hours remaining)`;
+      reason = timingCheck.error || "Time slot not available for this date";
     } else if (!capacityAvailable) {
       reason = `Kitchen full (${currentCount}/${kitchen.max_capacity} orders)`;
     } else if (!canPrepareAll) {

@@ -128,12 +128,11 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
     lng: number;
   } | null>(null);
 
-  // Set default delivery date to tomorrow
+  // Set default delivery date to today
   useEffect(() => {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(0, 0, 0, 0);
-    const dateString = tomorrow.toISOString().split("T")[0];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const dateString = today.toISOString().split("T")[0];
     setFormData(prev => ({ ...prev, deliveryDate: dateString }));
   }, []);
 
@@ -485,7 +484,7 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
                   Delivery Date & Time
                 </span>
                 <p className="text-xs text-gray-500 mb-3">
-                  Orders must be placed at least 36 hours before delivery
+                  You can order for today, tomorrow, or day after tomorrow
                 </p>
               </div>
 
@@ -499,9 +498,15 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
                       required
                       type="date"
                       min={(() => {
-                        const tomorrow = new Date();
-                        tomorrow.setDate(tomorrow.getDate() + 1);
-                        return tomorrow.toISOString().split("T")[0];
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        return today.toISOString().split("T")[0];
+                      })()}
+                      max={(() => {
+                        const dayAfterTomorrow = new Date();
+                        dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
+                        dayAfterTomorrow.setHours(0, 0, 0, 0);
+                        return dayAfterTomorrow.toISOString().split("T")[0];
                       })()}
                       className="w-full rounded-lg border border-gray-300 bg-white h-12 pl-10 pr-4 text-base focus:border-teal-600 focus:ring-1 focus:ring-teal-600 outline-none transition-all"
                       value={formData.deliveryDate}
