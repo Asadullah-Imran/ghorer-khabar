@@ -70,6 +70,7 @@ export async function GET(req: NextRequest) {
         message: true,
         read: true,
         createdAt: true,
+        actionUrl: true,
       },
     });
 
@@ -81,6 +82,7 @@ export async function GET(req: NextRequest) {
       message: notif.message,
       timestamp: notif.createdAt,
       read: notif.read,
+      actionUrl: notif.actionUrl || undefined,
     }));
 
     return NextResponse.json({ success: true, data: transformedNotifications });

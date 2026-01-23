@@ -2,6 +2,7 @@
 
 import { useCart } from "@/components/cart/CartProvider";
 import { useAuth } from "@/contexts/AuthContext";
+import BuyerNotificationBell from "@/components/notifications/BuyerNotificationBell";
 import {
   ChefHat,
   Home,
@@ -137,6 +138,9 @@ export default function Navbar() {
                 <span>Switch to Chef</span>
               </button>
             )}
+
+            {/* Notifications Bell */}
+            {user && <BuyerNotificationBell />}
 
             {/* Cart Icon */}
             <Link
