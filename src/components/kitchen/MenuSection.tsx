@@ -15,6 +15,9 @@ import { useState } from "react";
 export default function MenuSection({ data, isOwnProfile = false }: { data: any; isOwnProfile?: boolean }) {
   const [activeCategory, setActiveCategory] = useState("All Items");
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Check if user owns this kitchen (cannot order from own kitchen)
+  const isOwner = data?.isOwner || false;
 
   const categories = ["All Items", "Meals", "Snacks", "Desserts"];
 
@@ -109,7 +112,15 @@ export default function MenuSection({ data, isOwnProfile = false }: { data: any;
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-teal-700">৳{item.price}</span>
-                  <button className="px-3 py-1.5 bg-teal-50 text-teal-700 text-xs font-bold rounded-lg hover:bg-teal-700 hover:text-white transition-colors flex items-center gap-1">
+                  <button 
+                    disabled={isOwner}
+                    className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1 transition-colors ${
+                      isOwner 
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                        : "bg-teal-50 text-teal-700 hover:bg-teal-700 hover:text-white"
+                    }`}
+                    title={isOwner ? "You cannot order from your own kitchen" : "Add to cart"}
+                  >
                     ADD <Plus size={14} />
                   </button>
                 </div>
@@ -247,7 +258,15 @@ export default function MenuSection({ data, isOwnProfile = false }: { data: any;
                   </p>
                   <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                     <span className="font-bold text-teal-700">৳{item.price}</span>
-                    <button className="px-3 py-1.5 bg-teal-50 text-teal-700 text-xs font-bold rounded-lg hover:bg-teal-700 hover:text-white transition-colors flex items-center gap-1">
+                    <button 
+                      disabled={isOwner}
+                      className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1 transition-colors ${
+                        isOwner 
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                          : "bg-teal-50 text-teal-700 hover:bg-teal-700 hover:text-white"
+                      }`}
+                      title={isOwner ? "You cannot order from your own kitchen" : "Add to cart"}
+                    >
                       ADD <Plus size={12} />
                     </button>
                   </div>
