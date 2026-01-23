@@ -7,6 +7,7 @@ import MenuInsightsModal from "@/components/chef/Menu/MenuInsightsModal";
 import { Filter, Plus, Search, Loader2 } from "lucide-react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useChefMenu } from "@/lib/hooks/useChefMenu";
+import { useToast } from "@/contexts/ToastContext";
 
 interface MenuItem {
   id?: string;
@@ -30,10 +31,12 @@ export default function MenuPage() {
     loading,
     error,
     saving,
+    togglingAvailability,
     saveMenuItem,
     deleteMenuItem,
     toggleAvailability,
   } = useChefMenu();
+  const toast = useToast();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | undefined>();
@@ -90,9 +93,35 @@ export default function MenuPage() {
     }
   }, [itemToDelete?.id, deleteMenuItem]);
 
-  const handleToggleAvailabilityCallback = useCallback(async (id: string) => {
-    await toggleAvailability(id);
-  }, [toggleAvailability]);
+  const handleToggleAvailabilityCallback = useCallback(async (id: string): Promise<void> => {
+    const item = menuItems.find((i) => i.id === id);
+    if (!item) {
+      console.error("Item not found for toggle:", id);
+      return;
+    }
+
+    const wasAvailable = item.isAvailable;
+    
+    try {
+      const success = await toggleAvailability(id);
+      
+      if (success) {
+        toast.success(
+          wasAvailable ? "Item Unavailable" : "Item Available",
+          `"${item.name}" is now ${wasAvailable ? "unavailable" : "available"} for customers`
+        );
+      } else {
+        const errorMsg = error || "Failed to update item availability. Please try again.";
+        toast.error("Update Failed", errorMsg);
+      }
+    } catch (err) {
+      console.error("Error in toggle availability callback:", err);
+      toast.error(
+        "Update Failed",
+        err instanceof Error ? err.message : "An error occurred while updating availability. Please try again."
+      );
+    }
+  }, [toggleAvailability, menuItems, toast, error]);
 
   const fetchReviewsForItem = async (menuItemId: string) => {
     try {
@@ -218,7 +247,12 @@ export default function MenuPage() {
                   item={item}
                   onEdit={() => handleEdit(item)}
                   onDelete={() => handleDelete(item)}
-                  onToggleAvailability={() => item.id && handleToggleAvailabilityCallback(item.id)}
+                  onToggleAvailability={async () => {
+                    if (item.id) {
+                      await handleToggleAvailabilityCallback(item.id);
+                    }
+                  }}
+                  isToggling={togglingAvailability === item.id}
                   onViewInsights={async () => {
                     if (item.id) {
                       setInsightsItemId(item.id);
