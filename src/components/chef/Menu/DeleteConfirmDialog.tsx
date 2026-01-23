@@ -34,7 +34,7 @@ export default function DeleteConfirmDialog({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
         {/* Header with danger background */}
-        <div className="bg-gradient-to-r from-red-600 to-red-700 px-6 py-8 text-center">
+        <div className="px-6 py-8 text-center" style={{ background: `linear-gradient(to right, #c1121f, #a00e1a)` }}>
           <div className="flex justify-center mb-4">
             <div className="bg-white/20 p-4 rounded-full">
               <AlertTriangle size={32} className="text-white" />
@@ -45,11 +45,11 @@ export default function DeleteConfirmDialog({
 
         {/* Content */}
         <div className="p-6 space-y-4">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="rounded-lg p-4" style={{ backgroundColor: '#fee2e2', border: '1px solid #fecaca' }}>
             <p className="text-sm text-gray-700 mb-3">
               You are about to delete:
             </p>
-            <div className="bg-white p-3 rounded border border-red-100">
+            <div className="bg-white p-3 rounded border" style={{ borderColor: '#fca5a5' }}>
               <h3 className="font-bold text-gray-900">{item.name}</h3>
               <p className="text-sm text-gray-600 mt-1">{item.category}</p>
               <p className="text-sm text-gray-500 mt-2">
@@ -80,7 +80,10 @@ export default function DeleteConfirmDialog({
           </button>
           <button
             onClick={onConfirm}
-            className="flex-1 px-4 py-2.5 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2.5 text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+            style={{ backgroundColor: '#c1121f' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#a00e1a'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#c1121f'}
           >
             <AlertTriangle size={18} />
             Delete

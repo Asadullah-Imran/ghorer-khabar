@@ -42,27 +42,20 @@ export default function RoleTransition({
       setPhase("fade-in");
     }, 1100);
 
-    // Phase 3: Complete (300ms)
-    const completeTimer = setTimeout(() => {
-      setPhase("complete");
-      setShowLogo(false);
-      if (onComplete) {
-        onComplete();
-      }
-    }, 1400);
+    // Don't auto-complete - let parent component control when to hide
+    // The transition will stay visible until isVisible becomes false
 
     return () => {
       clearTimeout(fadeOutTimer);
       clearTimeout(transitionTimer);
-      clearTimeout(completeTimer);
     };
-  }, [isVisible, onComplete]);
+  }, [isVisible]);
 
-  if (!isVisible && phase === "complete") {
+  if (!isVisible) {
     return null;
   }
 
-  const isTransitioning = phase === "transition" || phase === "fade-in";
+  const isTransitioning = phase === "transition" || phase === "fade-in" || isVisible;
   const fromIcon = fromRole === "BUYER" ? User : ChefHat;
   const toIcon = toRole === "BUYER" ? User : ChefHat;
   const FromIcon = fromIcon;
@@ -74,12 +67,19 @@ export default function RoleTransition({
         isTransitioning ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
       style={{
-        background: `linear-gradient(135deg, #477e77 0%, #181610 50%, #feb728 100%)`,
+        background: `linear-gradient(135deg, #f8f7f5 0%, #ffffff 30%, #f8f7f5 70%, #ffffff 100%)`,
       }}
     >
       {/* Animated Background Pattern */}
-      <div className="absolute inset-0 overflow-hidden opacity-20">
+      <div className="absolute inset-0 overflow-hidden opacity-5">
         <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/food.png')] animate-pulse-slow"></div>
+      </div>
+
+      {/* Decorative Gradient Blobs */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
+        <div className="absolute top-20 left-20 w-64 h-64 bg-[#feb728]/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#477e77]/10 rounded-full blur-3xl animate-pulse-slow delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#feb728]/5 rounded-full blur-3xl animate-pulse-slow delay-500"></div>
       </div>
 
       {/* Main Content */}
@@ -93,8 +93,8 @@ export default function RoleTransition({
           }`}
         >
           <div className="relative">
-            <div className="absolute inset-0 bg-[#feb728] rounded-full blur-2xl opacity-50 animate-pulse"></div>
-            <div className="relative bg-white/10 backdrop-blur-md p-6 rounded-full border-4 border-white/30 shadow-2xl">
+            <div className="absolute inset-0 bg-[#feb728] rounded-full blur-2xl opacity-30 animate-pulse"></div>
+            <div className="relative bg-white p-6 rounded-full border-4 border-[#477e77]/20 shadow-2xl">
               <Image
                 src="/ghorer-khabar-logo.png"
                 alt="Ghorer Khabar"
@@ -118,10 +118,10 @@ export default function RoleTransition({
                   : "opacity-0 scale-75"
               }`}
             >
-              <div className="bg-white/20 backdrop-blur-sm p-4 rounded-full border-2 border-white/30">
-                <FromIcon size={32} className="text-white" />
+              <div className="bg-white p-4 rounded-full border-2 border-[#477e77]/30 shadow-lg">
+                <FromIcon size={32} className="text-[#477e77]" />
               </div>
-              <p className="text-white/80 text-sm font-semibold uppercase tracking-wider">
+              <p className="text-[#131615] text-sm font-semibold uppercase tracking-wider">
                 {fromRole === "BUYER" ? "Foodie" : "Chef"}
               </p>
             </div>
@@ -135,8 +135,8 @@ export default function RoleTransition({
               }`}
             >
               <div className="relative">
-                <div className="absolute inset-0 bg-[#feb728] rounded-full blur-lg opacity-50 animate-ping"></div>
-                <div className="relative bg-[#feb728] p-3 rounded-full">
+                <div className="absolute inset-0 bg-[#feb728] rounded-full blur-lg opacity-40 animate-ping"></div>
+                <div className="relative bg-[#feb728] p-3 rounded-full shadow-lg">
                   <UtensilsCrossed
                     size={24}
                     className="text-white animate-spin-slow"
@@ -153,10 +153,10 @@ export default function RoleTransition({
                   : "opacity-0 scale-75"
               }`}
             >
-              <div className="bg-[#feb728]/30 backdrop-blur-sm p-4 rounded-full border-2 border-[#feb728] shadow-lg">
+              <div className="bg-[#feb728] p-4 rounded-full border-2 border-[#feb728] shadow-lg">
                 <ToIcon size={32} className="text-white" />
               </div>
-              <p className="text-white font-bold text-base uppercase tracking-wider">
+              <p className="text-[#131615] font-bold text-base uppercase tracking-wider">
                 {toRole === "BUYER" ? "Foodie" : "Chef"}
               </p>
             </div>
@@ -166,16 +166,12 @@ export default function RoleTransition({
         {/* Loading Text */}
         {showLogo && phase === "transition" && (
           <div className="mt-4">
-            <p className="text-white/90 text-lg font-semibold animate-pulse">
+            <p className="text-[#477e77] text-lg font-semibold animate-pulse">
               Switching to {toRole === "BUYER" ? "Foodie" : "Chef"} Mode...
             </p>
           </div>
         )}
       </div>
-
-      {/* Decorative Elements */}
-      <div className="absolute top-20 left-20 w-32 h-32 bg-[#feb728]/20 rounded-full blur-3xl animate-pulse-slow"></div>
-      <div className="absolute bottom-20 right-20 w-40 h-40 bg-[#477e77]/30 rounded-full blur-3xl animate-pulse-slow delay-1000"></div>
     </div>
   );
 }
