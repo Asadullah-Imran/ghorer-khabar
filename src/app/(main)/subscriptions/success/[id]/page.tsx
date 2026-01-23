@@ -214,12 +214,6 @@ export default async function SubscriptionSuccessPage({ params }: PageProps) {
                     <span className="text-[10px] text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full font-bold">Cash on Delivery</span>
                   </div>
                 </div>
-
-                {/* Contact Button */}
-                <button className="w-full py-2.5 rounded-lg border border-gray-300 hover:bg-gray-50 text-sm font-semibold text-gray-900 flex items-center justify-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">chat</span>
-                  Message Chef
-                </button>
               </div>
             </div>
           </div>
