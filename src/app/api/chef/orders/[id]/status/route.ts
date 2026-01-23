@@ -163,7 +163,8 @@ export async function PATCH(
       order.userId,
       getNotificationType(status),
       getNotificationTitle(status),
-      getNotificationMessage(status, orderNumber, customerName, true)
+      getNotificationMessage(status, orderNumber, customerName, true),
+      `/orders/${id}/track` // Add tracking URL
     );
 
     // If status is COMPLETED, add revenue to kitchen

@@ -274,6 +274,7 @@ export async function GET(req: NextRequest) {
                 type: "INFO",
                 title: "Order Created from Subscription",
                 message: `${ordersCreatedForSubscription} order(s) from your subscription "${subscription.plan.name}" have been created for ${tomorrow.toLocaleDateString()}.`,
+                actionUrl: "/orders",
               },
             });
           } catch (notifError) {

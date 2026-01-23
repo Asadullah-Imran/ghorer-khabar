@@ -128,6 +128,7 @@ export async function PATCH(
           type: "SUCCESS",
           title: "Subscription Approved",
           message: `Your subscription to "${updated.plan.name}" has been approved and is now active!`,
+          actionUrl: "/profile/my-subscription",
         },
       });
     } catch (notifError) {
