@@ -15,11 +15,68 @@ export default function InventoryPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"inventory" | "shopping" | "forecast">("shopping");
+  const [activeTab, setActiveTab] = useState<"inventory" | "shopping" | "forecast">("inventory");
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     fetchItems();
   }, []);
+
+  // Auto-sync demand from orders when switching to shopping tab
+  useEffect(() => {
+    if (activeTab === "shopping") {
+      syncOrderDemand();
+    }
+  }, [activeTab]);
+
+  // Auto-sync forecast when switching to forecast tab
+  useEffect(() => {
+    if (activeTab === "forecast") {
+      syncForecastDemand();
+    }
+  }, [activeTab]);
+
+  const syncOrderDemand = async () => {
+    try {
+      setSyncing(true);
+      const res = await fetch("/api/chef/inventory/sync-demand", {
+        method: "POST",
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        // Refresh inventory items to show updated demand
+        await fetchItems();
+      } else {
+        console.error("Failed to sync order demand:", data.error);
+      }
+    } catch (err) {
+      console.error("Error syncing order demand:", err);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const syncForecastDemand = async () => {
+    try {
+      setSyncing(true);
+      const res = await fetch("/api/chef/inventory/sync-forecast", {
+        method: "POST",
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        // Refresh inventory items to show updated forecast
+        await fetchItems();
+      } else {
+        console.error("Failed to sync forecast demand:", data.error);
+      }
+    } catch (err) {
+      console.error("Error syncing forecast demand:", err);
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const fetchItems = async () => {
     try {
@@ -45,14 +102,19 @@ export default function InventoryPage() {
     setSelectedItem(item);
   };
 
-  const handleSaveStock = async (newStock: number) => {
+  const handleSaveStock = async (newStock: number, reorderLevel?: number) => {
     if (!selectedItem?.id) return;
     
     try {
+      const updateData: any = { currentStock: newStock };
+      if (reorderLevel !== undefined) {
+        updateData.reorderLevel = reorderLevel;
+      }
+      
       const res = await fetch(`/api/chef/inventory/${selectedItem.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentStock: newStock }),
+        body: JSON.stringify(updateData),
       });
       
       const data = await res.json();
@@ -122,6 +184,18 @@ export default function InventoryPage() {
           <p className="text-lg font-semibold text-gray-900">Loading inventory...</p>
         </div>
       ) : (
+        <>
+          {/* Syncing Indicator */}
+          {syncing && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+              <Loader2 className="animate-spin text-blue-600" size={16} />
+              <p className="text-sm text-blue-700">
+                {activeTab === "forecast" 
+                  ? "Syncing forecast demand..." 
+                  : "Syncing order demand..."}
+              </p>
+            </div>
+          )}
         <>
           {/* Header */}
           <div className="flex items-center justify-between">
@@ -202,16 +276,16 @@ export default function InventoryPage() {
         {/* Tab Navigation */}
         <div className="flex gap-2 border-b border-gray-200">
           <button
-            onClick={() => setActiveTab("shopping")}
+            onClick={() => setActiveTab("inventory")}
             className={`px-4 py-3 font-semibold text-sm border-b-2 transition ${
-              activeTab === "shopping"
-                ? "border-teal-600 text-teal-700"
+              activeTab === "inventory"
+                ? "border-blue-600 text-blue-700"
                 : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
           >
             <div className="flex items-center gap-2">
-              <Sparkles size={18} />
-              ML Shopping List
+              <Package size={18} />
+              Inventory Table
             </div>
           </button>
           <button
@@ -228,28 +302,25 @@ export default function InventoryPage() {
             </div>
           </button>
           <button
-            onClick={() => setActiveTab("inventory")}
+            onClick={() => setActiveTab("shopping")}
             className={`px-4 py-3 font-semibold text-sm border-b-2 transition ${
-              activeTab === "inventory"
-                ? "border-blue-600 text-blue-700"
+              activeTab === "shopping"
+                ? "border-teal-600 text-teal-700"
                 : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
           >
             <div className="flex items-center gap-2">
-              <Package size={18} />
-              Inventory Table
+              <Sparkles size={18} />
+              Smart Shopping List
             </div>
           </button>
         </div>
 
         {/* Tab Content */}
-        {activeTab === "shopping" && (
+        {activeTab === "inventory" && (
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Sparkles className="text-teal-600" size={24} />
-              ML-Powered Smart Shopping List
-            </h2>
-            <MLSmartShoppingList />
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Inventory Status</h2>
+            <InventoryTable items={items} onUpdateStock={handleUpdateStock} />
           </div>
         )}
 
@@ -263,13 +334,17 @@ export default function InventoryPage() {
           </div>
         )}
 
-        {activeTab === "inventory" && (
+        {activeTab === "shopping" && (
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Inventory Status</h2>
-            <InventoryTable items={items} onUpdateStock={handleUpdateStock} />
+            <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Sparkles className="text-teal-600" size={24} />
+              Smart Shopping List
+            </h2>
+            <MLSmartShoppingList />
           </div>
         )}
       </div>
+        </>
         </>
       )}
 

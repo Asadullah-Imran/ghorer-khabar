@@ -1,7 +1,7 @@
 "use client";
 
 import { InventoryItem } from "@/lib/dummy-data/chef";
-import { Edit2, Plus, TrendingDown, TrendingUp } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Edit2, Plus, TrendingDown, TrendingUp } from "lucide-react";
 
 interface InventoryTableProps {
   items: InventoryItem[];
@@ -19,8 +19,28 @@ export default function InventoryTable({ items, onUpdateStock }: InventoryTableP
   };
 
   const getStockStatus = (item: InventoryItem) => {
-    if (item.currentStock <= item.reorderLevel * 0.5) return "critical";
-    if (item.currentStock <= item.reorderLevel) return "low";
+    const required = item.demandFromOrders + item.forecastDemand;
+    const toBuy = Math.max(0, required - item.currentStock);
+    
+    // If reorderLevel is 0 or not set, use alternative logic based on toBuy
+    if (item.reorderLevel === 0) {
+      // Use toBuy as primary indicator
+      if (toBuy > item.currentStock * 2) return "critical"; // Need to buy more than 2x current stock
+      if (toBuy > 0) return "low"; // Any gap means low stock
+      return "healthy"; // Sufficient stock
+    }
+    
+    // Standard logic with reorderLevel
+    // Critical if: stock below 50% of reorder level OR need to buy more than 2x current stock
+    if (item.currentStock <= item.reorderLevel * 0.5 || toBuy > item.currentStock * 2) {
+      return "critical";
+    }
+    
+    // Low if: stock below reorder level OR any gap exists (toBuy > 0)
+    if (item.currentStock <= item.reorderLevel || toBuy > 0) {
+      return "low";
+    }
+    
     return "healthy";
   };
 
@@ -38,11 +58,26 @@ export default function InventoryTable({ items, onUpdateStock }: InventoryTableP
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "critical":
-        return <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded">Critical</span>;
+        return (
+          <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded flex items-center gap-1">
+            <AlertTriangle size={12} />
+            Critical
+          </span>
+        );
       case "low":
-        return <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded">Low</span>;
+        return (
+          <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded flex items-center gap-1">
+            <AlertTriangle size={12} />
+            Low
+          </span>
+        );
       default:
-        return <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded">Healthy</span>;
+        return (
+          <span className="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded flex items-center gap-1">
+            <CheckCircle2 size={12} />
+            Healthy
+          </span>
+        );
     }
   };
 
@@ -89,18 +124,18 @@ export default function InventoryTable({ items, onUpdateStock }: InventoryTableP
 
                   {/* Demand (Orders + Forecast) */}
                   <td className="px-6 py-4 text-center">
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-center gap-1">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-center gap-1 bg-blue-50 rounded px-2 py-1">
                         <TrendingUp size={14} className="text-blue-600" />
-                        <span className="text-sm font-semibold text-gray-900">
-                          {item.demandFromOrders}
+                        <span className="text-sm font-semibold text-blue-700">
+                          {item.demandFromOrders.toFixed(1)}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500">Orders</p>
-                      <div className="flex items-center justify-center gap-1">
+                      <div className="flex items-center justify-center gap-1 bg-purple-50 rounded px-2 py-1">
                         <TrendingDown size={14} className="text-purple-600" />
-                        <span className="text-sm font-semibold text-gray-900">
-                          {item.forecastDemand}
+                        <span className="text-sm font-semibold text-purple-700">
+                          {item.forecastDemand.toFixed(1)}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500">Forecast</p>
@@ -119,11 +154,17 @@ export default function InventoryTable({ items, onUpdateStock }: InventoryTableP
 
                   {/* To Buy (Gap) */}
                   <td className="px-6 py-4 text-center">
-                    <div className={`font-bold text-lg ${toBuy > 0 ? "text-orange-700" : "text-green-700"}`}>
+                    <div className={`font-bold text-lg ${
+                      toBuy > item.currentStock * 2 ? "text-red-700" : 
+                      toBuy > 0 ? "text-orange-700" : 
+                      "text-green-700"
+                    }`}>
                       {toBuy > 0 ? (
                         <>
                           <p>+{toBuy.toFixed(1)}</p>
-                          <p className="text-xs text-gray-500">to buy</p>
+                          <p className="text-xs text-gray-500">
+                            {toBuy > item.currentStock * 2 ? "urgent" : "to buy"}
+                          </p>
                         </>
                       ) : (
                         <>

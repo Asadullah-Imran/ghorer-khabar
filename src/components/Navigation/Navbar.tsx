@@ -18,11 +18,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import RoleTransition from "@/components/common/RoleTransition";
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showRoleTransition, setShowRoleTransition] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
@@ -83,6 +85,14 @@ export default function Navbar() {
 
   return (
     <>
+      {/* Role Transition Overlay */}
+      <RoleTransition
+        isVisible={showRoleTransition}
+        fromRole="BUYER"
+        toRole="SELLER"
+        onComplete={() => setShowRoleTransition(false)}
+      />
+
       <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm h-16">
         <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-between">
           {/* Logo */}
@@ -120,7 +130,12 @@ export default function Navbar() {
             {/* Show Switch to Chef button only for sellers */}
             {role === "SELLER" && (
               <button
-                onClick={() => router.push("/chef/dashboard")}
+                onClick={() => {
+                  setShowRoleTransition(true);
+                  setTimeout(() => {
+                    router.push("/chef/dashboard");
+                  }, 1400);
+                }}
                 className="hidden md:flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-brand-teal transition"
               >
                 <ChefHat size={18} />

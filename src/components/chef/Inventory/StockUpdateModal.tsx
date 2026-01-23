@@ -7,7 +7,7 @@ import { useState } from "react";
 interface StockUpdateModalProps {
   item: InventoryItem;
   onClose: () => void;
-  onSave: (newStock: number) => void;
+  onSave: (newStock: number, reorderLevel?: number) => void;
 }
 
 export default function StockUpdateModal({
@@ -17,6 +17,7 @@ export default function StockUpdateModal({
 }: StockUpdateModalProps) {
   const [newStock, setNewStock] = useState<string>(item.currentStock.toString());
   const [change, setChange] = useState<string>("0");
+  const [reorderLevel, setReorderLevel] = useState<string>(item.reorderLevel.toString());
 
   const handleByQuantity = () => {
     const changeQty = parseFloat(change) || 0;
@@ -28,8 +29,9 @@ export default function StockUpdateModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const stock = parseFloat(newStock) || 0;
+    const reorder = parseFloat(reorderLevel) || 0;
     if (stock >= 0) {
-      onSave(stock);
+      onSave(stock, reorder);
       onClose();
     }
   };
@@ -58,10 +60,16 @@ export default function StockUpdateModal({
             {/* Item Info */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <h3 className="font-bold text-gray-900 mb-2 text-sm">{item.name}</h3>
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-3 gap-2 text-xs">
                 <div>
                   <p className="text-gray-600">Current Stock</p>
                   <p className="font-bold text-blue-700">{item.currentStock} {item.unit}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Reorder Level</p>
+                  <p className="font-bold text-blue-700">
+                    {item.reorderLevel > 0 ? `${item.reorderLevel} ${item.unit}` : "Not set"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-gray-600">Unit Cost</p>
@@ -150,25 +158,87 @@ export default function StockUpdateModal({
               </div>
             </div>
 
-            {/* Gap Analysis Preview */}
-            <div className="bg-teal-50 border border-teal-200 rounded-lg p-3">
-              <h4 className="text-xs font-semibold text-teal-900 mb-2">Demand Analysis</h4>
-              <div className="grid grid-cols-3 gap-2 text-xs">
+            {/* Reorder Level */}
+            <div className="border-t border-gray-200 pt-4">
+              <label className="block text-xs font-semibold text-gray-900 mb-1.5">
+                Reorder Level (Minimum Stock)
+                <span className="ml-2 text-xs font-normal text-gray-500">
+                  (Stock will be marked "Low" when below this level)
+                </span>
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  value={reorderLevel}
+                  onChange={(e) => setReorderLevel(e.target.value)}
+                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                  placeholder="Set minimum stock level"
+                  min="0"
+                  step="0.1"
+                />
+                <span className="flex items-center px-3 py-2 bg-gray-100 rounded-lg font-semibold text-gray-700 text-xs">
+                  {item.unit}
+                </span>
+              </div>
+              {parseFloat(reorderLevel) > 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Current: {item.reorderLevel} {item.unit} → New: {reorderLevel} {item.unit}
+                </p>
+              )}
+            </div>
+
+            {/* Enhanced Demand Analysis */}
+            <div className="bg-teal-50 border border-teal-200 rounded-lg p-4">
+              <h4 className="text-xs font-semibold text-teal-900 mb-3">Demand Analysis</h4>
+              
+              {/* Breakdown */}
+              <div className="grid grid-cols-2 gap-3 mb-3 text-xs">
+                <div className="bg-blue-50 rounded-lg p-2">
+                  <p className="text-blue-600 mb-0.5">Orders Demand</p>
+                  <p className="font-bold text-blue-900">{item.demandFromOrders.toFixed(1)} {item.unit}</p>
+                </div>
+                <div className="bg-purple-50 rounded-lg p-2">
+                  <p className="text-purple-600 mb-0.5">Forecast Demand</p>
+                  <p className="font-bold text-purple-900">{item.forecastDemand.toFixed(1)} {item.unit}</p>
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div className="grid grid-cols-3 gap-2 text-xs border-t border-teal-200 pt-3">
                 <div>
-                  <p className="text-teal-700 mb-0.5">Required</p>
-                  <p className="font-bold text-teal-900">{required.toFixed(1)}</p>
+                  <p className="text-teal-700 mb-0.5">Total Required</p>
+                  <p className="font-bold text-teal-900">{required.toFixed(1)} {item.unit}</p>
                 </div>
                 <div>
                   <p className="text-teal-700 mb-0.5">New Stock</p>
-                  <p className="font-bold text-teal-900">{updatedStock.toFixed(1)}</p>
+                  <p className="font-bold text-teal-900">{updatedStock.toFixed(1)} {item.unit}</p>
                 </div>
                 <div>
                   <p className="text-teal-700 mb-0.5">Gap</p>
                   <p className={`font-bold ${gap > 0 ? "text-orange-600" : "text-green-600"}`}>
-                    {gap > 0 ? `+${gap.toFixed(1)}` : "✓"}
+                    {gap > 0 ? `+${gap.toFixed(1)}` : "✓ Sufficient"}
                   </p>
                 </div>
               </div>
+
+              {/* Status Indicator */}
+              <div className={`mt-3 p-2 rounded-lg text-xs font-semibold ${
+                gap > 0 
+                  ? "bg-orange-100 text-orange-800 border border-orange-200" 
+                  : "bg-green-100 text-green-800 border border-green-200"
+              }`}>
+                {gap > 0 
+                  ? `⚠️ Still need to buy ${gap.toFixed(1)} ${item.unit} after this update`
+                  : "✓ Stock will be sufficient after this update"
+                }
+              </div>
+
+              {/* Cost Impact (if gap remains) */}
+              {gap > 0 && item.unitCost > 0 && (
+                <div className="mt-2 text-xs text-gray-600">
+                  Estimated additional cost: ৳{(gap * item.unitCost).toFixed(0)}
+                </div>
+              )}
             </div>
           </div>
         </form>
