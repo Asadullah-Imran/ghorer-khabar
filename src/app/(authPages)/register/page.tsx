@@ -405,14 +405,18 @@ function RegisterContent() {
               >
                 I agree to the{" "}
                 <Link
-                  href="#"
+                  href="/terms-and-conditions"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-teal-600 font-bold hover:underline"
                 >
                   Terms of Service
                 </Link>{" "}
                 and{" "}
                 <Link
-                  href="#"
+                  href="/privacy-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-teal-600 font-bold hover:underline"
                 >
                   Privacy Policy
