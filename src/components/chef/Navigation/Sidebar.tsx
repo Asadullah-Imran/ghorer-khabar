@@ -9,6 +9,7 @@ import {
   Cog,
   Home,
   Menu,
+  Phone,
   UtensilsCrossed,
   User,
   X,
@@ -58,6 +59,11 @@ const sidebarItems: SidebarItem[] = [
     label: "Business Settings",
     href: "/chef/settings",
     icon: <Cog size={20} />,
+  },
+  {
+    label: "Help & Support",
+    href: "/support",
+    icon: <Phone size={20} />,
   },
 ];
 
