@@ -1,8 +1,8 @@
 "use client";
 
-import { Clock, Edit, Flame, Leaf, Trash2, ChefHat, BarChart3 } from "lucide-react";
+import { Clock, Edit, Flame, Leaf, Trash2, ChefHat, BarChart3, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { useState, memo, useMemo, useCallback } from "react";
+import { useState, memo, useMemo, useCallback, useEffect } from "react";
 
 interface MenuImage {
   id?: string;
@@ -37,7 +37,8 @@ interface MenuItemCardProps {
   item: MenuItem;
   onEdit: () => void;
   onDelete: () => void;
-  onToggleAvailability: () => void;
+  onToggleAvailability: () => void | Promise<void>;
+  isToggling?: boolean;
   onViewInsights?: () => void;
 }
 
@@ -46,9 +47,11 @@ function MenuItemCardComponent({
   onEdit,
   onDelete,
   onToggleAvailability,
+  isToggling = false,
   onViewInsights,
 }: MenuItemCardProps) {
   const [showIngredients, setShowIngredients] = useState(false);
+  const [isLocalToggling, setIsLocalToggling] = useState(false);
   
   // Memoize expensive calculations
   const { totalIngredientCost, profitMargin, profitMarginPercent, primaryImage } = useMemo(() => {
@@ -69,6 +72,50 @@ function MenuItemCardComponent({
   const handleToggleIngredients = useCallback(() => {
     setShowIngredients((prev) => !prev);
   }, []);
+
+  const handleToggleAvailabilityClick = useCallback(async () => {
+    // Prevent clicks if already toggling
+    if (isToggling || isLocalToggling) {
+      return;
+    }
+    
+    // Disable immediately on click
+    setIsLocalToggling(true);
+    
+    // Safety timeout - always reset after 5 seconds max
+    const safetyTimeout = setTimeout(() => {
+      setIsLocalToggling(false);
+    }, 5000);
+    
+    try {
+      // Call the toggle function and wait for it to complete
+      const result = onToggleAvailability();
+      if (result instanceof Promise) {
+        await result;
+      }
+      clearTimeout(safetyTimeout);
+    } catch (error) {
+      console.error("Error in toggle availability:", error);
+      clearTimeout(safetyTimeout);
+    } finally {
+      // Always reset local state after operation completes
+      // Small delay to ensure smooth transition
+      setTimeout(() => {
+        setIsLocalToggling(false);
+      }, 100);
+    }
+  }, [onToggleAvailability, isToggling, isLocalToggling]);
+
+  // Reset local toggling state when isToggling prop becomes false
+  useEffect(() => {
+    if (!isToggling) {
+      // Reset local state when parent indicates operation is complete
+      const timer = setTimeout(() => {
+        setIsLocalToggling(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isToggling]);
 
   return (
     <div
@@ -96,14 +143,22 @@ function MenuItemCardComponent({
         {/* Availability Badge */}
         <div className="absolute top-3 right-3">
           <button
-            onClick={onToggleAvailability}
-            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+            onClick={handleToggleAvailabilityClick}
+            disabled={isToggling || isLocalToggling}
+            className={`px-3 py-1 rounded-full text-xs font-semibold transition-opacity ${
               item.isAvailable
                 ? "bg-green-100 text-green-700"
                 : "bg-red-100 text-red-700"
-            }`}
+            } ${isToggling || isLocalToggling ? "opacity-60 cursor-not-allowed pointer-events-none" : "hover:opacity-80"}`}
           >
-            {item.isAvailable ? "Available" : "Unavailable"}
+            {isToggling || isLocalToggling ? (
+              <span className="flex items-center gap-1">
+                <Loader2 size={12} className="animate-spin" />
+                <span>Updating...</span>
+              </span>
+            ) : (
+              <span>{item.isAvailable ? "Available" : "Unavailable"}</span>
+            )}
           </button>
         </div>
       </div>
@@ -248,6 +303,7 @@ export const MenuItemCard = memo(MenuItemCardComponent, (prevProps, nextProps) =
     prevProps.item.price === nextProps.item.price &&
     prevProps.item.isAvailable === nextProps.item.isAvailable &&
     prevProps.item.images?.length === nextProps.item.images?.length &&
-    prevProps.item.ingredients?.length === nextProps.item.ingredients?.length
+    prevProps.item.ingredients?.length === nextProps.item.ingredients?.length &&
+    prevProps.isToggling === nextProps.isToggling
   );
 });

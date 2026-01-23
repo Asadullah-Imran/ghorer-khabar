@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma/prisma";
 import { imageService } from "@/services/image.service";
 import { createClient } from "@/lib/supabase/server";
+import { verifyToken } from "@/lib/auth/jwt";
+import { cookies } from "next/headers";
 
 /**
  * GET /api/chef/menu/[id]
@@ -12,15 +14,26 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    let userId: string | undefined;
+
     const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    if (user && !authError) {
+      userId = user.id;
+    } else {
+      // Fallback to JWT token from cookie
+      const cookieStore = await cookies();
+      const token = cookieStore.get("auth_token")?.value;
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded && typeof decoded === "object" && "userId" in decoded) {
+          userId = (decoded as any).userId;
+        }
+      }
+    }
 
-    if (authError || !user) {
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -58,7 +71,7 @@ export async function GET(
     }
 
     // Verify ownership
-    if (menuItem.chef_id !== user.id) {
+    if (menuItem.chef_id !== userId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -85,24 +98,37 @@ export async function PUT(
 ) {
   try {
     console.log("\n=== BACKEND: PUT /api/chef/menu/[id] STARTED ===");
+    let userId: string | undefined;
+
     const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    if (user && !authError) {
+      userId = user.id;
+      console.log("Authenticated via Supabase. User ID:", userId);
+    } else {
+      // Fallback to JWT token from cookie
+      const cookieStore = await cookies();
+      const token = cookieStore.get("auth_token")?.value;
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded && typeof decoded === "object" && "userId" in decoded) {
+          userId = (decoded as any).userId;
+          console.log("Authenticated via JWT token. User ID:", userId);
+        }
+      }
+    }
 
-    if (authError || !user) {
+    if (!userId) {
       console.log("Auth error - user not authenticated");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("Authenticated user ID:", user.id);
+    console.log("Authenticated user ID:", userId);
 
     // Check if user exists in database and has SELLER role
     const dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
+      where: { id: userId },
     });
 
     if (!dbUser) {
@@ -137,7 +163,7 @@ export async function PUT(
       );
     }
 
-    if (existingItem.chef_id !== user.id) {
+    if (existingItem.chef_id !== userId) {
       console.log("Menu item does not belong to user");
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -323,24 +349,37 @@ export async function DELETE(
 ) {
   try {
     console.log("\n=== BACKEND: DELETE /api/chef/menu/[id] STARTED ===");
+    let userId: string | undefined;
+
     const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    if (user && !authError) {
+      userId = user.id;
+      console.log("Authenticated via Supabase. User ID:", userId);
+    } else {
+      // Fallback to JWT token from cookie
+      const cookieStore = await cookies();
+      const token = cookieStore.get("auth_token")?.value;
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded && typeof decoded === "object" && "userId" in decoded) {
+          userId = (decoded as any).userId;
+          console.log("Authenticated via JWT token. User ID:", userId);
+        }
+      }
+    }
 
-    if (authError || !user) {
+    if (!userId) {
       console.log("Auth error - user not authenticated");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("Authenticated user ID:", user.id);
+    console.log("Authenticated user ID:", userId);
 
     // Check if user exists in database and has SELLER role
     const dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
+      where: { id: userId },
     });
 
     if (!dbUser) {
@@ -375,7 +414,7 @@ export async function DELETE(
       );
     }
 
-    if (menuItem.chef_id !== user.id) {
+    if (menuItem.chef_id !== userId) {
       console.log("Menu item does not belong to user");
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

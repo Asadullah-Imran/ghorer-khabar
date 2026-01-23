@@ -23,6 +23,7 @@ interface UseChefMenuReturn {
   loading: boolean;
   error: string | null;
   saving: boolean;
+  togglingAvailability: string | null; // ID of item being toggled
   fetchMenuItems: () => Promise<void>;
   saveMenuItem: (item: MenuItem, editingId?: string) => Promise<boolean>;
   deleteMenuItem: (id: string) => Promise<boolean>;
@@ -39,6 +40,7 @@ export function useChefMenu(): UseChefMenuReturn {
   const [loading, setLoading] = useState(!menuCache.length);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [togglingAvailability, setTogglingAvailability] = useState<string | null>(null);
   const isMountedRef = useRef(true);
 
   const fetchMenuItems = useCallback(async () => {
@@ -176,9 +178,20 @@ export function useChefMenu(): UseChefMenuReturn {
 
   const toggleAvailability = useCallback(async (id: string): Promise<boolean> => {
     const item = menuItems.find((i) => i.id === id);
-    if (!item) return false;
+    if (!item) {
+      console.error("Item not found:", id);
+      return false;
+    }
+
+    // Prevent multiple clicks on the same item
+    if (togglingAvailability === id) {
+      console.log("Already toggling this item, skipping");
+      return false;
+    }
 
     try {
+      // Set loading state immediately
+      setTogglingAvailability(id);
       setSaving(true);
       setError(null);
 
@@ -191,6 +204,11 @@ export function useChefMenu(): UseChefMenuReturn {
         credentials: "include",
       });
 
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(errorData.error || `HTTP ${res.status}`);
+      }
+
       const data = await res.json();
 
       if (data.success) {
@@ -201,17 +219,21 @@ export function useChefMenu(): UseChefMenuReturn {
         setMenuItems(menuCache);
         return true;
       } else {
-        setError(data.error || "Failed to update availability");
-        return false;
+        const errorMsg = data.error || "Failed to update availability";
+        setError(errorMsg);
+        throw new Error(errorMsg);
       }
     } catch (err) {
       console.error("Error updating availability:", err);
-      setError("Failed to update availability");
+      const errorMsg = err instanceof Error ? err.message : "Failed to update availability";
+      setError(errorMsg);
       return false;
     } finally {
+      // Always reset loading state, even on error
+      setTogglingAvailability(null);
       setSaving(false);
     }
-  }, [menuItems]);
+  }, [menuItems, togglingAvailability]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -227,6 +249,7 @@ export function useChefMenu(): UseChefMenuReturn {
     loading,
     error,
     saving,
+    togglingAvailability,
     fetchMenuItems,
     saveMenuItem,
     deleteMenuItem,
