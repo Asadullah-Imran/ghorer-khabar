@@ -103,7 +103,6 @@ export async function GET(req: NextRequest) {
       },
       include: {
         items: true,
-        subscription_id: true,
       },
     });
 
