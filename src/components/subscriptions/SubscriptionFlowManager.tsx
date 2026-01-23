@@ -183,12 +183,23 @@ export default function SubscriptionFlowManager({
     if (!schedule || typeof schedule !== 'object') return 0;
     
     // Count how many days per week have at least one meal
+    // Schedule can be in transformed format (e.g., "Saturday", "Sunday") or raw format (e.g., "SATURDAY", "SUNDAY")
     const daysWithMeals = Object.values(schedule).filter((daySchedule: any) => {
       if (!daySchedule || typeof daySchedule !== 'object') return false;
       // Check if any meal type (breakfast, lunch, snacks, dinner) has dishes
+      // Handle both formats: dishIds (raw) or dish (transformed)
       return ['breakfast', 'lunch', 'snacks', 'dinner'].some(mealType => {
         const meal = daySchedule[mealType];
-        return meal && meal.dishIds && Array.isArray(meal.dishIds) && meal.dishIds.length > 0;
+        if (!meal) return false;
+        // Check for raw format (dishIds array)
+        if (meal.dishIds && Array.isArray(meal.dishIds) && meal.dishIds.length > 0) {
+          return true;
+        }
+        // Check for transformed format (has dish property)
+        if (meal.dish && meal.dish !== "Chef's Special") {
+          return true;
+        }
+        return false;
       });
     }).length;
     
@@ -672,6 +683,11 @@ export default function SubscriptionFlowManager({
                               {deliveryInfo.distance.toFixed(2)} km away
                             </span>
                           )}
+                          {deliveriesPerMonth > 0 && (
+                            <span className="text-xs text-gray-400">
+                              {deliveriesPerMonth} deliveries/month
+                            </span>
+                          )}
                         </div>
                         <div className="flex flex-col items-end">
                           {loadingDelivery ? (
@@ -679,7 +695,7 @@ export default function SubscriptionFlowManager({
                           ) : (
                             <>
                               <span className={`font-medium ${deliveryInfo.available ? "text-gray-900" : "text-red-600"}`}>
-                                ৳{deliveryFee}
+                                ৳{totalDeliveryFee}
                               </span>
                               {!deliveryInfo.available && (
                                 <span className="text-xs text-red-600">Unavailable</span>
@@ -687,6 +703,10 @@ export default function SubscriptionFlowManager({
                             </>
                           )}
                         </div>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-green-600">Subscription Discount (10%)</span>
+                        <span className="font-medium text-green-600">- ৳{discount}</span>
                       </div>
                       {!deliveryInfo.available && deliveryInfo.error && (
                         <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg">

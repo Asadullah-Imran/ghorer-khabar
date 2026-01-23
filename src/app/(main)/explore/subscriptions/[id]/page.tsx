@@ -190,6 +190,7 @@ export default async function PlanDetailsPage({
       fats: planData.fats || "0g",
     },
     schedule: transformedSchedule,
+    rawSchedule: rawSchedule, // Also pass raw schedule for delivery calculation
     kitchen: planData.kitchen ? {
       id: planData.kitchen.id,
       name: planData.kitchen.name,
