@@ -70,10 +70,8 @@ export async function POST(req: NextRequest) {
     const {
       name,
       unit,
-      currentStock = 0,
-      demandFromOrders = 0,
-      forecastDemand = 0,
-      reorderLevel = 0,
+      currentStock, // This is now the stock to add (initial stock for new items)
+      stockToAdd, // Alternative field name
       unitCost = 0,
     } = body || {};
 
@@ -84,15 +82,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Use stockToAdd if provided, otherwise use currentStock (for backward compatibility)
+    const initialStock = Number(stockToAdd ?? currentStock) || 0;
+
     const item = await prisma.inventory_items.create({
       data: {
         chef_id: auth.userId,
         name: String(name),
         unit: String(unit),
-        currentStock: Number(currentStock) || 0,
-        demandFromOrders: Number(demandFromOrders) || 0,
-        forecastDemand: Number(forecastDemand) || 0,
-        reorderLevel: Number(reorderLevel) || 0,
+        currentStock: initialStock,
+        demandFromOrders: 0, // Will be calculated from orders
+        forecastDemand: 0, // Will be calculated from forecast
+        reorderLevel: 0, // Should be set separately
         unitCost: Number(unitCost) || 0,
       },
     });

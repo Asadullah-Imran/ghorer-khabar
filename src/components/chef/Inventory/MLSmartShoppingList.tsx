@@ -180,7 +180,7 @@ export default function MLSmartShoppingList() {
           <div className="flex items-center gap-3 text-white">
             <ShoppingCart size={24} />
             <div>
-              <h3 className="font-bold text-lg">ML-Powered Shopping List</h3>
+              <h3 className="font-bold text-lg">Smart Shopping List</h3>
               <p className="text-xs text-teal-100">{checkedCount} of {totalItems} items checked</p>
             </div>
           </div>

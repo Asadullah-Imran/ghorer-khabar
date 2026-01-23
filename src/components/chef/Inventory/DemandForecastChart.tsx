@@ -139,8 +139,8 @@ export default function DemandForecastChart() {
     );
   }
 
-  const maxRevenue = Math.max(...data.forecast.daily.map(d => d.predicted_revenue));
-  const maxOrders = Math.max(...data.forecast.daily.map(d => d.predicted_orders));
+  // Calculate max for bar scaling (using items, not revenue)
+  const maxItems = Math.max(...data.forecast.daily.map(d => d.predicted_items));
 
   return (
     <div className="space-y-6">
@@ -197,33 +197,39 @@ export default function DemandForecastChart() {
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <h4 className="font-semibold text-gray-900 mb-4">Daily Predictions</h4>
         <div className="space-y-4">
-          {data.forecast.daily.map((day) => (
-            <div key={day.date} className="flex items-center gap-4">
-              <div className="w-24 flex-shrink-0">
-                <p className="font-semibold text-gray-900">{day.day_name}</p>
-                <p className="text-xs text-gray-500">{day.date}</p>
-              </div>
-              
-              {/* Revenue Bar */}
-              <div className="flex-1">
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-gray-600">{day.predicted_orders.toFixed(1)} orders</span>
-                  <span className="font-semibold text-green-700">৳{day.predicted_revenue.toFixed(0)}</span>
+          {data.forecast.daily.map((day) => {
+            const maxItems = Math.max(...data.forecast.daily.map(d => d.predicted_items));
+            return (
+              <div key={day.date} className="flex items-center gap-4">
+                <div className="w-24 flex-shrink-0">
+                  <p className="font-semibold text-gray-900">{day.day_name}</p>
+                  <p className="text-xs text-gray-500">{day.date}</p>
                 </div>
-                <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                  <div
-                    className="bg-gradient-to-r from-purple-500 to-purple-600 h-full rounded-full transition-all"
-                    style={{ width: `${(day.predicted_revenue / maxRevenue) * 100}%` }}
-                  />
+                
+                {/* Items Bar (Primary) */}
+                <div className="flex-1">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="text-gray-600">{day.predicted_orders.toFixed(1)} orders</span>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-purple-700">{day.predicted_items.toFixed(1)} items</span>
+                      <span className="text-gray-500 text-xs">৳{day.predicted_revenue.toFixed(0)}</span>
+                    </div>
+                  </div>
+                  <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                    <div
+                      className="bg-gradient-to-r from-purple-500 to-purple-600 h-full rounded-full transition-all"
+                      style={{ width: `${(day.predicted_items / maxItems) * 100}%` }}
+                    />
+                  </div>
+                </div>
+                
+                {/* Confidence */}
+                <div className="w-16 text-right flex-shrink-0">
+                  <span className="text-xs text-gray-500">{(day.confidence * 100).toFixed(0)}%</span>
                 </div>
               </div>
-              
-              {/* Confidence */}
-              <div className="w-16 text-right flex-shrink-0">
-                <span className="text-xs text-gray-500">{(day.confidence * 100).toFixed(0)}%</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -231,19 +237,26 @@ export default function DemandForecastChart() {
       {data.forecast.ingredients.length > 0 && (
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <h4 className="font-semibold text-gray-900 mb-4">Ingredient Demand Forecast (7 days)</h4>
+          <p className="text-xs text-gray-500 mb-4 italic">
+            Note: Forecast units are from menu items. Values will be converted to match your inventory units when synced.
+          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {data.forecast.ingredients.slice(0, 8).map((ing) => (
               <div
                 key={ing.ingredient_name}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
               >
                 <div>
                   <p className="font-medium text-gray-900">{ing.ingredient_name}</p>
-                  <p className="text-xs text-gray-500">{ing.unit}</p>
+                  <p className="text-xs text-gray-500">Forecast unit: {ing.unit}</p>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-purple-700">{ing.predicted_demand} {ing.unit}</p>
-                  <p className="text-xs text-gray-500">৳{ing.estimated_cost.toFixed(0)}</p>
+                  <p className="font-bold text-purple-700 text-lg">
+                    {ing.predicted_demand.toFixed(1)} {ing.unit}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Est. cost: ৳{ing.estimated_cost.toFixed(0)}
+                  </p>
                 </div>
               </div>
             ))}

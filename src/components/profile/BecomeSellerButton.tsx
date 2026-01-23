@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ChefHat, Loader2, Sparkles, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import RoleTransition from "@/components/common/RoleTransition";
 
 export default function BecomeSellerButton() {
   const { refreshUser } = useAuth();
@@ -11,6 +12,7 @@ export default function BecomeSellerButton() {
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showRoleTransition, setShowRoleTransition] = useState(false);
 
   const handleUpgradeToSeller = async () => {
     setIsLoading(true);
@@ -30,8 +32,13 @@ export default function BecomeSellerButton() {
       // Refresh user data to update role in context
       await refreshUser();
 
-      // Redirect to chef onboarding
-      router.push("/chef-onboarding");
+      // Show transition
+      setShowRoleTransition(true);
+      
+      // Redirect to chef onboarding after transition
+      setTimeout(() => {
+        router.push("/chef-onboarding");
+      }, 1400);
     } catch (err: any) {
       console.error("Error upgrading to seller:", err);
       setError(err.message || "Something went wrong. Please try again.");
@@ -41,6 +48,14 @@ export default function BecomeSellerButton() {
 
   return (
     <>
+      {/* Role Transition Overlay */}
+      <RoleTransition
+        isVisible={showRoleTransition}
+        fromRole="BUYER"
+        toRole="SELLER"
+        onComplete={() => setShowRoleTransition(false)}
+      />
+
       {/* Become a Seller Card */}
       <div className="mb-6 bg-gradient-to-r from-teal-50 via-emerald-50 to-yellow-50 rounded-2xl border-2 border-[#477e77] p-6 shadow-lg hover:shadow-xl transition-shadow">
         <div className="flex items-start gap-4">
