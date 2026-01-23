@@ -204,7 +204,10 @@ function MenuItemCardComponent({
           {onViewInsights && (
             <button
               onClick={onViewInsights}
-              className="flex items-center justify-center gap-2 py-2 bg-yellow-400 text-gray-900 text-sm font-semibold rounded-lg hover:bg-yellow-500 transition"
+              className="flex items-center justify-center gap-2 py-2 text-gray-900 text-sm font-semibold rounded-lg transition"
+              style={{ backgroundColor: '#fdc500' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e6b000'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#fdc500'}
             >
               <BarChart3 size={16} />
               Insights
@@ -212,14 +215,20 @@ function MenuItemCardComponent({
           )}
           <button
             onClick={onEdit}
-            className="flex items-center justify-center gap-2 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition"
+            className="flex items-center justify-center gap-2 py-2 text-white text-sm font-semibold rounded-lg transition"
+            style={{ backgroundColor: '#0077b6' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0066a3'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#0077b6'}
           >
             <Edit size={16} />
             Edit
           </button>
           <button
             onClick={onDelete}
-            className="flex items-center justify-center gap-2 py-2 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition"
+            className="flex items-center justify-center gap-2 py-2 text-white text-sm font-semibold rounded-lg transition"
+            style={{ backgroundColor: '#c1121f' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#a00e1a'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#c1121f'}
           >
             <Trash2 size={16} />
             Delete
