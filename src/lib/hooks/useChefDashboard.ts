@@ -25,7 +25,9 @@ interface Notification {
 interface UseChefDashboardReturn {
   dashboardData: DashboardData | null;
   notifications: Notification[];
-  loading: boolean;
+  loading: boolean; // Overall loading (true only if no cached data exists)
+  loadingMetrics: boolean; // Metrics-specific loading
+  loadingNotifications: boolean; // Notifications-specific loading
   error: string | null;
   kitchenOpen: boolean;
   refetch: () => Promise<void>;
@@ -42,6 +44,8 @@ export function useChefDashboard(): UseChefDashboardReturn {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(dashboardCache);
   const [notifications, setNotifications] = useState<Notification[]>(notificationsCache);
   const [loading, setLoading] = useState(!dashboardCache);
+  const [loadingMetrics, setLoadingMetrics] = useState(!dashboardCache);
+  const [loadingNotifications, setLoadingNotifications] = useState(!notificationsCache);
   const [error, setError] = useState<string | null>(null);
   const [kitchenOpen, setKitchenOpen] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -50,52 +54,98 @@ export function useChefDashboard(): UseChefDashboardReturn {
   const fetchDashboardData = useCallback(async () => {
     // Use cache if still valid
     const now = Date.now();
-    if (dashboardCache && now - cacheTimestamp < CACHE_DURATION) {
+    const useCache = dashboardCache && now - cacheTimestamp < CACHE_DURATION;
+    
+    if (useCache) {
       setDashboardData(dashboardCache);
       setNotifications(notificationsCache);
       setLoading(false);
+      setLoadingMetrics(false);
+      setLoadingNotifications(false);
       return;
     }
 
     try {
       setError(null);
-
-      // Fetch metrics and notifications in parallel
-      const [metricsResponse, notificationsResponse] = await Promise.all([
-        fetch("/api/chef/dashboard/metrics", { credentials: "include" }),
-        fetch("/api/chef/dashboard/notifications?limit=10", { credentials: "include" }),
-      ]);
-
-      if (!metricsResponse.ok) {
-        const errorData = await metricsResponse.json();
-        throw new Error(errorData.error || "Failed to fetch dashboard metrics");
-      }
-
-      const metricsData = await metricsResponse.json();
       
-      if (metricsData.success && metricsData.data) {
-        // Update cache
-        dashboardCache = metricsData.data;
-        cacheTimestamp = now;
-        setDashboardData(metricsData.data);
-        setKitchenOpen(metricsData.data.kitchenOpen);
-      } else {
-        throw new Error("Invalid metrics response format");
+      // Check if we have cached data BEFORE fetching to determine loading states
+      const hasCachedMetrics = !!dashboardCache;
+      const hasCachedNotifications = notificationsCache.length > 0;
+      
+      // Set initial loading states only if we don't have cached data
+      if (!hasCachedMetrics) {
+        setLoading(true);
+        setLoadingMetrics(true);
+      }
+      if (!hasCachedNotifications) {
+        setLoadingNotifications(true);
       }
 
-      if (notificationsResponse.ok) {
-        const notificationsData = await notificationsResponse.json();
-        if (notificationsData.success && notificationsData.data) {
-          notificationsCache = notificationsData.data;
-          setNotifications(notificationsData.data);
-        }
-      }
+      // Fetch metrics and notifications in parallel, but update UI as each completes
+      const metricsPromise = fetch("/api/chef/dashboard/metrics", { credentials: "include" })
+        .then(async (response) => {
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || "Failed to fetch dashboard metrics");
+          }
+          return response.json();
+        })
+        .then((metricsData) => {
+          if (metricsData.success && metricsData.data) {
+            // Update cache
+            dashboardCache = metricsData.data;
+            cacheTimestamp = now;
+            if (isMountedRef.current) {
+              setDashboardData(metricsData.data);
+              setKitchenOpen(metricsData.data.kitchenOpen);
+            }
+          } else {
+            throw new Error("Invalid metrics response format");
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching metrics:", err);
+          throw err;
+        })
+        .finally(() => {
+          if (isMountedRef.current) {
+            setLoadingMetrics(false);
+            setLoading(false); // Metrics are the main data, so we can show UI once they load
+          }
+        });
+
+      const notificationsPromise = fetch("/api/chef/dashboard/notifications?limit=10", { credentials: "include" })
+        .then(async (response) => {
+          if (response.ok) {
+            const notificationsData = await response.json();
+            if (notificationsData.success && notificationsData.data) {
+              notificationsCache = notificationsData.data;
+              if (isMountedRef.current) {
+                setNotifications(notificationsData.data);
+              }
+            }
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching notifications:", err);
+          // Don't throw - notifications are not critical
+        })
+        .finally(() => {
+          if (isMountedRef.current) {
+            setLoadingNotifications(false);
+          }
+        });
+
+      // Wait for both, but UI updates as each completes
+      await Promise.allSettled([metricsPromise, notificationsPromise]);
+      
     } catch (err) {
       console.error("Error fetching dashboard data:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
       if (isMountedRef.current) {
         setLoading(false);
+        setLoadingMetrics(false);
+        setLoadingNotifications(false);
       }
     }
   }, []);
@@ -163,6 +213,8 @@ export function useChefDashboard(): UseChefDashboardReturn {
     dashboardData,
     notifications,
     loading,
+    loadingMetrics,
+    loadingNotifications,
     error,
     kitchenOpen,
     refetch: fetchDashboardData,
