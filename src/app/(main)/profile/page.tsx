@@ -154,6 +154,39 @@ export default async function ProfilePage() {
     }
   }) : null;
 
+  // Fetch impact statistics from database
+  let chefsSupported = 0;
+  let ordersThisMonth = 0;
+  let totalFavorites = 0;
+
+  if (userId) {
+    // Count unique kitchens/chefs the user has ordered from using groupBy
+    const uniqueKitchens = await prisma.order.groupBy({
+      by: ['kitchenId'],
+      where: { userId }
+    });
+    chefsSupported = uniqueKitchens.length;
+
+    // Count orders this month
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+    
+    const ordersThisMonthData = await prisma.order.count({
+      where: {
+        userId,
+        createdAt: { gte: startOfMonth },
+        status: { in: ["CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"] }
+      }
+    });
+    ordersThisMonth = ordersThisMonthData;
+
+    // Count total favorites (dishes + kitchens + plans)
+    totalFavorites = await prisma.favorite.count({
+      where: { userId }
+    });
+  }
+
   // Calculate subscription display data
   const subscriptionData = activeSubscription ? {
     id: activeSubscription.id,
@@ -194,12 +227,14 @@ export default async function ProfilePage() {
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-500 flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition-transform">
                     <Users size={22} />
                   </div>
-                  <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
-                    +{USER_PROFILE.stats.chefsSupported}
-                  </span>
+                  {chefsSupported > 0 && (
+                    <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-3 py-1 rounded-full">
+                      +{chefsSupported}
+                    </span>
+                  )}
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                  {USER_PROFILE.stats.chefsSupported} Chefs
+                  {chefsSupported} {chefsSupported === 1 ? 'Chef' : 'Chefs'}
                 </h3>
                 <p className="text-sm text-gray-500">Empowered local women</p>
               </div>
@@ -214,7 +249,7 @@ export default async function ProfilePage() {
                   </span>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                  {USER_PROFILE.stats.ordersThisMonth} Orders
+                  {ordersThisMonth} {ordersThisMonth === 1 ? 'Order' : 'Orders'}
                 </h3>
                 <p className="text-sm text-gray-500">Successfully delivered</p>
               </div>
@@ -229,7 +264,7 @@ export default async function ProfilePage() {
                   </span>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                  {USER_PROFILE.stats.favorites} Dishes
+                  {totalFavorites} {totalFavorites === 1 ? 'Favorite' : 'Favorites'}
                 </h3>
                 <p className="text-sm text-gray-500">In your favorites</p>
               </div>

@@ -135,6 +135,12 @@ export default function ChefNavbar({
                   >
                     Settings
                   </Link>
+                  <Link
+                    href="/support"
+                    className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition border-t border-gray-100"
+                  >
+                    Help & Support
+                  </Link>
                   <button
                     onClick={() => {
                       setIsProfileMenuOpen(false);
@@ -201,6 +207,13 @@ export default function ChefNavbar({
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Settings
+            </Link>
+            <Link
+              href="/support"
+              className="block px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Help & Support
             </Link>
             <button
               onClick={() => {
