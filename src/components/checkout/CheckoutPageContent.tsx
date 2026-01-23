@@ -313,7 +313,7 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
                 deliveryLng: selectedLocation?.lng,
                 deliveryDetails: {
                     name: formData.name,
-                    phone: formData.phone,
+                    phone: `01${formData.phone}`, // Prepend "01" to make 11 digits
                     address: formData.address
                 }
             })
@@ -382,15 +382,21 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
                   Phone Number
                 </span>
                 <div className="relative">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-700 font-semibold pointer-events-none">
+                    01
+                  </div>
                   <input
                     required
                     type="tel"
-                    className="w-full rounded-lg border border-gray-300 bg-white h-12 px-4 text-base focus:border-teal-600 focus:ring-1 focus:ring-teal-600 outline-none transition-all placeholder:text-gray-400"
-                    placeholder="+8801..."
+                    className="w-full rounded-lg border border-gray-300 bg-white h-12 pl-10 pr-12 text-base focus:border-teal-600 focus:ring-1 focus:ring-teal-600 outline-none transition-all placeholder:text-gray-400"
+                    placeholder="XXXXXXXXX"
+                    maxLength={9}
                     value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
+                    onChange={(e) => {
+                      // Only allow digits, max 9 digits (after "01")
+                      const value = e.target.value.replace(/\D/g, "").slice(0, 9);
+                      setFormData({ ...formData, phone: value });
+                    }}
                   />
                   <BadgeCheck
                     className="absolute right-3 top-3 text-teal-600"
@@ -398,8 +404,7 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
                   />
                 </div>
                 <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                  <Info size={14} /> We will call this number to confirm
-                  delivery.
+                  <Info size={14} /> Please enter 11 digits (01 is already included). We will call this number to confirm delivery.
                 </p>
               </label>
             </div>

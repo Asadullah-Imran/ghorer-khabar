@@ -79,9 +79,28 @@ export default function SettingsForm() {
       const response = await fetch("/api/user/profile");
       if (response.ok) {
         const data = await response.json();
+        // Extract 9 digits from phone (remove "01" prefix if present)
+        let phoneNumber = data.user.phone || "";
+        if (phoneNumber) {
+          // Remove all non-digits
+          phoneNumber = phoneNumber.replace(/\D/g, "");
+          // Remove 880 prefix if present (old format)
+          if (phoneNumber.startsWith("880")) {
+            phoneNumber = phoneNumber.slice(3);
+          }
+          // Remove "01" prefix if present (new format)
+          if (phoneNumber.startsWith("01")) {
+            phoneNumber = phoneNumber.slice(2);
+          } else if (phoneNumber.startsWith("1")) {
+            // If starts with 1, remove it (old format)
+            phoneNumber = phoneNumber.slice(1);
+          }
+          // Keep only 9 digits
+          phoneNumber = phoneNumber.slice(0, 9);
+        }
         setFormData({
           name: data.user.name || "",
-          phone: data.user.phone || "",
+          phone: phoneNumber,
           avatar: data.user.avatar || "",
           authProvider: data.user.authProvider || "EMAIL",
         });
@@ -170,9 +189,10 @@ export default function SettingsForm() {
     try {
       // Sanitize payload: convert empty strings to undefined for optional fields
       // and remove extraneous fields like authProvider
+      // Prepend "01" to phone if provided (form stores 9 digits, need 11 total)
       const payload = {
         name: formData.name,
-        phone: formData.phone === "" ? undefined : formData.phone,
+        phone: formData.phone === "" ? undefined : `01${formData.phone}`,
         avatar: formData.avatar === "" ? undefined : formData.avatar,
       };
 
@@ -460,15 +480,26 @@ export default function SettingsForm() {
                     className="absolute left-3 top-3 text-gray-400"
                     size={18}
                   />
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
-                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
-                    placeholder="+8801712345678"
-                  />
+                  <div className="relative">
+                    <div className="absolute left-10 top-1/2 -translate-y-1/2 text-gray-700 font-semibold pointer-events-none">
+                      01
+                    </div>
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => {
+                        // Only allow digits, max 9 digits (after "01")
+                        const value = e.target.value.replace(/\D/g, "").slice(0, 9);
+                        setFormData({ ...formData, phone: value });
+                      }}
+                      className="w-full pl-16 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
+                      placeholder="XXXXXXXXX"
+                      maxLength={9}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Please enter 11 digits (01 is already included)
+                  </p>
                 </div>
               </label>
             </div>

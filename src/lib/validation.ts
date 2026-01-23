@@ -85,8 +85,8 @@ export const chefOnboardingSchema = z.object({
   phone: z
     .string()
     .regex(
-      /^(\+880|880)?1[3-9]\d{8}$/,
-      "Valid Bangladesh phone number required"
+      /^01\d{9}$/,
+      "Valid Bangladesh phone number required (11 digits starting with 01)"
     ),
   nidFrontImage: z.string().url("NID front image is required"),
   nidBackImage: z.string().url("NID back image is required"),
