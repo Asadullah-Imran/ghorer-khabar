@@ -56,7 +56,7 @@ export function useChefDashboard(): UseChefDashboardReturn {
     const now = Date.now();
     const useCache = dashboardCache && now - cacheTimestamp < CACHE_DURATION;
     
-    if (useCache) {
+    if (useCache && dashboardCache) {
       setDashboardData(dashboardCache);
       setNotifications(notificationsCache);
       setKitchenOpen(dashboardCache.kitchenOpen);
