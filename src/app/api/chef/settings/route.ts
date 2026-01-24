@@ -102,6 +102,11 @@ export async function GET() {
         operatingDays: true,
         nidName: true,
         isVerified: true,
+        max_capacity: true,
+        breakfast_capacity: true,
+        lunch_capacity: true,
+        snacks_capacity: true,
+        dinner_capacity: true,
       },
     });
 
@@ -171,6 +176,11 @@ export async function GET() {
         operatingDays: responseOperatingDays,
         nidNumber: maskedNID,
         isVerified: kitchen.isVerified,
+        maxCapacity: kitchen.max_capacity,
+        breakfastCapacity: kitchen.breakfast_capacity,
+        lunchCapacity: kitchen.lunch_capacity,
+        snacksCapacity: kitchen.snacks_capacity,
+        dinnerCapacity: kitchen.dinner_capacity,
       },
     });
   } catch (error) {
@@ -228,7 +238,17 @@ export async function PUT(req: NextRequest) {
 
     // Parse request body
     const body = await req.json();
-    const { kitchenName, address, operatingDays, ownerName, phoneNumber } = body;
+    const { 
+      kitchenName, 
+      address, 
+      operatingDays, 
+      ownerName, 
+      phoneNumber,
+      breakfastCapacity,
+      lunchCapacity,
+      snacksCapacity,
+      dinnerCapacity,
+    } = body;
 
     // Validation: Kitchen name and address are required
     if (!kitchenName || kitchenName.trim() === "") {
@@ -258,12 +278,30 @@ export async function PUT(req: NextRequest) {
       area: string | null;
       updatedAt: Date;
       operatingDays?: object;
+      breakfast_capacity?: number | null;
+      lunch_capacity?: number | null;
+      snacks_capacity?: number | null;
+      dinner_capacity?: number | null;
     } = {
       name: kitchenName.trim(),
       location: location,
       area: area,
       updatedAt: new Date(),
     };
+    
+    // Add capacity fields if provided
+    if (breakfastCapacity !== undefined) {
+      updateData.breakfast_capacity = breakfastCapacity === null || breakfastCapacity === "" ? null : Number(breakfastCapacity);
+    }
+    if (lunchCapacity !== undefined) {
+      updateData.lunch_capacity = lunchCapacity === null || lunchCapacity === "" ? null : Number(lunchCapacity);
+    }
+    if (snacksCapacity !== undefined) {
+      updateData.snacks_capacity = snacksCapacity === null || snacksCapacity === "" ? null : Number(snacksCapacity);
+    }
+    if (dinnerCapacity !== undefined) {
+      updateData.dinner_capacity = dinnerCapacity === null || dinnerCapacity === "" ? null : Number(dinnerCapacity);
+    }
 
     // If operating days provided, validate and update
     console.log("=== PUT /api/chef/settings ===");
