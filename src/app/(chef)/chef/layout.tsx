@@ -1,6 +1,7 @@
 import ChefGuard from "@/components/auth/ChefGuard";
 import ChefNavbar from "@/components/chef/Navigation/Navbar";
 import ChefSidebar from "@/components/chef/Navigation/Sidebar";
+import Footer from "@/components/navigation/Footer";
 
 export default function ChefLayout({
   children,
@@ -16,6 +17,7 @@ export default function ChefLayout({
           {children}
         </main>
       </div>
+      <Footer />
     </ChefGuard>
   );
 }

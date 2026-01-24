@@ -1,9 +1,9 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
+import Loading from "@/components/ui/Loading";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -19,11 +19,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   // Show loading spinner while checking auth
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-teal-700" />
-      </div>
-    );
+    return <Loading variant="full" />;
   }
 
   // Show nothing while redirecting

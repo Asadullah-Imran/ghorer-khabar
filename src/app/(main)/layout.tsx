@@ -1,4 +1,5 @@
 import AuthGuard from "@/components/auth/AuthGuard";
+import Footer from "@/components/navigation/Footer";
 import Navbar from "@/components/navigation/Navbar";
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
@@ -42,6 +43,7 @@ export default async function RootLayout({
     <AuthGuard>
       <Navbar />
       <main className="min-h-screen">{children}</main>
+      <Footer />
     </AuthGuard>
   );
 }

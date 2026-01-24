@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { AdminNotificationProvider } from "@/contexts/AdminNotificationContext";
 import AdminSidebar from "@/components/admin/AdminSidebar";
+import Loading from "@/components/ui/Loading";
 
 export default function AdminLayout({
   children,
@@ -34,10 +35,7 @@ export default function AdminLayout({
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background-dark">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-text-muted">Verifying admin access...</p>
-        </div>
+        <Loading variant="inline" size="lg" />
       </div>
     );
   }
@@ -46,10 +44,7 @@ export default function AdminLayout({
   if (!user || role !== "ADMIN") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background-dark">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-text-muted">Redirecting...</p>
-        </div>
+        <Loading variant="inline" size="lg" />
       </div>
     );
   }

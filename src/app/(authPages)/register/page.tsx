@@ -2,6 +2,7 @@
 
 import { useToast } from "@/contexts/ToastContext";
 import { createClient } from "@/lib/supabase/client";
+import Loading from "@/components/ui/Loading";
 import {
     Eye,
     EyeOff,
@@ -19,13 +20,7 @@ import { Suspense, useEffect, useState } from "react";
 
 export default function RegisterPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <Loader2 className="animate-spin text-teal-700" />
-        </div>
-      }
-    >
+    <Suspense fallback={<Loading variant="full" />}>
       <RegisterContent />
     </Suspense>
   );

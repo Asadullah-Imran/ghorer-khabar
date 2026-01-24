@@ -4,7 +4,8 @@ import { MenuItemCard } from "@/components/chef/Menu/MenuItemCard.memo";
 import MenuItemForm from "@/components/chef/Menu/MenuItemForm";
 import DeleteConfirmDialog from "@/components/chef/Menu/DeleteConfirmDialog";
 import MenuInsightsModal from "@/components/chef/Menu/MenuInsightsModal";
-import { Filter, Plus, Search, Loader2 } from "lucide-react";
+import Loading from "@/components/ui/Loading";
+import { Filter, Plus, Search } from "lucide-react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useChefMenu } from "@/lib/hooks/useChefMenu";
 import { useToast } from "@/contexts/ToastContext";
@@ -157,10 +158,7 @@ export default function MenuPage() {
     <div className="p-6 space-y-8">
       {/* Loading State - Inline */}
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="animate-spin text-teal-600 mb-4" size={48} />
-          <p className="text-lg font-semibold text-gray-900">Loading menu...</p>
-        </div>
+        <Loading variant="inline" size="lg" />
       ) : (
         <>
           {/* Header */}

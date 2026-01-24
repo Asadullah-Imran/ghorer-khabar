@@ -83,6 +83,11 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
         take: 50, // Limit results for performance
         include: {
           menu_item_images: true,
+          reviews: {
+            select: {
+              rating: true,
+            },
+          },
           users: {
             include: {
               kitchens: true,
@@ -91,21 +96,28 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
         }
       });
 
-      dishes = dbDishes.map(d => ({
-        id: d.id,
-        name: d.name,
-        price: d.price,
-        rating: d.rating || 0,
-        image: d.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
-        kitchen: d.users.kitchens[0]?.name || "Unknown Kitchen",
-        kitchenId: d.users.kitchens[0]?.id || "unknown",
-        kitchenName: d.users.kitchens[0]?.name || "Unknown Kitchen",
-        kitchenLocation: d.users.kitchens[0]?.location || undefined,
-        kitchenRating: Number(d.users.kitchens[0]?.rating) || 0,
-        kitchenReviewCount: d.users.kitchens[0]?.reviewCount || 0,
-        deliveryTime: "30-45 min", // Placeholder as it's not in schema currently
-        chefId: d.chef_id // Chef/creator ID for permission checking
-      }));
+      dishes = dbDishes.map(d => {
+        // Calculate rating from actual reviews if they exist
+        const calculatedRating = d.reviews.length > 0
+          ? Math.round((d.reviews.reduce((sum, r) => sum + r.rating, 0) / d.reviews.length) * 10) / 10
+          : (d.rating || 0);
+
+        return {
+          id: d.id,
+          name: d.name,
+          price: d.price,
+          rating: calculatedRating,
+          image: d.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
+          kitchen: d.users.kitchens[0]?.name || "Unknown Kitchen",
+          kitchenId: d.users.kitchens[0]?.id || "unknown",
+          kitchenName: d.users.kitchens[0]?.name || "Unknown Kitchen",
+          kitchenLocation: d.users.kitchens[0]?.location || undefined,
+          kitchenRating: Number(d.users.kitchens[0]?.rating) || 0,
+          kitchenReviewCount: d.users.kitchens[0]?.reviewCount || 0,
+          deliveryTime: "30-45 min", // Placeholder as it's not in schema currently
+          chefId: d.chef_id // Chef/creator ID for permission checking
+        };
+      });
     } catch (error) {
       console.error("Error fetching dishes:", error);
     }

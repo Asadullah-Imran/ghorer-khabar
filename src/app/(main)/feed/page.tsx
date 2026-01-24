@@ -1,4 +1,4 @@
-import FeedGreeting from "@/components/feed/FeedGreeting";
+import ExploreHero from "@/components/feed/ExploreHero";
 import TabbedRecommendations from "@/components/feed/TabbedRecommendations";
 import DishCard from "@/components/shared/DishCard";
 import KitchenCard from "@/components/shared/KitchenCard";
@@ -45,6 +45,11 @@ export default async function FeedPage() {
     },
     include: {
       menu_item_images: true,
+      reviews: {
+        select: {
+          rating: true,
+        },
+      },
       users: {
         include: {
           kitchens: true,
@@ -57,21 +62,28 @@ export default async function FeedPage() {
     take: 10,
   });
 
-  const newDishes = newDishesData.map((item) => ({
-    id: item.id,
-    name: item.name,
-    price: item.price,
-    rating: item.rating || 0,
-    image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
-    kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
-    kitchenId: item.users.kitchens[0]?.id || "unknown",
-    kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
-    kitchenLocation: item.users.kitchens[0]?.location || undefined,
-    kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
-    kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
-    deliveryTime: "30-45 min",
-    chefId: item.chef_id,
-  }));
+  const newDishes = newDishesData.map((item) => {
+    // Calculate rating from actual reviews if they exist
+    const calculatedRating = item.reviews.length > 0
+      ? Math.round((item.reviews.reduce((sum, r) => sum + r.rating, 0) / item.reviews.length) * 10) / 10
+      : (item.rating || 0);
+
+    return {
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      rating: calculatedRating,
+      image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
+      kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
+      kitchenId: item.users.kitchens[0]?.id || "unknown",
+      kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
+      kitchenLocation: item.users.kitchens[0]?.location || undefined,
+      kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
+      kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
+      deliveryTime: "30-45 min",
+      chefId: item.chef_id,
+    };
+  });
 
   // Fetch dishes with orders in the last 7 days (Weekly Best)
   let weeklyBestDishes = await prisma.menu_items.findMany({
@@ -96,6 +108,11 @@ export default async function FeedPage() {
     },
     include: {
       menu_item_images: true,
+      reviews: {
+        select: {
+          rating: true,
+        },
+      },
       users: {
         include: {
           kitchens: true,
@@ -127,6 +144,11 @@ export default async function FeedPage() {
       },
       include: {
         menu_item_images: true,
+        reviews: {
+          select: {
+            rating: true,
+          },
+        },
         users: {
           include: {
             kitchens: true,
@@ -143,21 +165,28 @@ export default async function FeedPage() {
     weeklyBestDishes = [...weeklyBestDishes, ...additionalDishes];
   }
 
-  const dishes = weeklyBestDishes.map((item) => ({
-    id: item.id,
-    name: item.name,
-    price: item.price,
-    rating: item.rating || 0,
-    image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
-    kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
-    kitchenId: item.users.kitchens[0]?.id || "unknown",
-    kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
-    kitchenLocation: item.users.kitchens[0]?.location || undefined,
-    kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
-    kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
-    deliveryTime: "30-45 min",
-    chefId: item.chef_id,
-  }));
+  const dishes = weeklyBestDishes.map((item) => {
+    // Calculate rating from actual reviews if they exist
+    const calculatedRating = item.reviews.length > 0
+      ? Math.round((item.reviews.reduce((sum, r) => sum + r.rating, 0) / item.reviews.length) * 10) / 10
+      : (item.rating || 0);
+
+    return {
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      rating: calculatedRating,
+      image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
+      kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
+      kitchenId: item.users.kitchens[0]?.id || "unknown",
+      kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
+      kitchenLocation: item.users.kitchens[0]?.location || undefined,
+      kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
+      kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
+      deliveryTime: "30-45 min",
+      chefId: item.chef_id,
+    };
+  });
 
   // Fetch featured subscription plans from database
   const subscriptionPlans = await prisma.subscription_plans.findMany({
@@ -258,6 +287,11 @@ export default async function FeedPage() {
     },
     include: {
       menu_item_images: true,
+      reviews: {
+        select: {
+          rating: true,
+        },
+      },
       users: {
         include: {
           kitchens: true,
@@ -271,35 +305,39 @@ export default async function FeedPage() {
     take: 12
   });
 
-  const recommendedDishes = recommendedDishesData.map((item) => ({
-    id: item.id,
-    name: item.name,
-    price: item.price,
-    rating: item.rating || 0,
-    image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
-    kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
-    kitchenId: item.users.kitchens[0]?.id || "unknown",
-    kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
-    kitchenLocation: item.users.kitchens[0]?.location || undefined,
-    kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
-    kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
-    deliveryTime: "30-45 min",
-    chefId: item.chef_id,
-  }));
+  const recommendedDishes = recommendedDishesData.map((item) => {
+    // Calculate rating from actual reviews if they exist
+    const calculatedRating = item.reviews.length > 0
+      ? Math.round((item.reviews.reduce((sum, r) => sum + r.rating, 0) / item.reviews.length) * 10) / 10
+      : (item.rating || 0);
+
+    return {
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      rating: calculatedRating,
+      image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
+      kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
+      kitchenId: item.users.kitchens[0]?.id || "unknown",
+      kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
+      kitchenLocation: item.users.kitchens[0]?.location || undefined,
+      kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
+      kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
+      deliveryTime: "30-45 min",
+      chefId: item.chef_id,
+    };
+  });
 
   // Calculate current month for dynamic display
   const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long' });
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {/* 1. Welcome Section */}
-      <section className="bg-white border-b border-gray-100 py-6 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto">
-          <FeedGreeting name={userName} />
-        </div>
-      </section>
-
-      <div className="max-w-7xl mx-auto space-y-10 py-8">
+      <div className="max-w-7xl mx-auto space-y-10 py-8 px-4 md:px-8">
+        {/* 1. Explore Hero Section */}
+        <section>
+          <ExploreHero userName={userName} />
+        </section>
         {/* 2. New Dishes (Newly Uploaded) */}
         <section>
           <SectionHeader
