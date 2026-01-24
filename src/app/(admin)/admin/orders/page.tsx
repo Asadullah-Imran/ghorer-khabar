@@ -43,56 +43,72 @@ interface Order {
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [skip, setSkip] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [initialLoaded, setInitialLoaded] = useState(false);
 
+  // Initial fetch on mount
   useEffect(() => {
-    fetchOrders();
+    fetchOrders(0, true);
   }, []);
 
-  const fetchOrders = async () => {
+  // Debounced search and filter changes
+  useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      setSkip(0);
+      fetchOrders(0, false);
+    }, 500); // 500ms debounce
+  }, [searchQuery, statusFilter]);
+
+  const fetchOrders = async (skipValue: number, isInitialMount = false) => {
     try {
-      const res = await fetch("/api/admin/orders");
+      const isInitialLoad = skipValue === 0;
+      if (isInitialLoad) setLoading(true);
+      else setLoadingMore(true);
+
+      const params = new URLSearchParams();
+      params.set("skip", skipValue.toString());
+      params.set("take", "10");
+      if (searchQuery) params.set("search", searchQuery);
+      if (statusFilter !== "ALL") params.set("status", statusFilter);
+
+      const res = await fetch(`/api/admin/orders?${params}`);
       const data = await res.json();
-      setOrders(data.orders);
-      setFilteredOrders(data.orders);
+
+      if (isInitialLoad) {
+        setOrders(data.orders);
+      } else {
+        setOrders((prev) => [...prev, ...data.orders]);
+      }
+      setTotal(data.total);
+      setSkip(skipValue + 10);
+      if (isInitialLoad) setLoading(false);
+      else setLoadingMore(false);
+      if (isInitialMount) setInitialLoaded(true);
     } catch (error) {
       console.error("Failed to fetch orders:", error);
-    } finally {
-      setLoading(false);
+      if (skipValue === 0) setLoading(false);
+      else setLoadingMore(false);
     }
   };
 
   const handleSearch = (value: string) => {
     setSearch(value);
-    applyFilters(value, statusFilter);
+    setSearchQuery(value);
   };
 
-  const handleStatusFilter = (status: string) => {
-    setStatusFilter(status);
-    applyFilters(search, status);
-  };
-
-  const applyFilters = (searchValue: string, status: string) => {
-    let filtered = orders;
-
-    if (searchValue) {
-      filtered = filtered.filter(
-        (o) =>
-          o.id.toLowerCase().includes(searchValue.toLowerCase()) ||
-          o.user.email.toLowerCase().includes(searchValue.toLowerCase()) ||
-          o.kitchen.name.toLowerCase().includes(searchValue.toLowerCase())
-      );
-    }
-
-    if (status !== "ALL") {
-      filtered = filtered.filter((o) => o.status === status);
-    }
-
-    setFilteredOrders(filtered);
+  const handleLoadMore = () => {
+    fetchOrders(skip, false);
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: string) => {
@@ -106,11 +122,6 @@ export default function OrdersPage() {
       if (res.ok) {
         setOrders(
           orders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
-        );
-        setFilteredOrders(
-          filteredOrders.map((o) =>
-            o.id === orderId ? { ...o, status: newStatus } : o
-          )
         );
         if (selectedOrder?.id === orderId) {
           setSelectedOrder({ ...selectedOrder, status: newStatus });
@@ -159,7 +170,8 @@ export default function OrdersPage() {
     }
   };
 
-  if (loading) {
+  // Show full page loader only on initial load
+  if (loading && !initialLoaded) {
     return (
       <main className="flex-1 flex items-center justify-center">
         <Loading variant="inline" />
@@ -176,7 +188,7 @@ export default function OrdersPage() {
         <div>
           <h2 className="text-3xl font-bold mb-2">All Orders</h2>
           <p className="text-text-muted">
-            Manage and track all customer orders and transactions
+            Manage and track all customer orders and transactions ({total} total)
           </p>
         </div>
 
@@ -197,7 +209,7 @@ export default function OrdersPage() {
           {/* Status Filter */}
           <select
             value={statusFilter}
-            onChange={(e) => handleStatusFilter(e.target.value)}
+            onChange={(e) => setStatusFilter(e.target.value)}
             className="bg-surface-dark bg-neutral-900 border border-border-dark rounded-lg px-4 py-3 text-sm focus:ring-1 focus:ring-primary outline-none text-white"
           >
             <option value="ALL">All Status</option>
@@ -211,7 +223,12 @@ export default function OrdersPage() {
         </div>
 
         {/* Orders Table */}
-        <div className="bg-surface-dark border border-border-dark rounded-xl overflow-hidden">
+        <div className="relative bg-surface-dark border border-border-dark rounded-xl overflow-hidden">
+          {loading && (
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-20 rounded-xl">
+              <Loading variant="inline" />
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-background-dark text-text-muted text-xs uppercase border-b border-border-dark">
@@ -226,14 +243,14 @@ export default function OrdersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-dark">
-                {filteredOrders.length === 0 ? (
+                {orders.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-12 text-center text-text-muted">
                       No orders found
                     </td>
                   </tr>
                 ) : (
-                  filteredOrders.map((order) => (
+                  orders.map((order) => (
                     <tr
                       key={order.id}
                       className="hover:bg-background-dark/50 transition-colors"
@@ -277,6 +294,19 @@ export default function OrdersPage() {
             </table>
           </div>
         </div>
+
+        {/* Load More Button */}
+        {orders.length < total && (
+          <div className="flex justify-center">
+            <button
+              onClick={handleLoadMore}
+              disabled={loadingMore}
+              className="px-6 py-3 bg-primary text-background-dark rounded-lg font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {loadingMore ? "Loading..." : `Load More (${orders.length}/${total})`}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Detail Modal */}
