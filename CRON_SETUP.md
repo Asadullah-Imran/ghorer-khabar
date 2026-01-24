@@ -190,3 +190,10 @@ npx prisma generate
 
 curl -H "Authorization: Bearer 7f9KQ@xM2pZ!LwA8C3R#eYH$D6S0bVnT" 
   localhost:3000/api/cron/generate-subscription-orders
+
+
+  curl -H "Authorization: Bearer asdfasdf" 
+  localhost:3000/api/cron/generate-subscription-orders
+
+
+  for mac - curl -H "Authorization: Bearer asdfasdf" http://localhost:3000/api/cron/generate-subscription-orders
