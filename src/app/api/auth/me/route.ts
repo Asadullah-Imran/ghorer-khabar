@@ -21,6 +21,9 @@ export async function GET() {
     const decoded = verifyToken(token);
 
     if (!decoded || typeof decoded === "string" || !decoded.userId) {
+      // Clear the invalid cookie so the middleware doesn't get confused
+      console.log("Token invalid or expired - clearing cookie");
+      cookieStore.delete("auth_token");
       return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
