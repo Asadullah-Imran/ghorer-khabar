@@ -113,8 +113,8 @@ const RevenueChart = memo(({ data, isLoading }: { data: any; isLoading?: boolean
   const revenue = data?.revenue || [0, 0, 0, 0];
   const profit = data?.profit || [0, 0, 0, 0];
   
-  // Calculate max for scaling (min 1 to avoid division by zero)
-  const maxValue = Math.max(...revenue, ...profit, 50000);
+  // Calculate max for scaling based on actual data
+  const maxValue = Math.max(...revenue, ...profit, 1); // Use actual max, minimum 1 to avoid division by zero
 
   return (
     <div className="relative h-64">
@@ -387,10 +387,6 @@ export default function AnalyticsPage() {
           >
             <RefreshCw size={18} />
             Refresh All
-          </button>
-          <button className="w-fit px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition flex items-center gap-2 font-semibold text-gray-700">
-            <Calendar size={18} />
-            {dateRange}
           </button>
         </div>
       </div>
