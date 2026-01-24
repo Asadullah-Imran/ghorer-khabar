@@ -48,42 +48,82 @@ export async function GET(request: NextRequest) {
             name: true,
             email: true,
             phone: true,
+            addresses: {
+              where: { isDefault: true },
+              select: {
+                address: true,
+                zone: true,
+              },
+            },
           },
         },
-        items: true,
+        items: {
+          include: {
+            menuItem: {
+              select: {
+                name: true,
+                price: true,
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     });
 
     // Generate CSV
     const headers = [
+      "Order Number",
       "Order ID",
       "Buyer Name",
       "Buyer Email",
       "Buyer Phone",
+      "Buyer Location",
+      "Buyer Zone",
       "Order Date",
       "Order Time",
       "Status",
+      "Items Sold",
       "Items Count",
+      "Total Quantity",
       "Total Amount",
       "Notes",
     ];
 
     let csv = headers.join(",") + "\n";
 
-    orders.forEach((order: any) => {
+    orders.forEach((order: any, index: number) => {
       const orderDate = new Date(order.createdAt).toLocaleDateString();
       const orderTime = new Date(order.createdAt).toLocaleTimeString();
 
+      // Calculate total quantity
+      const totalQuantity = order.items?.reduce((sum: number, item: any) => {
+        return sum + (item.quantity || 0);
+      }, 0) || 0;
+
+      // Generate items sold details
+      const itemsSold = order.items?.map((item: any) => {
+        return `${item.menuItem?.name || "Item"} (x${item.quantity})`;
+      }).join("; ") || "N/A";
+
+      // Get buyer location
+      const buyerAddress = order.user?.addresses?.[0]?.address || "N/A";
+      const buyerZone = order.user?.addresses?.[0]?.zone || "N/A";
+
       csv += [
+        index + 1,
         `"${order.id}"`,
         `"${order.user?.name || "N/A"}"`,
         `"${order.user?.email || "N/A"}"`,
         `"${order.user?.phone || "N/A"}"`,
+        `"${buyerAddress}"`,
+        `"${buyerZone}"`,
         `"${orderDate}"`,
         `"${orderTime}"`,
         `"${order.status}"`,
+        `"${itemsSold}"`,
         order.items?.length || 0,
+        totalQuantity,
         order.total || 0,
         `"${order.notes || ""}"`,
       ].join(",") + "\n";

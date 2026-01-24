@@ -162,6 +162,35 @@ export default function UsersPage() {
     }
   };
 
+  const handleExportSellerOrders = async (userId: string, userName: string) => {
+    try {
+      // First, get the seller's kitchen (limit to 1 for speed)
+      const kitchenRes = await fetch(`/api/admin/kitchens?sellerId=${userId}&take=1`);
+      const kitchenData = await kitchenRes.json();
+      
+      if (!kitchenData.kitchens || kitchenData.kitchens.length === 0) {
+        alert("No kitchen found for this seller");
+        return;
+      }
+
+      const kitchenId = kitchenData.kitchens[0].id;
+      
+      // Export orders for this kitchen/seller
+      const res = await fetch(`/api/admin/export/seller?sellerId=${kitchenId}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `seller-orders-${userName.replace(/\s+/g, "-")}-${new Date().toISOString().split("T")[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to export seller orders:", error);
+    }
+  };
+
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "ADMIN":
@@ -298,6 +327,15 @@ export default function UsersPage() {
                             <button
                               onClick={() => handleExportUserOrders(user.id, user.name)}
                               title="Export user's orders"
+                              className="text-primary hover:text-primary/80 transition-colors"
+                            >
+                              <Download size={18} />
+                            </button>
+                          )}
+                          {user.role === "SELLER" && (
+                            <button
+                              onClick={() => handleExportSellerOrders(user.id, user.name)}
+                              title="Export seller's orders"
                               className="text-primary hover:text-primary/80 transition-colors"
                             >
                               <Download size={18} />

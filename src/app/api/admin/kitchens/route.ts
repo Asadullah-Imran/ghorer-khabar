@@ -8,9 +8,15 @@ export async function GET(req: NextRequest) {
     const skip = parseInt(searchParams.get("skip") || "0");
     const take = parseInt(searchParams.get("take") || "10");
     const search = searchParams.get("search");
+    const sellerId = searchParams.get("sellerId");
     const isVerifiedFilter = searchParams.get("isVerified");
 
     const where: any = { seller: { role: "SELLER" } };
+
+    // Filter by specific seller if provided (used for exports)
+    if (sellerId) {
+      where.seller = { ...where.seller, id: sellerId };
+    }
     
     // Apply verification filter if specified
     if (isVerifiedFilter !== null) {
