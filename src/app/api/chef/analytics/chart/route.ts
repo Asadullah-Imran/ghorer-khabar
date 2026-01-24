@@ -1,6 +1,7 @@
 import { verifyToken } from "@/lib/auth/jwt";
 import { prisma } from "@/lib/prisma/prisma";
 import { createClient } from "@/lib/supabase/server";
+import { calculateChefRevenue } from "@/lib/services/revenueCalculation";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -112,37 +113,48 @@ export async function GET(req: NextRequest) {
 
     // Process each month
     const sortedMonths = Array.from(monthMap.keys()).sort();
-    sortedMonths.forEach((monthKey) => {
+    
+    for (const monthKey of sortedMonths) {
       const monthOrders = monthMap.get(monthKey)!;
       const [year, month] = monthKey.split('-');
       const monthDate = new Date(parseInt(year), parseInt(month) - 1);
       const monthName = monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
 
-      // Calculate total revenue and cost for the month
-      let monthRevenue = 0;
+      // Calculate month start and end dates
+      const monthStart = new Date(parseInt(year), parseInt(month) - 1, 1);
+      const monthEnd = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59, 999);
+
+      // Calculate chef revenue for this month (using proper revenue calculation)
+      const monthRevenue = await calculateChefRevenue(kitchen.id, monthStart, monthEnd);
+
+      // Calculate cost from ingredients (only for completed orders)
       let monthCost = 0;
-
-      monthOrders.forEach((order: any) => {
-        monthRevenue += order.total;
-
-        // Calculate cost from ingredients
+      const completedMonthOrders = monthOrders.filter((o: any) => o.status === 'COMPLETED');
+      
+      completedMonthOrders.forEach((order: any) => {
         order.items.forEach((item: any) => {
-          const ingredientCost = item.menuItem.ingredients.reduce(
-            (sum: number, ing: any) => sum + (ing.cost || 0),
-            0
-          );
-          monthCost += ingredientCost * item.quantity;
+          if (item.menuItem?.ingredients) {
+            const ingredientCost = item.menuItem.ingredients.reduce(
+              (sum: number, ing: any) => sum + (ing.cost || 0),
+              0
+            );
+            monthCost += ingredientCost * item.quantity;
+          }
         });
       });
 
-      const monthProfit = Math.round(monthRevenue - monthCost);
+      // Profit = Chef Revenue - Ingredient Costs
+      // If no ingredient costs are set, use estimated 35% profit margin
+      const monthProfit = monthCost > 0 
+        ? Math.round(monthRevenue - monthCost)
+        : Math.round(monthRevenue * 0.35);
 
       monthlyData.push({
         month: monthName,
         revenue: Math.round(monthRevenue),
         profit: monthProfit,
       });
-    });
+    }
 
     return NextResponse.json({
       weeks: monthlyData.map(m => m.month),
