@@ -17,7 +17,8 @@
     "seed:recommendations": "tsx prisma/seedForRecommendations.ts",
     "seed:all": "TEMP_Seller_ID=ad5f641d-5ac2-46d9-88f9-80a4acf5c73b npm run seed:menu && TEMP_Seller_ID=ad5f641d-5ac2-46d9-88f9-80a4acf5c73b npm run seed:subscriptions && TEMP_Seller_ID=ad5f641d-5ac2-46d9-88f9-80a4acf5c73b npm run seed:inventory",
     "seed:complete": "tsx prisma/seedComplete.ts",
-    "create-admin": "tsx scripts/create-admin.ts"
+    "create-admin": "tsx scripts/create-admin.ts",
+    "seed:demo": "tsx prisma/seed-demo.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",

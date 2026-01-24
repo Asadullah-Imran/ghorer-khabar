@@ -1,5 +1,7 @@
-import { Phone, ShoppingBag, Truck, Clock, Calendar, Eye } from "lucide-react";
+import Loading from "@/components/ui/Loading";
+import { Clock, Eye, Phone } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 interface OrderItem {
   name: string;
@@ -26,11 +28,23 @@ interface Order {
 
 interface OrderCardProps {
   order: Order;
-  onMove?: (orderId: string, newStatus: string) => void;
-  onReject?: (orderId: string) => void;
+  onMove?: (orderId: string, newStatus: string) => Promise<void> | void;
+  onReject?: (orderId: string) => Promise<void> | void;
 }
 
 export default function OrderCard({ order, onMove, onReject }: OrderCardProps) {
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+
+  const handleAction = async (actionType: string, actionFn?: () => Promise<void> | void) => {
+    if (!actionFn || loadingAction) return;
+    try {
+      setLoadingAction(actionType);
+      await actionFn();
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
       {/* Header: Order Number */}
@@ -118,14 +132,20 @@ export default function OrderCard({ order, onMove, onReject }: OrderCardProps) {
         {order.status === "new" && (
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => onMove?.(order.id, "cooking")}
-              className="py-2 bg-green-600 text-white text-xs font-semibold rounded hover:bg-green-700 transition"
+              onClick={() => handleAction("accept", () => onMove?.(order.id, "cooking"))}
+              disabled={loadingAction !== null}
+              className="py-2 bg-green-600 text-white text-xs font-semibold rounded hover:bg-green-700 transition flex items-center justify-center min-h-[32px] disabled:opacity-70"
             >
-              Accept
+              {loadingAction === "accept" ? (
+                <Loading variant="small" size="sm" />
+              ) : (
+                "Accept"
+              )}
             </button>
             <button 
               onClick={() => onReject?.(order.id)}
-              className="py-2 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 transition"
+              disabled={loadingAction !== null}
+              className="py-2 bg-red-600 text-white text-xs font-semibold rounded hover:bg-red-700 transition flex items-center justify-center min-h-[32px] disabled:opacity-70"
             >
               Reject
             </button>
@@ -133,21 +153,32 @@ export default function OrderCard({ order, onMove, onReject }: OrderCardProps) {
         )}
         {order.status === "cooking" && (
           <button
-            onClick={() => onMove?.(order.id, "ready")}
-            className="w-full py-2 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 transition"
+            onClick={() => handleAction("ready", () => onMove?.(order.id, "ready"))}
+            disabled={loadingAction !== null}
+            className="w-full py-2 bg-blue-600 text-white text-xs font-semibold rounded hover:bg-blue-700 transition flex items-center justify-center min-h-[32px] disabled:opacity-70"
           >
-            Mark Ready
+            {loadingAction === "ready" ? (
+              <Loading variant="small" size="sm" />
+            ) : (
+              "Mark Ready"
+            )}
           </button>
         )}
         {order.status === "ready" && (
           <button
-            onClick={() => onMove?.(order.id, "handover")}
-            className="w-full py-2 bg-purple-600 text-white text-xs font-semibold rounded hover:bg-purple-700 transition"
+            onClick={() => handleAction("handover", () => onMove?.(order.id, "handover"))}
+            disabled={loadingAction !== null}
+            className="w-full py-2 bg-purple-600 text-white text-xs font-semibold rounded hover:bg-purple-700 transition flex items-center justify-center min-h-[32px] disabled:opacity-70"
           >
-            Handover
+            {loadingAction === "handover" ? (
+              <Loading variant="small" size="sm" />
+            ) : (
+              "Handover"
+            )}
           </button>
         )}
       </div>
     </div>
   );
 }
+
