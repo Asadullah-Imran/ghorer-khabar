@@ -66,13 +66,28 @@ export async function GET() {
       );
     }
 
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const twentyFourHoursAgo = new Date();
+    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
     // Fetch orders for this kitchen
     const orders = await prisma.order.findMany({
       where: {
         kitchenId: kitchen.id,
-        status: {
-          in: ["PENDING", "CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"],
-        },
+        OR: [
+          {
+            status: {
+              in: ["PENDING", "CONFIRMED", "PREPARING", "DELIVERING"],
+            },
+            createdAt: { gte: sevenDaysAgo },
+          },
+          {
+            status: "COMPLETED",
+            updatedAt: { gte: twentyFourHoursAgo },
+          },
+        ],
       },
       select: {
         id: true,

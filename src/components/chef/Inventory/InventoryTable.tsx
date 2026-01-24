@@ -1,7 +1,7 @@
 "use client";
 
 import { InventoryItem } from "@/lib/dummy-data/chef";
-import { AlertTriangle, CheckCircle2, Edit2, Plus, TrendingDown, TrendingUp } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Edit2, TrendingDown, TrendingUp } from "lucide-react";
 
 interface InventoryTableProps {
   items: InventoryItem[];
@@ -116,7 +116,7 @@ export default function InventoryTable({ items, onUpdateStock }: InventoryTableP
                   <td className="px-6 py-4 text-center">
                     <div>
                       <p className="font-bold text-gray-900 text-lg">
-                        {item.currentStock}
+                        {item.currentStock.toFixed(2)}
                       </p>
                       <p className="text-xs text-gray-500">{item.unit}</p>
                     </div>
@@ -128,14 +128,14 @@ export default function InventoryTable({ items, onUpdateStock }: InventoryTableP
                       <div className="flex items-center justify-center gap-1 bg-blue-50 rounded px-2 py-1">
                         <TrendingUp size={14} className="text-blue-600" />
                         <span className="text-sm font-semibold text-blue-700">
-                          {item.demandFromOrders.toFixed(1)}
+                          {item.demandFromOrders.toFixed(2)}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500">Orders</p>
                       <div className="flex items-center justify-center gap-1 bg-purple-50 rounded px-2 py-1">
                         <TrendingDown size={14} className="text-purple-600" />
                         <span className="text-sm font-semibold text-purple-700">
-                          {item.forecastDemand.toFixed(1)}
+                          {item.forecastDemand.toFixed(2)}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500">Forecast</p>
@@ -146,7 +146,7 @@ export default function InventoryTable({ items, onUpdateStock }: InventoryTableP
                   <td className="px-6 py-4 text-center">
                     <div>
                       <p className="font-bold text-teal-700 text-lg">
-                        {requiredQty.toFixed(1)}
+                        {requiredQty.toFixed(2)}
                       </p>
                       <p className="text-xs text-gray-500">needed</p>
                     </div>
@@ -161,7 +161,7 @@ export default function InventoryTable({ items, onUpdateStock }: InventoryTableP
                     }`}>
                       {toBuy > 0 ? (
                         <>
-                          <p>+{toBuy.toFixed(1)}</p>
+                          <p>+{toBuy.toFixed(2)}</p>
                           <p className="text-xs text-gray-500">
                             {toBuy > item.currentStock * 2 ? "urgent" : "to buy"}
                           </p>

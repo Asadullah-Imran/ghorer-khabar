@@ -257,7 +257,7 @@ export default function InventoryPage() {
             </div>
             <span className="text-sm font-semibold text-gray-600">Inventory Value</span>
           </div>
-          <p className="text-3xl font-bold text-green-600">৳{(totalInventoryValue / 1000).toFixed(1)}K</p>
+          <p className="text-3xl font-bold text-green-600">৳{(totalInventoryValue / 1000).toFixed(2)}K</p>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-4">
@@ -267,7 +267,7 @@ export default function InventoryPage() {
             </div>
             <span className="text-sm font-semibold text-gray-600">To Procure</span>
           </div>
-          <p className="text-3xl font-bold text-orange-600">৳{estimatedProcurementCost.toFixed(0)}</p>
+          <p className="text-3xl font-bold text-orange-600">৳{estimatedProcurementCost.toFixed(2)}</p>
         </div>
       </div>
 

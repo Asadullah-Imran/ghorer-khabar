@@ -1,7 +1,7 @@
 "use client";
 
 import { InventoryItem } from "@/lib/dummy-data/chef";
-import { CheckCircle2, Circle, ShoppingCart, ArrowRight } from "lucide-react";
+import { ArrowRight, CheckCircle2, Circle, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 
 interface SmartShoppingListProps {
@@ -59,11 +59,11 @@ export default function SmartShoppingList({ items }: SmartShoppingListProps) {
         </div>
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
           <p className="text-sm text-orange-600 mb-1">Total Quantity</p>
-          <p className="text-2xl font-bold text-orange-700">{totalToBuy.toFixed(1)}</p>
+          <p className="text-2xl font-bold text-orange-700">{totalToBuy.toFixed(2)}</p>
         </div>
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <p className="text-sm text-green-600 mb-1">Estimated Cost</p>
-          <p className="text-2xl font-bold text-green-700">৳{totalEstimatedCost.toFixed(0)}</p>
+          <p className="text-2xl font-bold text-green-700">৳{totalEstimatedCost.toFixed(2)}</p>
         </div>
       </div>
 
@@ -131,25 +131,25 @@ export default function SmartShoppingList({ items }: SmartShoppingListProps) {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-gray-600 mb-2">
                       <div>
                         <span className="text-gray-500">Current:</span>
-                        <p className="font-semibold text-gray-900">{item.currentStock}</p>
+                        <p className="font-semibold text-gray-900">{item.currentStock.toFixed(2)}</p>
                       </div>
                       <div>
                         <span className="text-gray-500">Demand:</span>
                         <p className="font-semibold text-gray-900">
-                          {item.demandFromOrders} + {item.forecastDemand}
+                          {item.demandFromOrders.toFixed(2)} + {item.forecastDemand.toFixed(2)}
                         </p>
                       </div>
                       <div>
                         <span className="text-gray-500">Required:</span>
                         <p className="font-semibold text-gray-900">
-                          {(item.demandFromOrders + item.forecastDemand).toFixed(1)}
+                          {(item.demandFromOrders + item.forecastDemand).toFixed(2)}
                         </p>
                       </div>
                       <div className="flex items-center gap-1">
                         <ArrowRight size={14} className="text-orange-600" />
                         <div>
                           <span className="text-gray-500">Buy:</span>
-                          <p className="font-bold text-orange-700">{toBuy.toFixed(1)}</p>
+                          <p className="font-bold text-orange-700">{toBuy.toFixed(2)}</p>
                         </div>
                       </div>
                     </div>
@@ -157,10 +157,10 @@ export default function SmartShoppingList({ items }: SmartShoppingListProps) {
                     {/* Unit Cost & Total */}
                     <div className="flex items-center gap-4 pt-2 border-t border-gray-200">
                       <span className="text-xs text-gray-500">
-                        ৳{item.unitCost} per {item.unit}
+                        ৳{item.unitCost.toFixed(2)} per {item.unit}
                       </span>
                       <span className="font-bold text-teal-600">
-                        Subtotal: ৳{cost.toFixed(0)}
+                        Subtotal: ৳{cost.toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -168,9 +168,9 @@ export default function SmartShoppingList({ items }: SmartShoppingListProps) {
                   {/* Right Section */}
                   <div className="text-right flex-shrink-0">
                     <p className="text-lg font-bold text-orange-700">
-                      {toBuy.toFixed(1)} {item.unit}
+                      {toBuy.toFixed(2)} {item.unit}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">৳{cost.toFixed(0)}</p>
+                    <p className="text-xs text-gray-500 mt-1">৳{cost.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
@@ -191,7 +191,7 @@ export default function SmartShoppingList({ items }: SmartShoppingListProps) {
             </div>
             <div>
               <p className="text-xs text-gray-600 mb-1">Total Budget</p>
-              <p className="text-xl font-bold text-teal-700">৳{totalEstimatedCost.toFixed(0)}</p>
+              <p className="text-xl font-bold text-teal-700">৳{totalEstimatedCost.toFixed(2)}</p>
             </div>
           </div>
         </div>

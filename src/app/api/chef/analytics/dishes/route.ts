@@ -70,6 +70,9 @@ export async function GET(req: NextRequest) {
     const orders = await prisma.order.findMany({
       where: {
         kitchenId: kitchen.id,
+        status: {
+          not: 'CANCELLED',
+        },
         createdAt: {
           gte: startDate,
         },

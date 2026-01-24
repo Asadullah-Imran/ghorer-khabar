@@ -1,9 +1,10 @@
 import { verifyToken } from "@/lib/auth/jwt";
 import { prisma } from "@/lib/prisma/prisma";
+import { calculateKRI } from "@/lib/services/kriCalculation";
+import { calculateChefRevenue, PLATFORM_COMMISSION_PERCENT, PLATFORM_FEE_PER_ORDER } from "@/lib/services/revenueCalculation";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { calculateKRI } from "@/lib/services/kriCalculation";
 
 async function getAuthenticatedChefId() {
   const supabase = await createClient();
@@ -97,32 +98,28 @@ export async function GET() {
       monthlyRevenue,
       kriResult,
     ] = await Promise.all([
-      // Today's revenue
-      prisma.order.findMany({
-        where: {
-          kitchenId: kitchen.id,
-          createdAt: { gte: today },
-          status: { in: ["CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"] },
-        },
-        select: { total: true },
-      }),
+      // Today's revenue (using proper calculation service)
+      calculateChefRevenue(
+        kitchen.id, 
+        today, 
+        undefined, 
+        ["CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"]
+      ),
       // Active orders count
       prisma.order.findMany({
         where: {
           kitchenId: kitchen.id,
-          status: { in: ["PENDING", "CONFIRMED", "PREPARING"] },
+          status: { in: ["PENDING", "CONFIRMED", "PREPARING", "DELIVERING"] },
         },
         select: { id: true },
       }),
-      // Yesterday's revenue
-      prisma.order.findMany({
-        where: {
-          kitchenId: kitchen.id,
-          createdAt: { gte: yesterday, lte: yesterdayEnd },
-          status: { in: ["CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"] },
-        },
-        select: { total: true },
-      }),
+      // Yesterday's revenue (using proper calculation service)
+      calculateChefRevenue(
+        kitchen.id, 
+        yesterday, 
+        yesterdayEnd, 
+        ["CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"]
+      ),
       // Monthly revenue (optimized)
       getMonthlyRevenue(kitchen.id),
       // KRI calculation (with error handling)
@@ -132,8 +129,8 @@ export async function GET() {
       }),
     ]);
 
-    const todayRevenue = todayOrders.reduce((sum, order) => sum + order.total, 0);
-    const yesterdayRevenue = yesterdayOrders.reduce((sum, order) => sum + order.total, 0);
+    const todayRevenue = todayOrders;
+    const yesterdayRevenue = yesterdayOrders;
 
     // Calculate trend percentage
     let revenueTrend = 0;
@@ -244,7 +241,7 @@ async function getMonthlyRevenue(kitchenId: string) {
   twentyFourMonthsAgo.setDate(1);
   twentyFourMonthsAgo.setHours(0, 0, 0, 0);
 
-  // Single query to get all orders from last 24 months
+  // Single query to get all orders from last 24 months with items for commission calc
   const orders = await prisma.order.findMany({
     where: {
       kitchenId,
@@ -254,6 +251,12 @@ async function getMonthlyRevenue(kitchenId: string) {
     select: {
       total: true,
       createdAt: true,
+      items: {
+        select: {
+          price: true,
+          quantity: true
+        }
+      }
     },
   });
 
@@ -273,7 +276,13 @@ async function getMonthlyRevenue(kitchenId: string) {
     const orderDate = new Date(order.createdAt);
     const monthKey = `${orderDate.getFullYear()}-${orderDate.getMonth()}`;
     const currentRevenue = monthlyRevenueMap.get(monthKey) || 0;
-    monthlyRevenueMap.set(monthKey, currentRevenue + order.total);
+    
+    // Calculate chef revenue for this order
+    const itemsTotal = order.items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
+    const commission = itemsTotal * PLATFORM_COMMISSION_PERCENT;
+    const chefRevenue = order.total - PLATFORM_FEE_PER_ORDER - commission;
+    
+    monthlyRevenueMap.set(monthKey, currentRevenue + Math.max(0, chefRevenue));
   }
 
   // Convert map to array format with year information

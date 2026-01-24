@@ -1,7 +1,6 @@
 "use client";
 
-import { ANALYTICS_DATA } from "@/lib/dummy-data/chef";
-import { AlertTriangle, Brain, Calendar, CheckCircle, DollarSign, Lightbulb, MessageSquare, RefreshCw, ShoppingBag, Sparkles, Star, ThumbsUp, TrendingUp, Users } from "lucide-react";
+import { AlertTriangle, Brain, DollarSign, Lightbulb, MessageSquare, RefreshCw, ShoppingBag, Sparkles, Star, ThumbsUp } from "lucide-react";
 import React, { memo, useCallback, useState } from "react";
 
 // Types for AI insights
@@ -87,7 +86,7 @@ const TopDishItem = memo(({ dish, index }: { dish: any; index: number }) => {
           </span>
         </div>
         <span className="text-sm font-bold text-gray-600">
-          {sales > 0 ? `${sales} orders` : "—"}
+          {sales > 0 ? `${sales} sold` : "—"}
         </span>
       </div>
       <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -404,7 +403,7 @@ export default function AnalyticsPage() {
             Refresh
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <KPICard
             icon={DollarSign}
             label="Total Revenue"
@@ -427,21 +426,6 @@ export default function AnalyticsPage() {
             isLoading={kpisLoading && kpiData.avgRating === 0}
           />
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-            <p className="text-xs text-gray-600 mb-3">Customer Retention</p>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-teal-100 rounded-lg flex-shrink-0">
-                <Users className="text-teal-600" size={20} />
-              </div>
-              <div className="flex-1 min-w-0">
-                {kpisLoading ? (
-                  <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
-                ) : (
-                  <p className="text-2xl font-black text-gray-900">{additionalStats.customerRetention}%</p>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
             <p className="text-xs text-gray-600 mb-3">Avg. Order Value</p>
             <div className="flex items-center gap-3">
               <div className="p-2 bg-yellow-100 rounded-lg flex-shrink-0">
@@ -452,21 +436,6 @@ export default function AnalyticsPage() {
                   <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
                 ) : (
                   <p className="text-2xl font-black text-gray-900 truncate">৳{additionalStats.avgOrderValue}</p>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-            <p className="text-xs text-gray-600 mb-3">Fulfillment Rate</p>
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg flex-shrink-0">
-                <CheckCircle className="text-green-600" size={20} />
-              </div>
-              <div className="flex-1 min-w-0">
-                {kpisLoading ? (
-                  <div className="h-8 bg-gray-200 animate-pulse rounded"></div>
-                ) : (
-                  <p className="text-2xl font-black text-gray-900">{additionalStats.fulfillmentRate}%</p>
                 )}
               </div>
             </div>
