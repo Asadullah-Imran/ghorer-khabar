@@ -387,7 +387,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl mx-auto">
+    <div className="p-6 md:p-8 space-y-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-black text-gray-900">Business Settings</h1>
@@ -586,7 +586,7 @@ export default function SettingsPage() {
         <button
           onClick={handleSaveCapacity}
           disabled={saving}
-          className="mt-6 w-full md:w-auto px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="mt-6 w-full md:w-auto px-6 py-3 bg-teal-700 text-white font-semibold rounded-lg hover:bg-teal-800 transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Save size={20} />
           {saving ? "Saving..." : "Save Capacity Settings"}

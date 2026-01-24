@@ -271,7 +271,7 @@ export default function SubscriptionsPage() {
   }
 
   return (
-    <div className="p-6 space-y-8 max-w-7xl mx-auto">
+    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
       {/* Error Banner */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">

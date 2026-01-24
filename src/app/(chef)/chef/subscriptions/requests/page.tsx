@@ -200,7 +200,7 @@ export default function SubscriptionRequestsPage() {
   }
 
   return (
-    <div className="p-6 space-y-8 max-w-7xl mx-auto">
+    <div className="p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
       {/* Error Banner */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
@@ -515,7 +515,7 @@ function SubscriptionRequestCard({
             <div className="flex gap-3 pt-2">
               <button
                 onClick={onApprove}
-                className="flex-1 px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-teal-700 text-white font-semibold rounded-lg hover:bg-teal-800 transition flex items-center justify-center gap-2"
               >
                 <CheckCircle size={18} />
                 Approve

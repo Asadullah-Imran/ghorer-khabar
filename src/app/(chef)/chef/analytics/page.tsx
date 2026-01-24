@@ -125,7 +125,7 @@ const RevenueChart = memo(({ data, isLoading }: { data: any; isLoading?: boolean
               </div>
               {/* Profit Bar Overlay */}
               <div
-                className="w-full bg-teal-600 rounded-t absolute bottom-0 left-0 group cursor-pointer hover:bg-teal-700 transition"
+                className="w-full bg-teal-700 rounded-t absolute bottom-0 left-0 group cursor-pointer hover:bg-teal-800 transition"
                 style={{ height: `${profitHeight}%` }}
               >
                 <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
@@ -306,7 +306,7 @@ export default function AnalyticsPage() {
   }, []);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 md:p-8 space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -439,7 +439,7 @@ export default function AnalyticsPage() {
               <span className="text-sm text-gray-600">Revenue</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-teal-600 rounded"></div>
+              <div className="w-4 h-4 bg-teal-700 rounded"></div>
               <span className="text-sm text-gray-600">Profit</span>
             </div>
           </div>

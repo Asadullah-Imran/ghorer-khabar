@@ -12,6 +12,7 @@ interface RevenueChartProps {
   data?: RevenueData[];
   currency?: string;
   title?: string;
+  isLoading?: boolean;
 }
 
 const defaultData: RevenueData[] = [
@@ -33,6 +34,7 @@ export default function RevenueChart({
   data = defaultData,
   currency = "৳",
   title = "Monthly Revenue",
+  isLoading = false,
 }: RevenueChartProps) {
   const stats = useMemo(() => {
     const maxRevenue = Math.max(...data.map((d) => d.revenue));
@@ -52,6 +54,22 @@ export default function RevenueChart({
       growthRate,
     };
   }, [data]);
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-6" />
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex items-center gap-4">
+              <div className="h-4 w-12 bg-gray-100 rounded animate-pulse" />
+              <div className="flex-1 h-8 bg-gray-200 rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">

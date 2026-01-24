@@ -176,7 +176,7 @@ export default function InventoryPage() {
   }, 0);
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-6 md:p-8 space-y-8">
       {/* Loading State - Inline */}
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20">
@@ -207,7 +207,7 @@ export default function InventoryPage() {
         </div>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition whitespace-nowrap"
+          className="flex items-center gap-2 px-4 py-2 bg-teal-700 text-white font-semibold rounded-lg hover:bg-teal-800 transition whitespace-nowrap"
         >
           <Plus size={20} />
           Add Item
