@@ -333,7 +333,7 @@ export default function OrdersPage() {
               {historyOrders.map((order) => (
                 <Link
                   key={order.id}
-                  href={`/orders/${order.id}`}
+                  href={`/chef/orders/${order.id}`}
                   className="block bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-all hover:border-teal-300"
                 >
                   <div className="flex items-start justify-between mb-4">
