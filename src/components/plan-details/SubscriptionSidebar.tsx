@@ -55,6 +55,7 @@ export default function SubscriptionSidebar({
           servingsPerMeal={plan.servingsPerMeal}
           isOwnKitchen={isOwnKitchen}
           kitchenId={kitchenId || plan.kitchen?.id}
+          weeklySchedule={plan.rawSchedule || plan.schedule || {}}
         />
         <p className="text-center text-xs text-gray-400 mt-4">
           Next delivery starts from Monday, 8:00 AM

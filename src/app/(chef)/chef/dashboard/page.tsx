@@ -39,7 +39,7 @@ export default function ChefDashboard() {
   }, [dashboardData]);
 
   const displayNotifications = useMemo(() => {
-    return notifications.length > 0 ? notifications : CHEF_STATS.notifications;
+    return notifications;
   }, [notifications]);
 
   return (
@@ -52,11 +52,13 @@ export default function ChefDashboard() {
           </h1>
           <p className="text-gray-500 mt-2">Welcome back, Chef! 👋</p>
         </div>
-        {/* Kitchen Status Toggle - Always visible, doesn't need data to load */}
-        <KitchenStatusToggle
-          initialStatus={kitchenOpen}
-          onStatusChange={updateKitchenStatus}
-        />
+        {/* Kitchen Status Toggle - hide while status is loading to avoid flicker */}
+        {kitchenOpen !== null && (
+          <KitchenStatusToggle
+            initialStatus={kitchenOpen}
+            onStatusChange={updateKitchenStatus}
+          />
+        )}
       </div>
 
       {/* Key Metrics Grid - Show skeleton only if metrics are loading */}

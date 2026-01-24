@@ -46,6 +46,9 @@ export default async function KitchenProfilePage({
   const userId = await getAuthUserId();
   console.log('🔍 Kitchen Page - User ID:', userId);
   
+  // Check if the current user is the owner of this kitchen
+  const isOwner = userId === kitchen.sellerId;
+  
   if (userId) {
     // Get user's default address
     const userAddress = await prisma.address.findFirst({
@@ -153,6 +156,7 @@ export default async function KitchenProfilePage({
     kriScore: kitchen.kriScore,
     isOpen: kitchen.isOpen,
     isActive: kitchen.isActive,
+    isOwner, // Pass ownership status
     stats: {
       orders: kitchen.totalOrders.toString(),
       satisfaction: `${Number(kitchen.satisfactionRate) || 90}%`
@@ -173,6 +177,15 @@ export default async function KitchenProfilePage({
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
       
+      {/* Owner Notice Banner */}
+      {isOwner && (
+        <div className="bg-blue-500 text-white py-3 px-4 text-center">
+          <p className="font-semibold">
+            👨‍🍳 This is your kitchen - You cannot order from your own kitchen
+          </p>
+        </div>
+      )}
+
       {/* Closed Kitchen Banner */}
       {!kitchen.isOpen && (
         <div className="bg-red-500 text-white py-3 px-4 text-center">

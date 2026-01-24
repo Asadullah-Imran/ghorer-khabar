@@ -89,9 +89,12 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Calculate KPIs
-    const totalRevenue = orders.reduce((sum: number, order: any) => sum + order.total, 0);
-    const totalOrders = orders.length;
+    // Completed orders for revenue and avg order value
+    const completedOrders = orders.filter((o: any) => o.status === 'COMPLETED');
+
+    // Calculate KPIs (using only completed orders for revenue)
+    const totalRevenue = completedOrders.reduce((sum: number, order: any) => sum + order.total, 0);
+    const totalOrders = completedOrders.length;
 
     // Calculate previous period for growth metrics
     const previousStartDate = new Date(startDate);
@@ -109,6 +112,15 @@ export async function GET(req: NextRequest) {
 
     const previousRevenue = previousOrders.reduce((sum: number, order: any) => sum + order.total, 0);
     const previousOrderCount = previousOrders.length;
+
+    // Calculate customer retention
+    const currentCustomers = new Set(orders.map((o: any) => o.userId));
+    const previousCustomers = new Set(previousOrders.map((o: any) => o.userId));
+    const returningCustomers = new Set([...currentCustomers].filter(id => previousCustomers.has(id)));
+    
+    const customerRetention = currentCustomers.size > 0 
+      ? Math.round((returningCustomers.size / currentCustomers.size) * 100)
+      : 0;
 
     const revenueGrowth = previousRevenue > 0 
       ? Math.round(((totalRevenue - previousRevenue) / previousRevenue) * 100) 
@@ -265,9 +277,9 @@ export async function GET(req: NextRequest) {
       sentiment,
       aiInsights,
       additionalStats: {
-        customerRetention: totalOrders > 0 ? Math.min(Math.round((totalOrders / 10) * 78), 95) : 0,
+        customerRetention,
         avgOrderValue: totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0,
-        fulfillmentRate: totalOrders > 0 ? Math.min(Math.round(95 + Math.random() * 5), 100) : 0,
+        fulfillmentRate: completedOrders.length > 0 ? Math.round((completedOrders.length / orders.length) * 100) : 0,
       },
     };
 

@@ -7,8 +7,10 @@ import KitchenNameStep from "@/components/chef/onboarding/KitchenNameStep";
 import NIDDetailsStep from "@/components/chef/onboarding/NIDDetailsStep";
 import StepIndicator from "@/components/chef/onboarding/StepIndicator";
 import { useToast } from "@/contexts/ToastContext";
+import { useConfirmation } from "@/contexts/ConfirmationContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { chefOnboardingSchema } from "@/lib/validation";
-import { ArrowLeft, ArrowRight, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -18,6 +20,8 @@ const STORAGE_KEY = "chef_onboarding_progress";
 
 export default function ChefOnboardingPage() {
   const router = useRouter();
+  const { confirm, setLoading: setConfirmLoading } = useConfirmation();
+  const { refreshUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -187,6 +191,57 @@ export default function ChefOnboardingPage() {
     }
   };
 
+  const handleCancel = async () => {
+    // Show confirmation modal
+    const confirmed = await confirm({
+      title: "Cancel Chef Onboarding",
+      message: "Are you sure you want to cancel the chef onboarding process? All your progress will be lost and your account will be reverted to buyer.",
+      confirmLabel: "Yes, Cancel",
+      cancelLabel: "Continue Onboarding",
+      variant: "warning",
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    setConfirmLoading(true);
+
+    try {
+      // Call API to revert role back to BUYER
+      const response = await fetch("/api/user/revert-to-buyer", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to cancel onboarding");
+      }
+
+      // Clear saved progress
+      localStorage.removeItem(STORAGE_KEY);
+
+      // Refresh user data
+      await refreshUser();
+
+      // Show success message
+      toast.success("Onboarding Cancelled", "Your account has been reverted to buyer. Redirecting to profile...");
+
+      // Redirect to profile page
+      setTimeout(() => {
+        router.push("/profile");
+      }, 1500);
+    } catch (error: any) {
+      console.error("Error cancelling onboarding:", error);
+      toast.error(
+        "Cancel Failed",
+        error.message || "Failed to cancel onboarding. Please try again."
+      );
+      setConfirmLoading(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!validateStep(currentStep)) {
       return;
@@ -249,8 +304,15 @@ export default function ChefOnboardingPage() {
     <ChefGuard>
       <div className="min-h-screen bg-[#f8f6f6] py-8 px-4">
         <div className="max-w-5xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-8">
+          {/* Header with Cancel Button */}
+          <div className="text-center mb-8 relative">
+            <button
+              onClick={handleCancel}
+              className="absolute top-0 right-0 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Cancel onboarding"
+            >
+              <X size={24} />
+            </button>
             <h1 className="text-3xl font-black text-[#1b0e0e] mb-2">
               Welcome to <span className="text-[#477e77]">Ghorer Khabar</span>
             </h1>

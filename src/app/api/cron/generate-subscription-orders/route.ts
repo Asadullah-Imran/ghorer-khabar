@@ -230,11 +230,29 @@ export async function GET(req: NextRequest) {
             continue;
           }
 
-          // Add delivery fee (from subscription) - calculated when subscription was created
-          // The delivery fee is stored per subscription and represents the fee for each delivery
-          // For subscriptions, we add the delivery fee to each meal order
-          const deliveryFee = subscription.deliveryFee || 0;
-          total += deliveryFee;
+          // Calculate per-delivery fee from subscription
+          // subscription.deliveryFee stores TOTAL delivery fee for all deliveries per month
+          // We need to calculate per-delivery fee by dividing by deliveries per month
+          const weeklySchedule = subscription.plan.weekly_schedule as any;
+          const calculateDeliveriesPerMonth = (schedule: any): number => {
+            if (!schedule || typeof schedule !== 'object') return 0;
+            const daysWithMeals = Object.values(schedule).filter((daySchedule: any) => {
+              if (!daySchedule || typeof daySchedule !== 'object') return false;
+              return ['breakfast', 'lunch', 'snacks', 'dinner'].some(mealType => {
+                const meal = daySchedule[mealType];
+                return meal && meal.dishIds && Array.isArray(meal.dishIds) && meal.dishIds.length > 0;
+              });
+            }).length;
+            return daysWithMeals * 4;
+          };
+          const deliveriesPerMonth = calculateDeliveriesPerMonth(weeklySchedule);
+          const perDeliveryFee = deliveriesPerMonth > 0 
+            ? (subscription.deliveryFee || 0) / deliveriesPerMonth 
+            : 0;
+          
+          // Add platform fee (৳10 per order)
+          const PLATFORM_FEE = 10;
+          const finalTotal = total + perDeliveryFee + PLATFORM_FEE;
 
           // Create order with delivery date and time slot
           const order = await prisma.order.create({
@@ -242,7 +260,7 @@ export async function GET(req: NextRequest) {
               userId: subscription.userId,
               kitchenId: subscription.kitchenId,
               subscription_id: subscription.id,
-              total: total,
+              total: finalTotal,
               status: "PENDING",
               delivery_date: tomorrow,
               delivery_time_slot: timeSlot,
@@ -274,6 +292,7 @@ export async function GET(req: NextRequest) {
                 type: "INFO",
                 title: "Order Created from Subscription",
                 message: `${ordersCreatedForSubscription} order(s) from your subscription "${subscription.plan.name}" have been created for ${tomorrow.toLocaleDateString()}.`,
+                actionUrl: "/orders",
               },
             });
           } catch (notifError) {

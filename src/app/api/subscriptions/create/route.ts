@@ -212,11 +212,48 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Calculate deliveries per month from weekly schedule
+    const calculateDeliveriesPerMonth = (schedule: any): number => {
+      if (!schedule || typeof schedule !== 'object') return 0;
+      
+      // Count how many days per week have at least one meal
+      const daysWithMeals = Object.values(schedule).filter((daySchedule: any) => {
+        if (!daySchedule || typeof daySchedule !== 'object') return false;
+        // Check if any meal type (breakfast, lunch, snacks, dinner) has dishes
+        return ['breakfast', 'lunch', 'snacks', 'dinner'].some(mealType => {
+          const meal = daySchedule[mealType];
+          return meal && meal.dishIds && Array.isArray(meal.dishIds) && meal.dishIds.length > 0;
+        });
+      }).length;
+      
+      // Deliveries per month = days per week × 4 weeks
+      return daysWithMeals * 4;
+    };
+
+    const weeklySchedule = typeof plan.weekly_schedule === 'string' 
+      ? JSON.parse(plan.weekly_schedule) 
+      : plan.weekly_schedule || {};
+    
+    const deliveriesPerMonth = calculateDeliveriesPerMonth(weeklySchedule);
+    
     // Calculate pricing
     const monthlyPrice = plan.price;
-    const discount = 0;
-    const totalAmount = monthlyPrice + deliveryFee - discount;
-    console.log("[Subscription API] Pricing calculated:", { monthlyPrice, deliveryFee, discount, totalAmount, distanceKm });
+    const singleDeliveryFee = deliveryFee; // This is the per-delivery charge
+    const totalDeliveryFee = singleDeliveryFee * deliveriesPerMonth; // Total for all deliveries
+    const subtotal = monthlyPrice + totalDeliveryFee;
+    const discount = Math.round(subtotal * 0.1); // 10% discount on subtotal
+    const totalAmount = subtotal - discount;
+    
+    console.log("[Subscription API] Pricing calculated:", { 
+      monthlyPrice, 
+      singleDeliveryFee, 
+      deliveriesPerMonth,
+      totalDeliveryFee,
+      subtotal,
+      discount, 
+      totalAmount, 
+      distanceKm 
+    });
 
     // Create the subscription
     console.log("[Subscription API] Creating subscription record");
@@ -229,7 +266,7 @@ export async function POST(req: NextRequest) {
         deliveryInstructions: deliveryInstructions || null,
         useChefContainers: useChefContainers ?? true,
         monthlyPrice,
-        deliveryFee,
+        deliveryFee: totalDeliveryFee, // Store total delivery fee for all deliveries per month
         discount,
         totalAmount,
         status: "PENDING",

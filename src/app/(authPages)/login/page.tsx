@@ -3,7 +3,7 @@
 import { useToast } from "@/contexts/ToastContext";
 import logo from "@/lib/image/logo.png";
 import { createClient } from "@/lib/supabase/client";
-import { Loader2, User, UtensilsCrossed } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, Mail, User, UtensilsCrossed } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -12,6 +12,7 @@ import { Suspense, useState } from "react";
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<"BUYER" | "SELLER">("BUYER");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -118,6 +119,33 @@ function LoginForm() {
             </p>
           </div>
 
+          {/* Social Login - Google First */}
+          <button
+            onClick={handleGoogleLogin}
+            type="button"
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-xl bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 48 48">
+              <path
+                d="M44.5 20H24v8.5h11.9C34.6 32.6 30.1 36 24 36c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.4 0 6.4 1.3 8.7 3.4l6.1-6.1C34.6 3.6 29.6 1.5 24 1.5 11.9 1.5 2.5 10.9 2.5 23S11.9 44.5 24 44.5c11.2 0 20.4-8 20.4-21.5 0-1.5-.2-2.6-.4-3z"
+                fill="#4285F4"
+              />
+            </svg>
+            Continue with Google
+          </button>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-400">
+                Or continue with email
+              </span>
+            </div>
+          </div>
+
           <form onSubmit={handleLogin} className="space-y-5">
             {/* Role Switcher */}
             <div className="grid grid-cols-2 bg-gray-100 p-1 rounded-xl mb-6">
@@ -146,86 +174,72 @@ function LoginForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Email or Username
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address
               </label>
               <div className="relative">
-                {/* Field background set to brand teal (#3d7068) */}
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <Mail size={18} />
+                </div>
                 <input
-                  type="text"
-                  placeholder="foodie@example.com"
+                  type="email"
+                  placeholder="john@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full pl-6 pr-4 py-3 bg-[#3d7068] border-none text-white placeholder-white/60 rounded-xl focus:ring-2 focus:ring-[#fbb03b] outline-none transition-all"
+                  className="block w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex justify-between mb-2">
-                <label className="block text-sm font-semibold text-gray-700">
+              <div className="flex justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
                 <Link
                   href="/forgotpassword"
-                  className="text-xs font-bold text-[#3d7068] hover:text-[#fbb03b]"
+                  className="text-xs font-bold text-teal-600 hover:text-teal-700 hover:underline"
                 >
                   Forgot Password?
                 </Link>
               </div>
               <div className="relative">
-                {/* Field background set to brand teal (#3d7068) */}
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                  <Lock size={18} />
+                </div>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="w-full pl-6 pr-4 py-3 bg-[#3d7068] border-none text-white placeholder-white/60 rounded-xl focus:ring-2 focus:ring-[#fbb03b] outline-none transition-all"
+                  className="block w-full pl-10 pr-12 py-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? (
+                    <EyeOff size={18} />
+                  ) : (
+                    <Eye size={18} />
+                  )}
+                </button>
               </div>
             </div>
 
-            {/* Login button with white text and teal background */}
+            {/* Login button */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-[#3d7068] hover:bg-[#2d5650] text-white font-bold rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5 mt-4 disabled:opacity-70"
+              className="w-full flex justify-center items-center gap-2 py-3.5 px-4 rounded-xl shadow-md text-sm font-bold text-white bg-teal-700 hover:bg-teal-800 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
             >
+              {loading && <Loader2 className="animate-spin" size={18} />}
               {loading ? "Signing In..." : "Sign In"}
             </button>
-            <div className="my-6 relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-400">Or </span>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <button
-                onClick={handleGoogleLogin} // This triggers the function
-                type="button"
-                className="w-full inline-flex items-center justify-center gap-3 py-3 border border-gray-200 rounded-xl bg-white text-sm font-medium text-gray-700 hover:shadow transition-colors active:scale-95"
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 48 48"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  aria-hidden
-                >
-                  <path
-                    d="M44.5 20H24v8.5h11.9C34.6 32.6 30.1 36 24 36c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.4 0 6.4 1.3 8.7 3.4l6.1-6.1C34.6 3.6 29.6 1.5 24 1.5 11.9 1.5 2.5 10.9 2.5 23S11.9 44.5 24 44.5c11.2 0 20.4-8 20.4-21.5 0-1.5-.2-2.6-.4-3z"
-                    fill="#4285F4"
-                  />
-                </svg>
-                Continue with Google
-              </button>
-            </div>
           </form>
 
           <p className="text-center text-sm text-gray-500 mt-8">

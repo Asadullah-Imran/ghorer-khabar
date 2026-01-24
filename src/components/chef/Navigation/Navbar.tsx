@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
+import ChefNotificationBell from "@/components/notifications/ChefNotificationBell";
 import { ChefHat, Loader2, LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -105,6 +106,9 @@ export default function ChefNavbar({
                 <span>Switch to Buyer</span>
               </button>
             )}
+
+            {/* Notifications Bell */}
+            {user && <ChefNotificationBell />}
 
             {/* Profile Button with Menu (Desktop) */}
             <div className="hidden md:flex items-center gap-3 relative">

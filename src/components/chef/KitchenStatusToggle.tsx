@@ -1,7 +1,7 @@
 "use client";
 
 import { Power } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface KitchenStatusToggleProps {
   initialStatus?: boolean;
@@ -13,6 +13,11 @@ export default function KitchenStatusToggle({
   onStatusChange,
 }: KitchenStatusToggleProps) {
   const [isOpen, setIsOpen] = useState(initialStatus);
+
+  // Sync internal state whenever upstream status changes (e.g. after reload)
+  useEffect(() => {
+    setIsOpen(initialStatus);
+  }, [initialStatus]);
 
   const handleToggle = () => {
     const newStatus = !isOpen;

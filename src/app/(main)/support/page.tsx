@@ -1,7 +1,6 @@
-import {
-  ContactForm,
-  FAQSection,
-} from "@/components/support/SupportInteractions";
+ "use client";
+
+import { ContactForm, FAQSection } from "@/components/support/SupportInteractions";
 import { CONTACT_INFO, SUPPORT_FAQS } from "@/lib/dummy-data/support";
 import {
   ArrowLeft,
@@ -10,19 +9,22 @@ import {
   MessageCircleQuestion,
   Phone,
 } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function SupportPage() {
+  const router = useRouter();
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
       {/* 1. Header */}
       <div>
-        <Link
-          href="/profile"
+        <button
+          type="button"
+          onClick={() => router.back()}
           className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-teal-700 transition-colors mb-4"
         >
-          <ArrowLeft size={16} /> Back to Profile
-        </Link>
+          <ArrowLeft size={16} /> Back
+        </button>
         <div className="flex items-center gap-3">
           <div className="bg-yellow-100 p-3 rounded-xl">
             <MessageCircleQuestion className="text-yellow-700" size={28} />
