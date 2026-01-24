@@ -5,14 +5,16 @@ import { PrismaClient } from '../../../generated/prisma/client';
 
 const connectionString = `${process.env.DATABASE_URL}`;
 
-// 1. Create a connection pool
-const pool = new Pool({ connectionString });
+// Prevent multiple instances in development (Next.js hot-reloading)
+const globalForPrisma = global as unknown as { 
+  prisma: PrismaClient | undefined,
+  pgPool: Pool | undefined,
+  adapter: PrismaPg | undefined
+};
 
-// 2. Set up the adapter
-const adapter = new PrismaPg(pool);
-
-// 3. Prevent multiple instances in development (Next.js hot-reloading)
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+// Use existing pool or create a new one
+const pool = globalForPrisma.pgPool || new Pool({ connectionString });
+const adapter = globalForPrisma.adapter || new PrismaPg(pool);
 
 export const prisma =
   globalForPrisma.prisma ||
@@ -23,4 +25,8 @@ export const prisma =
       : ['error'] // Only log errors in production
   });
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma;
+  globalForPrisma.pgPool = pool;
+  globalForPrisma.adapter = adapter;
+}
