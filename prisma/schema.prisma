@@ -108,11 +108,11 @@ model menu_items {
   spiciness        String?
   isVegetarian     Boolean            @default(false)
   isAvailable      Boolean            @default(true)
-  allergyAlerts    String[]           @default([])
   rating           Float?             @default(0)
   reviewCount      Int                @default(0)
   createdAt        DateTime           @default(now())
   updatedAt        DateTime
+  allergyAlerts    String[]           @default([])
   favorites        Favorite[]
   ingredients      ingredients[]
   menu_item_images menu_item_images[]
@@ -156,11 +156,11 @@ model Kitchen {
   latitude            Float?
   longitude           Float?
   max_capacity        Int                  @default(6)
+  min_prep_time_hours Int                  @default(4)
   breakfast_capacity  Int?                 @map("breakfast_capacity")
+  dinner_capacity     Int?                 @map("dinner_capacity")
   lunch_capacity      Int?                 @map("lunch_capacity")
   snacks_capacity     Int?                 @map("snacks_capacity")
-  dinner_capacity     Int?                 @map("dinner_capacity")
-  min_prep_time_hours Int                  @default(4)
   favorites           Favorite[]
   gallery             KitchenGallery[]
   address             Address?             @relation(fields: [addressId], references: [id])

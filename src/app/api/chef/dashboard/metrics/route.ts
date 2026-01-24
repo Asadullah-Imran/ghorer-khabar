@@ -219,8 +219,8 @@ export async function PATCH(req: NextRequest) {
 }
 
 /**
- * Helper function to calculate monthly revenue for the last 12 months
- * Optimized to use a single query instead of 12 sequential queries
+ * Helper function to calculate monthly revenue for the last 24 months (2 years)
+ * Includes year information for proper filtering
  */
 async function getMonthlyRevenue(kitchenId: string) {
   const months = [
@@ -238,17 +238,17 @@ async function getMonthlyRevenue(kitchenId: string) {
     "Dec",
   ];
 
-  // Calculate date range for last 12 months
-  const twelveMonthsAgo = new Date();
-  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-  twelveMonthsAgo.setDate(1);
-  twelveMonthsAgo.setHours(0, 0, 0, 0);
+  // Calculate date range for last 24 months (2 years)
+  const twentyFourMonthsAgo = new Date();
+  twentyFourMonthsAgo.setMonth(twentyFourMonthsAgo.getMonth() - 24);
+  twentyFourMonthsAgo.setDate(1);
+  twentyFourMonthsAgo.setHours(0, 0, 0, 0);
 
-  // Single query to get all orders from last 12 months
+  // Single query to get all orders from last 24 months
   const orders = await prisma.order.findMany({
     where: {
       kitchenId,
-      createdAt: { gte: twelveMonthsAgo },
+      createdAt: { gte: twentyFourMonthsAgo },
       status: { in: ["CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"] },
     },
     select: {
@@ -257,11 +257,11 @@ async function getMonthlyRevenue(kitchenId: string) {
     },
   });
 
-  // Group orders by month and calculate revenue
+  // Group orders by month+year and calculate revenue
   const monthlyRevenueMap = new Map<string, number>();
   
-  // Initialize all 12 months with 0 revenue
-  for (let i = 11; i >= 0; i--) {
+  // Initialize all 24 months with 0 revenue
+  for (let i = 23; i >= 0; i--) {
     const date = new Date();
     date.setMonth(date.getMonth() - i);
     const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
@@ -276,9 +276,9 @@ async function getMonthlyRevenue(kitchenId: string) {
     monthlyRevenueMap.set(monthKey, currentRevenue + order.total);
   }
 
-  // Convert map to array format
+  // Convert map to array format with year information
   const monthlyData = [];
-  for (let i = 11; i >= 0; i--) {
+  for (let i = 23; i >= 0; i--) {
     const date = new Date();
     date.setMonth(date.getMonth() - i);
     const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
@@ -287,6 +287,7 @@ async function getMonthlyRevenue(kitchenId: string) {
     monthlyData.push({
       month: months[date.getMonth()],
       revenue: Math.round(revenue),
+      year: date.getFullYear(),
     });
   }
 
