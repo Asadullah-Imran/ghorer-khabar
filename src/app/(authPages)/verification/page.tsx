@@ -318,9 +318,11 @@ function VerifyCodeContent() {
   );
 }
 
+import Loading from "@/components/ui/Loading";
+
 export default function VerifyCode() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<Loading variant="full" />}>
       <VerifyCodeContent />
     </Suspense>
   );

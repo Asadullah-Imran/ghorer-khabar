@@ -285,15 +285,11 @@ function LoginForm() {
   );
 }
 
+import Loading from "@/components/ui/Loading";
+
 export default function LoginPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[#fefdfa] flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-teal-700" />
-        </div>
-      }
-    >
+    <Suspense fallback={<Loading variant="full" />}>
       <LoginForm />
     </Suspense>
   );

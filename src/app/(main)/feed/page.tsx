@@ -1,4 +1,3 @@
-import FeedGreeting from "@/components/feed/FeedGreeting";
 import ExploreHero from "@/components/feed/ExploreHero";
 import TabbedRecommendations from "@/components/feed/TabbedRecommendations";
 import DishCard from "@/components/shared/DishCard";
@@ -334,15 +333,8 @@ export default async function FeedPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
-      {/* 1. Welcome Section */}
-      <section className="bg-white border-b border-gray-100 py-6 px-4 md:px-8">
-        <div className="max-w-7xl mx-auto">
-          <FeedGreeting name={userName} />
-        </div>
-      </section>
-
       <div className="max-w-7xl mx-auto space-y-10 py-8 px-4 md:px-8">
-        {/* 1.5. Explore Hero Section */}
+        {/* 1. Explore Hero Section */}
         <section>
           <ExploreHero userName={userName} />
         </section>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2 } from "lucide-react";
+import Loading from "@/components/ui/Loading";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -62,11 +62,7 @@ export default function ChefGuard({ children }: { children: React.ReactNode }) {
 
   // Show loading spinner while checking auth
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-teal-700" />
-      </div>
-    );
+    return <Loading variant="full" />;
   }
 
   // Show nothing while redirecting
