@@ -1,6 +1,7 @@
 import { verifyToken } from "@/lib/auth/jwt";
 import { prisma } from "@/lib/prisma/prisma";
 import { createClient } from "@/lib/supabase/server";
+import { calculateChefRevenue } from "@/lib/services/revenueCalculation";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -76,6 +77,7 @@ export async function GET(req: NextRequest) {
         },
       },
       select: {
+        userId: true,
         total: true,
         status: true,
         reviews: {
@@ -108,9 +110,10 @@ export async function GET(req: NextRequest) {
     const completedOrders = orders.filter((o: any) => o.status === 'COMPLETED');
     const previousCompletedOrders = previousOrders.filter((o: any) => o.status === 'COMPLETED');
 
-    // Calculate metrics
-    const totalRevenue = completedOrders.reduce((sum: number, order: any) => sum + order.total, 0);
-    const previousRevenue = previousCompletedOrders.reduce((sum: number, order: any) => sum + order.total, 0);
+    // Calculate chef revenue using proper revenue calculation service
+    // Chef Revenue = Items Total - Platform Fee (NOT order.total which includes delivery fee)
+    const totalRevenue = await calculateChefRevenue(kitchen.id, startDate);
+    const previousRevenue = await calculateChefRevenue(kitchen.id, previousStartDate, startDate);
     
     const totalOrders = completedOrders.length;
     const previousOrderCount = previousCompletedOrders.length;
@@ -122,6 +125,10 @@ export async function GET(req: NextRequest) {
       ? Math.round(((totalOrders - previousOrderCount) / previousOrderCount) * 100) 
       : 0;
 
+    // Calculate profit: Chef Revenue - Ingredient Costs
+    // For now, we'll use a simplified calculation. 
+    // TODO: Calculate actual ingredient costs from order items if chefs have set ingredient costs
+    // For now, using estimated 35% profit margin as fallback
     const netProfit = Math.round(totalRevenue * 0.35);
     const previousProfit = Math.round(previousRevenue * 0.35);
     const profitGrowth = previousProfit > 0 
