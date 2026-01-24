@@ -133,7 +133,9 @@ export async function GET(request: NextRequest) {
     csv += "\n\n### SELLER ORDER SUMMARY ###\n";
     csv += `Seller Name,"${sellerUser?.name || "N/A"}"\n`;
     csv += `Seller Email,"${sellerUser?.email || "N/A"}"\n`;
+    csv += `Seller Phone,"${sellerUser?.phone || "N/A"}"\n`;
     csv += `Kitchen Name,"${seller.name || "N/A"}"\n`;
+    csv += `Kitchen Location,"${seller.location || "N/A"}"\n`;
     csv += `Total Orders,${orders.length}\n`;
 
     const totalRevenue = orders

@@ -23,6 +23,16 @@ export default function AdminNotificationBell() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Sort notifications: unread first, then by newest
+  const sortedNotifications = [...notifications].sort((a, b) => {
+    // Unread notifications come first
+    if (a.read !== b.read) {
+      return a.read ? 1 : -1;
+    }
+    // Then sort by newest first
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
   const handleNotificationClick = async (notificationId: string) => {
     await markAsRead(notificationId);
   };
@@ -71,7 +81,7 @@ export default function AdminNotificationBell() {
                 <p className="text-text-muted text-sm">No notifications yet</p>
               </div>
             ) : (
-              notifications.map((notification) => (
+              sortedNotifications.map((notification) => (
                 <Link 
                   key={notification.id} 
                   href={notification.type === "SELLER_APPROVAL" ? "/admin/onboarding" : "/admin/support"}
