@@ -180,7 +180,13 @@ export async function checkKitchenCapacity(
 ): Promise<{ available: boolean; currentCount: number; maxCapacity: number; error?: string }> {
   const kitchen = await prisma.kitchen.findUnique({
     where: { id: kitchenId },
-    select: { max_capacity: true },
+    select: { 
+      max_capacity: true,
+      breakfast_capacity: true,
+      lunch_capacity: true,
+      snacks_capacity: true,
+      dinner_capacity: true,
+    },
   });
   
   if (!kitchen) {
@@ -190,6 +196,23 @@ export async function checkKitchenCapacity(
       maxCapacity: 0,
       error: "Kitchen not found",
     };
+  }
+  
+  // Get capacity for this specific meal type, fallback to max_capacity
+  let maxCapacity = kitchen.max_capacity; // default fallback
+  switch (timeSlot) {
+    case "BREAKFAST":
+      maxCapacity = kitchen.breakfast_capacity ?? kitchen.max_capacity;
+      break;
+    case "LUNCH":
+      maxCapacity = kitchen.lunch_capacity ?? kitchen.max_capacity;
+      break;
+    case "SNACKS":
+      maxCapacity = kitchen.snacks_capacity ?? kitchen.max_capacity;
+      break;
+    case "DINNER":
+      maxCapacity = kitchen.dinner_capacity ?? kitchen.max_capacity;
+      break;
   }
   
   // Normalize delivery date to start of day for comparison
@@ -213,13 +236,13 @@ export async function checkKitchenCapacity(
     },
   });
   
-  const available = currentCount < kitchen.max_capacity;
+  const available = currentCount < maxCapacity;
   
   return {
     available,
     currentCount,
-    maxCapacity: kitchen.max_capacity,
-    error: available ? undefined : `Kitchen is full for ${MEAL_TIME_SLOTS[timeSlot].displayName}. ${currentCount}/${kitchen.max_capacity} orders already placed.`,
+    maxCapacity,
+    error: available ? undefined : `Kitchen is full for ${MEAL_TIME_SLOTS[timeSlot].displayName}. ${currentCount}/${maxCapacity} orders already placed.`,
   };
 }
 
@@ -233,7 +256,14 @@ export async function getAvailableTimeSlots(
 ): Promise<AvailableSlot[]> {
   const kitchen = await prisma.kitchen.findUnique({
     where: { id: kitchenId },
-    select: { max_capacity: true, min_prep_time_hours: true },
+    select: { 
+      max_capacity: true,
+      breakfast_capacity: true,
+      lunch_capacity: true,
+      snacks_capacity: true,
+      dinner_capacity: true,
+      min_prep_time_hours: true,
+    },
   });
   
   if (!kitchen) {
@@ -261,6 +291,23 @@ export async function getAvailableTimeSlots(
     const timingCheck = validateOrderTiming(deliveryDate, slot);
     const timingValid = timingCheck.valid;
     
+    // Get capacity for this specific meal type, fallback to max_capacity
+    let maxCapacity = kitchen.max_capacity; // default fallback
+    switch (slot) {
+      case "BREAKFAST":
+        maxCapacity = kitchen.breakfast_capacity ?? kitchen.max_capacity;
+        break;
+      case "LUNCH":
+        maxCapacity = kitchen.lunch_capacity ?? kitchen.max_capacity;
+        break;
+      case "SNACKS":
+        maxCapacity = kitchen.snacks_capacity ?? kitchen.max_capacity;
+        break;
+      case "DINNER":
+        maxCapacity = kitchen.dinner_capacity ?? kitchen.max_capacity;
+        break;
+    }
+    
     // Check capacity
     const currentCount = await prisma.order.count({
       where: {
@@ -275,7 +322,7 @@ export async function getAvailableTimeSlots(
         },
       },
     });
-    const capacityAvailable = currentCount < kitchen.max_capacity;
+    const capacityAvailable = currentCount < maxCapacity;
     
     // Check prep time for all dishes (only if timing is valid and hoursUntilDelivery > 0)
     const canPrepareAll = timingValid && hoursUntilDelivery > 0 ? menuItems.every((item) => {
@@ -293,7 +340,7 @@ export async function getAvailableTimeSlots(
     if (!timingValid) {
       reason = timingCheck.error || "Time slot not available for this date";
     } else if (!capacityAvailable) {
-      reason = `Kitchen full (${currentCount}/${kitchen.max_capacity} orders)`;
+      reason = `Kitchen full (${currentCount}/${maxCapacity} orders)`;
     } else if (!canPrepareAll) {
       reason = "Prep time insufficient for some dishes";
     }
@@ -303,7 +350,7 @@ export async function getAvailableTimeSlots(
       time: MEAL_TIME_SLOTS[slot].time,
       displayName: MEAL_TIME_SLOTS[slot].displayName,
       available,
-      capacity: kitchen.max_capacity - currentCount,
+      capacity: Math.max(0, maxCapacity - currentCount),
       reason,
     });
   }

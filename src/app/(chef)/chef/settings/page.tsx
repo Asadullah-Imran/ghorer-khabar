@@ -11,6 +11,7 @@ import {
     Save,
     Trash2,
     User,
+    UtensilsCrossed,
     XCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -43,6 +44,14 @@ export default function SettingsPage() {
     { day: "SUNDAY", isOpen: false, openTime: "10:00", closeTime: "22:00" },
   ]);
   const [operatingHoursFromDb, setOperatingHoursFromDb] = useState(false);
+
+  // Capacity State
+  // Capacity State
+  const [breakfastCapacity, setBreakfastCapacity] = useState<number | null>(null);
+  const [lunchCapacity, setLunchCapacity] = useState<number | null>(null);
+  const [snacksCapacity, setSnacksCapacity] = useState<number | null>(null);
+  const [dinnerCapacity, setDinnerCapacity] = useState<number | null>(null);
+  const [maxCapacity, setMaxCapacity] = useState<number>(6); // Default capacity
 
   // Loading and error states
   const [loading, setLoading] = useState(true);
@@ -88,6 +97,13 @@ export default function SettingsPage() {
         setAddress(data.address || "");
         setOwnerName(data.ownerName || "");
         setPhoneNumber(data.phoneNumber || "");
+        
+        // Set capacity values
+        setMaxCapacity(data.maxCapacity || 6);
+        setBreakfastCapacity(data.breakfastCapacity ?? null);
+        setLunchCapacity(data.lunchCapacity ?? null);
+        setSnacksCapacity(data.snacksCapacity ?? null);
+        setDinnerCapacity(data.dinnerCapacity ?? null);
 
         // Parse operating days from database
         // Check if operatingDays exists and has data (not null, not undefined, not empty object)
@@ -210,6 +226,48 @@ export default function SettingsPage() {
     const updated = [...operatingHours];
     updated[index][field] = value;
     setOperatingHours(updated);
+  };
+
+  const handleSaveCapacity = async () => {
+    try {
+      setSaving(true);
+      setError("");
+      setSuccessMessage("");
+
+      const response = await fetch("/api/chef/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          kitchenName,
+          address,
+          breakfastCapacity: breakfastCapacity || null,
+          lunchCapacity: lunchCapacity || null,
+          snacksCapacity: snacksCapacity || null,
+          dinnerCapacity: dinnerCapacity || null,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = "Failed to save capacity settings";
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.error || errorMessage;
+        } catch {
+          errorMessage = `Server error: ${response.status}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      setSuccessMessage("Order capacity settings saved successfully!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (err) {
+      console.error("Error saving capacity settings:", err);
+      setError(err instanceof Error ? err.message : "Failed to save capacity settings");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSaveHours = async () => {
@@ -450,7 +508,92 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Section 2: Operating Hours */}
+      {/* Section 2: Order Capacity */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div className="flex items-center gap-2 mb-6">
+          <UtensilsCrossed className="text-teal-600" size={24} />
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-gray-900">Order Capacity per Meal</h2>
+            <p className="text-xs text-gray-500 mt-1">
+              Set how many orders you can accept for each meal time slot. Leave empty to use default capacity ({maxCapacity}).
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Breakfast Capacity */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Breakfast Capacity (8:00 AM)
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={breakfastCapacity ?? ""}
+              onChange={(e) => setBreakfastCapacity(e.target.value ? parseInt(e.target.value) : null)}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400"
+              placeholder="Leave empty for default"
+            />
+          </div>
+
+          {/* Lunch Capacity */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Lunch Capacity (1:00 PM)
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={lunchCapacity ?? ""}
+              onChange={(e) => setLunchCapacity(e.target.value ? parseInt(e.target.value) : null)}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400"
+              placeholder="Leave empty for default"
+            />
+          </div>
+
+          {/* Snacks Capacity */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Snacks Capacity (4:00 PM)
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={snacksCapacity ?? ""}
+              onChange={(e) => setSnacksCapacity(e.target.value ? parseInt(e.target.value) : null)}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400"
+              placeholder="Leave empty for default"
+            />
+          </div>
+
+          {/* Dinner Capacity */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Dinner Capacity (8:00 PM)
+            </label>
+            <input
+              type="number"
+              min="1"
+              value={dinnerCapacity ?? ""}
+              onChange={(e) => setDinnerCapacity(e.target.value ? parseInt(e.target.value) : null)}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-400 focus:border-teal-400"
+              placeholder="Leave empty for default"
+            />
+          </div>
+        </div>
+
+        {/* Save Button */}
+        <button
+          onClick={handleSaveCapacity}
+          disabled={saving}
+          className="mt-6 w-full md:w-auto px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition shadow-md flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Save size={20} />
+          {saving ? "Saving..." : "Save Capacity Settings"}
+        </button>
+      </div>
+
+      {/* Section 3: Operating Hours */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <div className="flex items-center gap-2 mb-6">
           <Clock className="text-teal-600" size={24} />
