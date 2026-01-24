@@ -185,6 +185,9 @@ export async function PUT(
       const formData = await req.formData();
       imageFiles = formData.getAll("images") as File[];
       imagesToDelete = formData.getAll("deleteImages") as any;
+      const allergyAlertsJson = formData.get("allergyAlerts") as string;
+      const allergyAlerts = allergyAlertsJson ? JSON.parse(allergyAlertsJson).filter((alert: string) => alert.trim() !== "") : [];
+      
       updateData = {
         name: formData.get("name"),
         description: formData.get("description"),
@@ -200,6 +203,7 @@ export async function PUT(
           : undefined,
         spiciness: formData.get("spiciness"),
         isVegetarian: formData.get("isVegetarian") === "true",
+        allergyAlerts: allergyAlerts.length > 0 ? allergyAlerts : [],
       };
       console.log("Update data from FormData:", updateData);
       console.log("Images to upload:", imageFiles.length);

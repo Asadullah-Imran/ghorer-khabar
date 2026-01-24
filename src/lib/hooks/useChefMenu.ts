@@ -12,6 +12,7 @@ interface MenuItem {
   calories?: number;
   spiciness?: string;
   isVegetarian?: boolean;
+  allergyAlerts?: string[];
   isAvailable?: boolean;
   images?: Array<{ id?: string; imageUrl?: string; order?: number }>;
   ingredients?: Array<{ id?: string; name: string; quantity: number; unit: string; cost?: number }>;
@@ -91,6 +92,7 @@ export function useChefMenu(): UseChefMenuReturn {
       formData.append("calories", (formItem.calories || 0).toString());
       formData.append("spiciness", formItem.spiciness || "Medium");
       formData.append("isVegetarian", (formItem.isVegetarian || false).toString());
+      formData.append("allergyAlerts", JSON.stringify(formItem.allergyAlerts || []));
       formData.append("ingredients", JSON.stringify(formItem.ingredients || []));
       
       if (formItem.deletedImageIds && formItem.deletedImageIds.length > 0) {

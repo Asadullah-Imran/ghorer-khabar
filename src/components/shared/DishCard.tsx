@@ -1,4 +1,4 @@
-import { Clock, Star } from "lucide-react";
+import { AlertTriangle, Clock, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { AddToCartBtn } from "../feed/DishInteractions";
@@ -19,6 +19,7 @@ interface DishProps {
     kitchenReviewCount?: number;
     deliveryTime: string;
     chefId?: string; // Chef/creator ID
+    allergyAlerts?: string[]; // Allergy alerts
   };
   featured?: boolean;
   isFavorite?: boolean; // NEW: Pass from parent
@@ -50,6 +51,12 @@ export default function DishCard({ data, featured, isFavorite, currentUserId, us
           <div className="absolute top-2 right-2 z-10">
             <FavoriteButton itemId={data.id} itemType="dish" initialIsFavorite={isFavorite} />
           </div>
+          {/* Allergy Alert Badge */}
+          {data.allergyAlerts && data.allergyAlerts.length > 0 && (
+            <div className="absolute top-2 left-2 z-10 bg-yellow-500 text-white p-1.5 rounded-full shadow-lg" title={`Contains: ${data.allergyAlerts.join(", ")}`}>
+              <AlertTriangle size={14} fill="currentColor" />
+            </div>
+          )}
         </div>
 
         {/* Content Section */}

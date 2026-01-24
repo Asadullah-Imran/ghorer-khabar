@@ -63,37 +63,44 @@ export default function IngredientTransparency({
 
       {/* List */}
       <div className="p-5 space-y-5">
-        {ingredients.map((ing, idx) => {
-          const Icon = icons[ing.icon] || Wheat;
-          return (
-            <div key={idx} className="flex items-start gap-3">
-              <div className="mt-1 p-1.5 bg-white rounded-full shadow-sm text-gray-400">
-                <Icon
-                  size={18}
-                  className={isDeepView ? "text-teal-600" : "text-gray-400"}
-                />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">{ing.name}</p>
+        {ingredients.length > 0 ? (
+          ingredients.map((ing, idx) => {
+            const Icon = icons[ing.icon] || Wheat;
+            return (
+              <div key={idx} className="flex items-start gap-3">
+                <div className="mt-1 p-1.5 bg-white rounded-full shadow-sm text-gray-400">
+                  <Icon
+                    size={18}
+                    className={isDeepView ? "text-teal-600" : "text-gray-400"}
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">{ing.name}</p>
 
-                {/* Animated Details */}
-                <div
-                  className={`grid transition-all duration-300 ease-in-out ${
-                    isDeepView
-                      ? "grid-rows-[1fr] opacity-100 mt-2"
-                      : "grid-rows-[0fr] opacity-0"
-                  }`}
-                >
-                  <div className="overflow-hidden">
-                    <p className="text-xs text-teal-700 bg-teal-50 p-2 rounded-lg border border-teal-100">
-                      ✓ {ing.detail}
-                    </p>
+                  {/* Animated Details */}
+                  <div
+                    className={`grid transition-all duration-300 ease-in-out ${
+                      isDeepView
+                        ? "grid-rows-[1fr] opacity-100 mt-2"
+                        : "grid-rows-[0fr] opacity-0"
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <p className="text-xs text-teal-700 bg-teal-50 p-2 rounded-lg border border-teal-100">
+                        ✓ {ing.detail}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <p className="text-sm">No ingredient information available</p>
+            <p className="text-xs mt-1 text-gray-400">Chef hasn't added ingredient details yet</p>
+          </div>
+        )}
 
         {/* Badges */}
         <div className="mt-4 pt-4 border-t border-dashed border-gray-200 flex flex-wrap gap-2">
