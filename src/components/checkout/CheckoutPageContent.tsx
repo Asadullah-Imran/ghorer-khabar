@@ -23,6 +23,13 @@ import { useEffect, useMemo, useState } from "react";
 import { MealTimeSlot, MEAL_TIME_SLOTS, getAllMealSlots } from "@/lib/constants/mealTimeSlots";
 
 export default function CheckoutPageContent({ userData }: { userData: any }) {
+  const formatLocalDate = (date: Date) => {
+    const y = date.getFullYear();
+    const m = `${date.getMonth() + 1}`.padStart(2, "0");
+    const d = `${date.getDate()}`.padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const kitchenId = searchParams.get("kitchenId");
@@ -107,6 +114,8 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
   const delivery = deliveryInfo.charge ?? 60; // Use calculated charge or fallback
   const total = subtotal + delivery;
 
+  const today = useMemo(() => formatLocalDate(new Date()), []);
+
   // Form State
   const [formData, setFormData] = useState({
     name: userData.fullName,
@@ -114,7 +123,7 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
     address: userData.savedAddress || "",
     addressId: "" as string | "",
     note: "",
-    deliveryDate: "", // Will be set to tomorrow
+    deliveryDate: today,
     deliveryTimeSlot: "" as MealTimeSlot | "",
   });
 
@@ -128,13 +137,6 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
     lng: number;
   } | null>(null);
 
-  // Set default delivery date to today
-  useEffect(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const dateString = today.toISOString().split("T")[0];
-    setFormData(prev => ({ ...prev, deliveryDate: dateString }));
-  }, []);
 
   // Fetch available time slots when items or delivery date changes
   useEffect(() => {
@@ -500,13 +502,13 @@ export default function CheckoutPageContent({ userData }: { userData: any }) {
                       min={(() => {
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
-                        return today.toISOString().split("T")[0];
+                        return formatLocalDate(today);
                       })()}
                       max={(() => {
                         const dayAfterTomorrow = new Date();
                         dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 2);
                         dayAfterTomorrow.setHours(0, 0, 0, 0);
-                        return dayAfterTomorrow.toISOString().split("T")[0];
+                        return formatLocalDate(dayAfterTomorrow);
                       })()}
                       className="w-full rounded-lg border border-gray-300 bg-white h-12 pl-10 pr-4 text-base focus:border-teal-600 focus:ring-1 focus:ring-teal-600 outline-none transition-all"
                       value={formData.deliveryDate}

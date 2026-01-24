@@ -7,6 +7,7 @@ import OrderProgressStepper from "@/components/orders/tracking/OrderProgressStep
 import OrderRealtimeSubscriber from "@/components/orders/tracking/OrderRealtimeSubscriber";
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
+import { Clock } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
@@ -71,8 +72,10 @@ export default async function OrderTrackingPage({ params }: PageProps) {
 
   if (!order) return notFound();
 
-  // Calculate estimated delivery (45 mins from order time for now)
-  const estimatedDelivery = new Date(order.createdAt.getTime() + 45 * 60000);
+  // Use actual delivery date from order, fallback to 45 mins if not set
+  const estimatedDelivery = order.delivery_date 
+    ? new Date(order.delivery_date)
+    : new Date(order.createdAt.getTime() + 45 * 60000);
   const canCancel = ['PENDING', 'CONFIRMED'].includes(order.status);
 
   const statusInfo = getStatusMessage(order.status);
@@ -121,33 +124,46 @@ export default async function OrderTrackingPage({ params }: PageProps) {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column: Status & Dishes */}
-            <div className="lg:col-span-2 space-y-6">
-              
-              {/* ETA Card */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                  <div className="text-center md:text-left">
-                    <p className="text-sm uppercase tracking-wider font-bold text-gray-600 mb-1">
-                      {order.status === 'COMPLETED' ? 'Delivered At' : 'Estimated Delivery'}
-                    </p>
-                    <h2 className="text-4xl md:text-5xl font-black text-teal-700">
-                      {order.status === 'COMPLETED' 
-                        ? order.updatedAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-                        : estimatedDelivery.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-                      }
-                    </h2>
-                    {order.status !== 'COMPLETED' && order.status !== 'CANCELLED' && (
-                      <p className="text-sm font-medium text-teal-700 mt-2 flex items-center justify-center md:justify-start gap-1">
-                        <span className="material-symbols-outlined text-[18px]">verified</span>
-                        On Time
+            {/* ETA & Progress Card - Full Width */}
+            <div className="lg:col-span-3">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
+                <div className="space-y-6">
+                  {/* Top: Countdown Timer */}
+                  <div className="flex items-start gap-4">
+                    <Clock className="text-teal-700 flex-shrink-0 mt-1" size={28} />
+                    <div className="flex-1">
+                      <h3 className="font-bold text-gray-900 mb-2 text-lg">Delivery Time</h3>
+                      <p className="text-sm text-gray-600 mb-3">
+                        {new Date(order.delivery_date).toLocaleDateString("en-US", {
+                          weekday: "long",
+                          month: "long",
+                          day: "numeric",
+                        })} at {new Date(order.delivery_date).toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })}
+                        {order.delivery_time_slot && ` (${order.delivery_time_slot})`}
                       </p>
-                    )}
+                      <div className="text-4xl font-black font-mono text-teal-700">
+                        {(() => {
+                          const delivery = new Date(order.delivery_date);
+                          const now = new Date();
+                          const difference = delivery.getTime() - now.getTime();
+                          if (difference <= 0) return "Delivery time has passed";
+                          const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                          const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+                          const minutes = Math.floor((difference / 1000 / 60) % 60);
+                          if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+                          if (hours > 0) return `${hours}h ${minutes}m`;
+                          return `${minutes}m`;
+                        })()}
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="h-16 w-px bg-gray-200 dark:bg-white/10 hidden md:block" />
-
-                  <div className="flex-1 w-full md:max-w-md">
+                  {/* Progress Stepper */}
+                  <div className="pt-4 border-t border-gray-100">
                     <OrderProgressStepper 
                       currentStatus={order.status}
                       estimatedDelivery={order.status === 'COMPLETED' ? undefined : estimatedDelivery}
@@ -155,8 +171,10 @@ export default async function OrderTrackingPage({ params }: PageProps) {
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Status Message */}
+            {/* Left Column: Status & Dishes */}
+            <div className="lg:col-span-2 space-y-6">
               <div className={`${statusInfo.color} rounded-lg p-4 border-l-4`}>
                 <div className="flex gap-3">
                   <span className={`material-symbols-outlined ${order.status === 'PREPARING' ? 'animate-spin' : ''}`}>

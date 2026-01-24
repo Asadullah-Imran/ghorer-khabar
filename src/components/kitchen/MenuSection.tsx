@@ -1,5 +1,6 @@
 "use client";
 
+import { useCart } from "@/components/cart/CartProvider";
 import { useToast } from "@/contexts/ToastContext";
 import {
   ArrowRight,
@@ -17,11 +18,12 @@ export default function MenuSection({ data, isOwnProfile = false }: { data: any;
   const [activeCategory, setActiveCategory] = useState("All Items");
   const [searchQuery, setSearchQuery] = useState("");
   const toast = useToast();
+  const { addItem } = useCart();
   
   // Check if user owns this kitchen (cannot order from own kitchen)
   const isOwner = data?.isOwner || false;
 
-  const handleAddClick = (e: React.MouseEvent, itemName: string) => {
+  const handleAddClick = (e: React.MouseEvent, item: any) => {
     e.preventDefault();
     e.stopPropagation();
     if (isOwner) {
@@ -29,6 +31,28 @@ export default function MenuSection({ data, isOwnProfile = false }: { data: any;
         "Cannot Add Dish",
         "You cannot add your own dishes to cart"
       );
+      return;
+    }
+
+    const kitchenId = data?.id || item.kitchenId;
+    const kitchenName = data?.name || item.kitchenName || "Kitchen";
+
+    const result = addItem(
+      {
+        id: item.id,
+        name: item.name,
+        image: item.image,
+        price: item.price,
+        kitchenId,
+        kitchenName,
+      },
+      1
+    );
+
+    if (result.success) {
+      toast.success("Added to Cart", `${item.name} added to cart`);
+    } else {
+      toast.error("Failed to Add", result.message || "Could not add item to cart");
     }
   };
 
@@ -126,7 +150,7 @@ export default function MenuSection({ data, isOwnProfile = false }: { data: any;
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-teal-700">৳{item.price}</span>
                   <button 
-                    onClick={(e) => handleAddClick(e, item.name)}
+                    onClick={(e) => handleAddClick(e, item)}
                     className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1 transition-colors ${
                       isOwner 
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
@@ -272,7 +296,7 @@ export default function MenuSection({ data, isOwnProfile = false }: { data: any;
                   <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                     <span className="font-bold text-teal-700">৳{item.price}</span>
                     <button 
-                      onClick={(e) => handleAddClick(e, item.name)}
+                      onClick={(e) => handleAddClick(e, item)}
                       className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1 transition-colors ${
                         isOwner 
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed" 

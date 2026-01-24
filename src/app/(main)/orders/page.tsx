@@ -1,3 +1,4 @@
+import DeliveryCountdown from "@/components/orders/DeliveryCountdown";
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
 import { ArrowRight, Clock, Package, ShoppingBag } from "lucide-react";
@@ -66,6 +67,16 @@ export default async function OrderHistoryPage() {
                                     <Clock size={14} />
                                     {new Date(order.createdAt).toLocaleDateString()} at {new Date(order.createdAt).toLocaleTimeString()}
                                 </p>
+
+                                {/* Delivery Countdown */}
+                                <div className="mb-3">
+                                    <DeliveryCountdown 
+                                        deliveryDate={order.delivery_date}
+                                        deliveryTimeSlot={order.delivery_time_slot}
+                                        status={order.status}
+                                        compact={true}
+                                    />
+                                </div>
 
                                 <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
                                     <div className="min-w-[40px] h-[40px] bg-gray-200 rounded flex items-center justify-center text-xs font-bold text-gray-500">

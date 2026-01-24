@@ -1,5 +1,4 @@
 import { Phone, ShoppingBag, Truck, Clock, Calendar, Eye } from "lucide-react";
-import TimerBadge from "./TimerBadge";
 import Link from "next/link";
 
 interface OrderItem {
@@ -34,7 +33,7 @@ interface OrderCardProps {
 export default function OrderCard({ order, onMove, onReject }: OrderCardProps) {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
-      {/* Header: Order Number & Timer */}
+      {/* Header: Order Number */}
       <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
         <div className="flex items-center gap-2">
           <h3 className="font-bold text-gray-900">{order.orderNumber}</h3>
@@ -47,12 +46,6 @@ export default function OrderCard({ order, onMove, onReject }: OrderCardProps) {
             <Eye size={16} />
           </Link>
         </div>
-        {(order.status === "cooking" || order.status === "ready") && (
-          <TimerBadge
-            createdAt={order.createdAt}
-            prepTime={order.prepTime}
-          />
-        )}
       </div>
 
       {/* Customer Info */}
