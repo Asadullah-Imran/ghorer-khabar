@@ -106,9 +106,9 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    let revenueFromOrders = 0;
-    let revenueFromSubscriptions = 0;
-    let totalDeliveryFees = 0;
+    let revenueFromOrders = 0; // platform-side revenue from non-subscription orders
+    let revenueFromSubscriptions = 0; // platform-side revenue from subscription orders
+    let totalDeliveryFees = 0; // informational only; goes to chefs per guide
     let totalPlatformFees = 0;
 
     for (const order of orders) {
@@ -116,16 +116,18 @@ export async function GET(req: NextRequest) {
         (sum, item) => sum + item.price * item.quantity,
         0
       );
-      const platformFee = 10;
+      const platformFee = 0;
       const deliveryFee = order.total - itemsTotal - platformFee;
+      const commission = itemsTotal * 0.10; // 10% commission per sale (completed orders)
 
       totalDeliveryFees += deliveryFee;
       totalPlatformFees += platformFee;
 
+      const platformRevenue = platformFee + commission;
       if (order.subscription_id) {
-        revenueFromSubscriptions += deliveryFee + platformFee;
+        revenueFromSubscriptions += platformRevenue;
       } else {
-        revenueFromOrders += deliveryFee + platformFee;
+        revenueFromOrders += platformRevenue;
       }
     }
 

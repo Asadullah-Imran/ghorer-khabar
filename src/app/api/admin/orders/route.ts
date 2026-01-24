@@ -9,8 +9,21 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status");
     const search = searchParams.get("search");
 
+    // Normalize and validate status to avoid case mismatches breaking filters
+    const allowedStatuses = new Set([
+      "PENDING",
+      "CONFIRMED",
+      "PREPARING",
+      "DELIVERING",
+      "COMPLETED",
+      "CANCELLED",
+    ]);
+    const normalizedStatus = status?.toUpperCase();
+
     const where: any = {};
-    if (status) where.status = status;
+    if (normalizedStatus && allowedStatuses.has(normalizedStatus)) {
+      where.status = normalizedStatus;
+    }
     if (search) {
       where.OR = [
         { id: { contains: search, mode: "insensitive" } },
