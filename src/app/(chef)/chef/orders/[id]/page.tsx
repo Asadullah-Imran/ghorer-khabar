@@ -188,8 +188,15 @@ export default async function ChefOrderDetailsPage({ params }: PageProps) {
       SNACKS: "Snacks",
       DINNER: "Dinner",
     };
+    const timeSlotTimes: Record<string, string> = {
+      BREAKFAST: "08:00 AM",
+      LUNCH: "01:00 PM",
+      SNACKS: "04:00 PM",
+      DINNER: "08:00 PM",
+    };
     const slotName = timeSlotNames[order.delivery_time_slot] || order.delivery_time_slot;
-    deliveryTimeDisplay = `${dateStr}, ${slotName}`;
+    const slotTime = timeSlotTimes[order.delivery_time_slot] || "";
+    deliveryTimeDisplay = `${dateStr}, ${slotTime}`;
   }
 
   return (

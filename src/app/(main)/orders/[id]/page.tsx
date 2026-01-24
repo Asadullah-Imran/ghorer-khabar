@@ -1,3 +1,4 @@
+import DeliveryCountdown from "@/components/orders/DeliveryCountdown";
 import OrderItemReviewButton from "@/components/orders/OrderItemReviewButton";
 import { prisma } from "@/lib/prisma/prisma";
 import { CheckCircle, ChevronRight, Clock, MapPin, Phone } from "lucide-react";
@@ -65,12 +66,13 @@ export default async function OrderDetailsPage({ params }: PageProps) {
                         {order.status}
                     </span>
                 </div>
-                <div className="text-center sm:text-right">
-                    <p className="text-sm text-gray-500 mb-1">Estimated Delivery</p>
-                    <div className="flex items-center gap-2 text-teal-700 font-bold text-lg">
-                        <Clock size={20} />
-                        <span>30-45 mins</span>
-                    </div>
+                <div className="flex-1 sm:text-right">
+                    <DeliveryCountdown 
+                        deliveryDate={order.delivery_date}
+                        deliveryTimeSlot={order.delivery_time_slot}
+                        status={order.status}
+                        compact={true}
+                    />
                 </div>
             </div>
         </div>
