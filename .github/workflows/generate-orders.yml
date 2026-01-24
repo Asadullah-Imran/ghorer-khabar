@@ -14,4 +14,4 @@ jobs:
         run: |
           curl -X GET \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            https://your-domain.com/api/cron/generate-subscription-orders
+            https://ghorer-khabar-eight.vercel.app/api/cron/generate-subscription-orders
