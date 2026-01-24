@@ -126,6 +126,8 @@ export async function POST(req: NextRequest) {
     const calories = formData.get("calories") ? parseInt(formData.get("calories") as string) : null;
     const spiciness = formData.get("spiciness") as string;
     const isVegetarian = formData.get("isVegetarian") === "true";
+    const allergyAlertsJson = formData.get("allergyAlerts") as string;
+    const allergyAlerts = allergyAlertsJson ? JSON.parse(allergyAlertsJson).filter((alert: string) => alert.trim() !== "") : [];
     const ingredientsJson = formData.get("ingredients") as string;
     const ingredients = ingredientsJson ? JSON.parse(ingredientsJson) : [];
 
@@ -186,6 +188,7 @@ export async function POST(req: NextRequest) {
         calories,
         spiciness,
         isVegetarian,
+        allergyAlerts,
         updatedAt: new Date(),
         ingredients: {
           createMany: {

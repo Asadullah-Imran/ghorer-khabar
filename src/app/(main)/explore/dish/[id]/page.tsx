@@ -81,6 +81,7 @@ export default async function SingleDishPage({ params }: PageProps) {
     reviewsCount: dishData.reviewCount || 0,
     prepTime: dishData.prepTime ? `${dishData.prepTime} min` : "N/A",
     calories: dishData.calories ? `${dishData.calories} kcal` : "N/A",
+    allergyAlerts: dishData.allergyAlerts || [],
     images: dishData.menu_item_images.map((img) => img.imageUrl),
     chef: {
         name: dishData.users.kitchens[0]?.name || dishData.users.name || "Unknown Chef",
@@ -89,11 +90,28 @@ export default async function SingleDishPage({ params }: PageProps) {
         kri: chefKri,
         badge: "Verified Chef"
     },
-    ingredients: dishData.ingredients.map(ing => ({
-        name: ing.name,
-        icon: "wheat", // Default icon
-        detail: `${ing.quantity} ${ing.unit}` // Showing quantity as detail
-    })),
+    ingredients: dishData.ingredients.map(ing => {
+        // Smart icon selection based on ingredient name
+        let icon = "wheat"; // default
+        const nameLower = ing.name.toLowerCase();
+        if (nameLower.includes("fish") || nameLower.includes("shrimp") || nameLower.includes("prawn") || nameLower.includes("crab")) {
+            icon = "fish";
+        } else if (nameLower.includes("water") || nameLower.includes("oil") || nameLower.includes("milk") || nameLower.includes("juice")) {
+            icon = "droplets";
+        }
+        
+        // Build detail string with quantity, unit, and cost if available
+        let detail = `${ing.quantity} ${ing.unit}`;
+        if (ing.cost && ing.cost > 0) {
+            detail += ` • Cost: ৳${ing.cost.toFixed(2)}`;
+        }
+        
+        return {
+            name: ing.name,
+            icon: icon,
+            detail: detail
+        };
+    }),
     // No reviews table yet, providing empty array
     reviews: [] as any[]
   };
@@ -195,19 +213,23 @@ export default async function SingleDishPage({ params }: PageProps) {
                 {dish.description}
               </p>
 
-              {/* Allergen Info */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3 mb-6">
-                <AlertTriangle size={20} className="text-yellow-600 mt-0.5" />
-                <div>
-                  <h4 className="text-xs font-bold text-yellow-800 uppercase tracking-wide">
-                    Allergen Information
-                  </h4>
-                  <p className="text-sm text-yellow-900 mt-1">
-                    Contains:{" "}
-                    <span className="font-bold">Fish, Mustard Seeds</span>
-                  </p>
+              {/* Allergy Alerts */}
+              {dish.allergyAlerts && dish.allergyAlerts.length > 0 && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3 mb-6">
+                  <AlertTriangle size={20} className="text-yellow-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-xs font-bold text-yellow-800 uppercase tracking-wide">
+                      Allergy Alerts
+                    </h4>
+                    <p className="text-sm text-yellow-900 mt-1">
+                      Contains:{" "}
+                      <span className="font-bold">
+                        {dish.allergyAlerts.join(", ")}
+                      </span>
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Ingredient Transparency (Client) */}

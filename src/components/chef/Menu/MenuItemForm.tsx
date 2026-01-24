@@ -29,6 +29,7 @@ interface MenuItem {
   calories?: number;
   spiciness?: string;
   isVegetarian?: boolean;
+  allergyAlerts?: string[];
   images?: MenuImage[];
   ingredients?: Ingredient[];
   deletedImageIds?: string[];
@@ -63,6 +64,10 @@ export default function MenuItemForm({
     spiciness: item?.spiciness || "Medium",
     isVegetarian: item?.isVegetarian || false,
   });
+
+  const [allergyAlerts, setAllergyAlerts] = useState<string[]>(
+    item?.allergyAlerts || []
+  );
 
   const [images, setImages] = useState<
     Array<{
@@ -114,6 +119,7 @@ export default function MenuItemForm({
     const menuItem: MenuItem = {
       id: item?.id,
       ...formData,
+      allergyAlerts: allergyAlerts,
       images: images,
       ingredients: ingredients,
       deletedImageIds: deletedImageIds,
@@ -395,6 +401,53 @@ export default function MenuItemForm({
                   Vegetarian
                 </span>
               </label>
+            </div>
+          </div>
+
+          {/* Allergy Alerts */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">
+              Allergy Alerts
+            </label>
+            <p className="text-xs text-gray-500 mb-3">
+              Add common allergens that users should be aware of (e.g., Nuts, Dairy, Gluten, Shellfish)
+            </p>
+            <div className="space-y-2">
+              {allergyAlerts.map((alert, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={alert}
+                    onChange={(e) => {
+                      const updated = [...allergyAlerts];
+                      updated[index] = e.target.value;
+                      setAllergyAlerts(updated);
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                    placeholder="e.g., Nuts, Dairy, Gluten"
+                    disabled={uploading || isLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAllergyAlerts(allergyAlerts.filter((_, i) => i !== index));
+                    }}
+                    className="p-2 text-red-600 hover:bg-red-50 rounded transition"
+                    disabled={uploading || isLoading}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setAllergyAlerts([...allergyAlerts, ""])}
+                className="flex items-center gap-1 text-sm text-teal-600 font-medium hover:text-teal-700"
+                disabled={uploading || isLoading}
+              >
+                <Plus size={16} />
+                Add Allergy Alert
+              </button>
             </div>
           </div>
 
