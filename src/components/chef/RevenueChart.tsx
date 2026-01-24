@@ -15,33 +15,39 @@ interface RevenueChartProps {
   isLoading?: boolean;
 }
 
-const defaultData: RevenueData[] = [
-  { month: "Jan", revenue: 4200 },
-  { month: "Feb", revenue: 3800 },
-  { month: "Mar", revenue: 5200 },
-  { month: "Apr", revenue: 4800 },
-  { month: "May", revenue: 6100 },
-  { month: "Jun", revenue: 5900 },
-  { month: "Jul", revenue: 7200 },
-  { month: "Aug", revenue: 6800 },
-  { month: "Sep", revenue: 7500 },
-  { month: "Oct", revenue: 8200 },
-  { month: "Nov", revenue: 8900 },
-  { month: "Dec", revenue: 9100 },
-];
+// Static month structure - always rendered
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// Default empty data structure - static, doesn't need to load
+const getEmptyData = (): RevenueData[] => {
+  return MONTHS.map((month) => ({ month, revenue: 0 }));
+};
 
 export default function RevenueChart({
-  data = defaultData,
+  data,
   currency = "৳",
   title = "Monthly Revenue",
   isLoading = false,
 }: RevenueChartProps) {
+  // Use provided data or empty structure - chart structure is always static
+  const chartData = useMemo(() => {
+    if (!data || data.length === 0) {
+      return getEmptyData();
+    }
+    // Ensure we have all 12 months, fill missing ones with 0
+    const dataMap = new Map(data.map((d) => [d.month, d.revenue]));
+    return MONTHS.map((month) => ({
+      month,
+      revenue: dataMap.get(month) || 0,
+    }));
+  }, [data]);
+
   const stats = useMemo(() => {
-    const maxRevenue = Math.max(...data.map((d) => d.revenue));
-    const totalRevenue = data.reduce((sum, d) => sum + d.revenue, 0);
-    const avgRevenue = Math.round(totalRevenue / data.length);
-    const lastMonthRevenue = data[data.length - 1]?.revenue || 0;
-    const prevMonthRevenue = data[data.length - 2]?.revenue || 0;
+    const maxRevenue = Math.max(...chartData.map((d) => d.revenue), 1); // Min 1 to avoid division by zero
+    const totalRevenue = chartData.reduce((sum, d) => sum + d.revenue, 0);
+    const avgRevenue = Math.round(totalRevenue / chartData.length);
+    const lastMonthRevenue = chartData[chartData.length - 1]?.revenue || 0;
+    const prevMonthRevenue = chartData[chartData.length - 2]?.revenue || 0;
     const growthRate =
       prevMonthRevenue > 0
         ? Math.round(((lastMonthRevenue - prevMonthRevenue) / prevMonthRevenue) * 100)
@@ -53,23 +59,7 @@ export default function RevenueChart({
       avgRevenue,
       growthRate,
     };
-  }, [data]);
-
-  if (isLoading) {
-    return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-6" />
-        <div className="space-y-3">
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex items-center gap-4">
-              <div className="h-4 w-12 bg-gray-100 rounded animate-pulse" />
-              <div className="flex-1 h-8 bg-gray-200 rounded animate-pulse" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  }, [chartData]);
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
@@ -82,7 +72,11 @@ export default function RevenueChart({
         <div className="text-right">
           <p className="text-sm text-gray-500">Total This Year</p>
           <p className="text-2xl font-bold text-gray-900">
-            {currency} {(stats.totalRevenue / 1000).toFixed(1)}K
+            {isLoading ? (
+              <span className="inline-block h-8 w-20 bg-gray-200 rounded animate-pulse" />
+            ) : (
+              `${currency} ${(stats.totalRevenue / 1000).toFixed(1)}K`
+            )}
           </p>
         </div>
       </div>
@@ -94,7 +88,11 @@ export default function RevenueChart({
             Average Monthly
           </p>
           <p className="text-lg font-bold text-gray-900 mt-1">
-            {currency} {stats.avgRevenue.toLocaleString()}
+            {isLoading ? (
+              <span className="inline-block h-6 w-16 bg-gray-200 rounded animate-pulse" />
+            ) : (
+              `${currency} ${stats.avgRevenue.toLocaleString()}`
+            )}
           </p>
         </div>
         <div>
@@ -102,7 +100,11 @@ export default function RevenueChart({
             Highest Month
           </p>
           <p className="text-lg font-bold text-gray-900 mt-1">
-            {currency} {stats.maxRevenue.toLocaleString()}
+            {isLoading ? (
+              <span className="inline-block h-6 w-16 bg-gray-200 rounded animate-pulse" />
+            ) : (
+              `${currency} ${stats.maxRevenue.toLocaleString()}`
+            )}
           </p>
         </div>
         <div>
@@ -110,14 +112,18 @@ export default function RevenueChart({
             Growth vs Previous
           </p>
           <div className="flex items-center gap-1 mt-1">
-            <p
-              className={`text-lg font-bold ${
-                stats.growthRate >= 0 ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {stats.growthRate >= 0 ? "+" : ""}
-              {stats.growthRate}%
-            </p>
+            {isLoading ? (
+              <span className="inline-block h-6 w-12 bg-gray-200 rounded animate-pulse" />
+            ) : (
+              <p
+                className={`text-lg font-bold ${
+                  stats.growthRate >= 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {stats.growthRate >= 0 ? "+" : ""}
+                {stats.growthRate}%
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -126,36 +132,60 @@ export default function RevenueChart({
       <div className="mb-4">
         {/* Y-Axis Label */}
         <div className="flex items-end gap-3 h-60">
-          {/* Y-Axis Values */}
+          {/* Y-Axis Values - Static structure, dynamic values */}
           <div className="flex flex-col justify-between text-xs text-gray-400 font-medium min-w-fit pb-2">
-            <span>{currency} {(stats.maxRevenue / 1000).toFixed(1)}K</span>
-            <span>{currency} {(stats.maxRevenue / 2000).toFixed(1)}K</span>
-            <span>0</span>
+            {isLoading ? (
+              <>
+                <span className="inline-block h-4 w-12 bg-gray-200 rounded animate-pulse" />
+                <span className="inline-block h-4 w-12 bg-gray-200 rounded animate-pulse" />
+                <span>0</span>
+              </>
+            ) : (
+              <>
+                <span>{currency} {(stats.maxRevenue / 1000).toFixed(1)}K</span>
+                <span>{currency} {(stats.maxRevenue / 2000).toFixed(1)}K</span>
+                <span>0</span>
+              </>
+            )}
           </div>
 
-          {/* Bars Container */}
+          {/* Bars Container - Static structure, only values update */}
           <div className="flex-1 flex items-end justify-between gap-2 px-2">
-            {data.map((item) => {
-              const heightPercentage = (item.revenue / stats.maxRevenue) * 100;
+            {chartData.map((item) => {
+              const heightPercentage = stats.maxRevenue > 0 
+                ? (item.revenue / stats.maxRevenue) * 100 
+                : 0;
+              const isZero = item.revenue === 0;
+              
               return (
                 <div
                   key={item.month}
                   className="flex-1 flex flex-col items-center group"
                 >
-                  {/* Bar */}
+                  {/* Bar - Always rendered, height updates with data */}
                   <div className="w-full relative h-48 flex items-end">
-                    <div
-                      className="w-full bg-gradient-to-t from-teal-600 to-teal-400 rounded-t-lg transition-all hover:from-teal-700 hover:to-teal-500 cursor-pointer shadow-sm"
-                      style={{ height: `${heightPercentage}%` }}
-                    >
-                      {/* Tooltip */}
-                      <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
-                        {currency} {item.revenue.toLocaleString()}
+                    {isLoading && isZero ? (
+                      <div className="w-full h-2 bg-gray-200 rounded-t-lg animate-pulse" />
+                    ) : (
+                      <div
+                        className={`w-full rounded-t-lg transition-all ${
+                          isZero 
+                            ? "bg-gray-100" 
+                            : "bg-gradient-to-t from-teal-600 to-teal-400 hover:from-teal-700 hover:to-teal-500 cursor-pointer shadow-sm"
+                        }`}
+                        style={{ height: `${Math.max(heightPercentage, 2)}%` }} // Min 2% so bar is visible even when 0
+                      >
+                        {/* Tooltip - Only show if not zero */}
+                        {!isZero && (
+                          <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">
+                            {currency} {item.revenue.toLocaleString()}
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    )}
                   </div>
 
-                  {/* X-Axis Label */}
+                  {/* X-Axis Label - Static, always visible */}
                   <p className="text-xs font-medium text-gray-600 mt-3">
                     {item.month}
                   </p>

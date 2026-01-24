@@ -25,17 +25,22 @@ export default function ChefDashboard() {
   } = useChefDashboard();
 
   // Memoize data to prevent recalculation
+  // Use empty structure for monthlyRevenue when loading so chart structure renders immediately
   const data = useMemo(() => {
-    return dashboardData || {
-      revenueToday: CHEF_STATS.revenueToday,
-      revenueTodayAmount: 2450,
-      activeOrders: CHEF_STATS.activeOrders,
-      kriScore: CHEF_STATS.kriScore,
-      kriScoreAmount: 98,
-      kitchenOpen: true,
-      monthlyRevenue: CHEF_STATS.monthlyRevenue,
-      revenueTrend: 12,
-    };
+    if (!dashboardData) {
+      // Return structure with empty monthly revenue so chart renders immediately
+      return {
+        revenueToday: "৳ 0",
+        revenueTodayAmount: 0,
+        activeOrders: 0,
+        kriScore: "0/100",
+        kriScoreAmount: 0,
+        kitchenOpen: true,
+        monthlyRevenue: [], // Empty array - chart will use static structure
+        revenueTrend: 0,
+      };
+    }
+    return dashboardData;
   }, [dashboardData]);
 
   const displayNotifications = useMemo(() => {

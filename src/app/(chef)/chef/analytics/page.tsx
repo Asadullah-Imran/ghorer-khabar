@@ -67,79 +67,133 @@ const KPICard = memo(({ icon: Icon, label, value, growth, color, isLoading }: {
 
 KPICard.displayName = 'KPICard';
 
-// Memoized Top Dish Item
-const TopDishItem = memo(({ dish, index }: { dish: any; index: number }) => (
-  <div>
-    <div className="flex items-center justify-between mb-2">
-      <div className="flex items-center gap-2">
-        <span className="text-2xl font-black text-yellow-500">#{index + 1}</span>
-        <span className="font-semibold text-gray-900">{dish.name}</span>
+// Memoized Top Dish Item - Structure always visible
+const TopDishItem = memo(({ dish, index }: { dish: any; index: number }) => {
+  const name = dish?.name || "Loading...";
+  const sales = dish?.sales || 0;
+  const percentage = dish?.percentage || 0;
+  
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className="text-2xl font-black text-yellow-500">#{index + 1}</span>
+          <span className="font-semibold text-gray-900">
+            {name === "Loading..." ? (
+              <span className="inline-block h-4 w-24 bg-gray-200 rounded animate-pulse" />
+            ) : (
+              name
+            )}
+          </span>
+        </div>
+        <span className="text-sm font-bold text-gray-600">
+          {sales > 0 ? `${sales} orders` : "—"}
+        </span>
       </div>
-      <span className="text-sm font-bold text-gray-600">{dish.sales} orders</span>
+      <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${
+            percentage > 0 
+              ? "bg-gradient-to-r from-yellow-400 to-yellow-500" 
+              : "bg-gray-100"
+          }`}
+          style={{ width: `${Math.max(percentage, 0)}%` }}
+        ></div>
+      </div>
     </div>
-    <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
-      <div
-        className="h-full bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full transition-all duration-500"
-        style={{ width: `${dish.percentage}%` }}
-      ></div>
-    </div>
-  </div>
-));
+  );
+});
 
 TopDishItem.displayName = 'TopDishItem';
 
-// Memoized Chart Component
+// Memoized Chart Component - Static structure, dynamic values
 const RevenueChart = memo(({ data, isLoading }: { data: any; isLoading?: boolean }) => {
-  if (isLoading) {
-    return <div className="h-64 bg-gray-200 animate-pulse rounded"></div>;
-  }
+  // Static week structure - always render
+  const weeks = data?.weeks || ["Week 1", "Week 2", "Week 3", "Week 4"];
+  const revenue = data?.revenue || [0, 0, 0, 0];
+  const profit = data?.profit || [0, 0, 0, 0];
+  
+  // Calculate max for scaling (min 1 to avoid division by zero)
+  const maxValue = Math.max(...revenue, ...profit, 50000);
 
   return (
     <div className="relative h-64">
-      {/* Y-axis labels */}
+      {/* Y-axis labels - Static structure, dynamic values */}
       <div className="absolute left-0 top-0 bottom-8 flex flex-col justify-between text-xs text-gray-500 pr-2">
-        <span>৳50K</span>
-        <span>৳40K</span>
-        <span>৳30K</span>
-        <span>৳20K</span>
-        <span>৳10K</span>
-        <span>৳0</span>
+        {isLoading ? (
+          <>
+            <span className="inline-block h-3 w-10 bg-gray-200 rounded animate-pulse" />
+            <span className="inline-block h-3 w-10 bg-gray-200 rounded animate-pulse" />
+            <span className="inline-block h-3 w-10 bg-gray-200 rounded animate-pulse" />
+            <span className="inline-block h-3 w-10 bg-gray-200 rounded animate-pulse" />
+            <span className="inline-block h-3 w-10 bg-gray-200 rounded animate-pulse" />
+            <span>৳0</span>
+          </>
+        ) : (
+          <>
+            <span>৳{(maxValue / 1000).toFixed(0)}K</span>
+            <span>৳{(maxValue / 1.25 / 1000).toFixed(0)}K</span>
+            <span>৳{(maxValue / 2 / 1000).toFixed(0)}K</span>
+            <span>৳{(maxValue / 4 / 1000).toFixed(0)}K</span>
+            <span>৳{(maxValue / 5 / 1000).toFixed(0)}K</span>
+            <span>৳0</span>
+          </>
+        )}
       </div>
 
-      {/* Chart Area */}
+      {/* Chart Area - Static structure, dynamic bar heights */}
       <div className="ml-12 h-full flex items-end justify-between gap-4 border-l-2 border-b-2 border-gray-300 pl-4 pb-8">
-        {data.weeks.map((week: string, index: number) => {
-          const revenueHeight = (data.revenue[index] / 50000) * 100;
-          const profitHeight = (data.profit[index] / 50000) * 100;
+        {weeks.map((week: string, index: number) => {
+          const revenueHeight = maxValue > 0 ? (revenue[index] / maxValue) * 100 : 0;
+          const profitHeight = maxValue > 0 ? (profit[index] / maxValue) * 100 : 0;
+          const isZero = revenue[index] === 0 && profit[index] === 0;
 
           return (
             <div key={week} className="flex-1 relative h-full flex flex-col justify-end">
-              {/* Revenue Bar */}
-              <div
-                className="w-full bg-yellow-400 rounded-t relative group cursor-pointer hover:bg-yellow-500 transition"
-                style={{ height: `${revenueHeight}%` }}
-              >
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-                  ৳{(data.revenue[index] / 1000).toFixed(0)}K
+              {/* Revenue Bar - Always rendered */}
+              {isLoading && isZero ? (
+                <div className="w-full h-2 bg-gray-200 rounded-t animate-pulse" />
+              ) : (
+                <div
+                  className={`w-full rounded-t relative group transition ${
+                    isZero 
+                      ? "bg-gray-100" 
+                      : "bg-yellow-400 hover:bg-yellow-500 cursor-pointer"
+                  }`}
+                  style={{ height: `${Math.max(revenueHeight, 2)}%` }}
+                >
+                  {!isZero && revenue[index] > 0 && (
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                      ৳{(revenue[index] / 1000).toFixed(0)}K
+                    </div>
+                  )}
                 </div>
-              </div>
-              {/* Profit Bar Overlay */}
-              <div
-                className="w-full bg-teal-700 rounded-t absolute bottom-0 left-0 group cursor-pointer hover:bg-teal-800 transition"
-                style={{ height: `${profitHeight}%` }}
-              >
-                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
-                  ৳{(data.profit[index] / 1000).toFixed(0)}K
+              )}
+              {/* Profit Bar Overlay - Always rendered */}
+              {!isLoading && (
+                <div
+                  className={`w-full rounded-t absolute bottom-0 left-0 group transition ${
+                    isZero 
+                      ? "bg-gray-100" 
+                      : "bg-teal-700 hover:bg-teal-800 cursor-pointer"
+                  }`}
+                  style={{ height: `${Math.max(profitHeight, 2)}%` }}
+                >
+                  {!isZero && profit[index] > 0 && (
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+                      ৳{(profit[index] / 1000).toFixed(0)}K
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
           );
         })}
       </div>
 
-      {/* X-axis labels */}
+      {/* X-axis labels - Static, always visible */}
       <div className="ml-12 mt-2 flex justify-between text-xs text-gray-600 font-semibold">
-        {data.weeks.map((week: string) => (
+        {weeks.map((week: string) => (
           <span key={week} className="flex-1 text-center">{week}</span>
         ))}
       </div>
@@ -157,10 +211,18 @@ export default function AnalyticsPage() {
   const [dateRange, setDateRange] = useState("Last 30 Days");
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   
-  // State for actual data from API
-  const [kpiData, setKpiData] = useState(ANALYTICS_DATA.kpis);
-  const [chartData, setChartData] = useState(ANALYTICS_DATA.revenueChart);
-  const [topDishes, setTopDishes] = useState(ANALYTICS_DATA.topDishes);
+  // State for actual data from API - start with empty structures for instant rendering
+  const [kpiData, setKpiData] = useState({
+    totalRevenue: 0,
+    totalOrders: 0,
+    avgRating: 0,
+  });
+  const [chartData, setChartData] = useState({
+    weeks: ["Week 1", "Week 2", "Week 3", "Week 4"],
+    revenue: [0, 0, 0, 0],
+    profit: [0, 0, 0, 0],
+  });
+  const [topDishes, setTopDishes] = useState<any[]>([]);
   const [reviewInsights, setReviewInsights] = useState<ReviewInsights>({
     summary: { total_reviews: 0, positive_count: 0, negative_count: 0, neutral_count: 0, avg_rating: 0 },
     positive_themes: [],
@@ -350,23 +412,23 @@ export default function AnalyticsPage() {
           <KPICard
             icon={DollarSign}
             label="Total Revenue"
-            value={`৳${kpiData.totalRevenue.toLocaleString()}`}
+            value={kpisLoading ? "..." : `৳${kpiData.totalRevenue.toLocaleString()}`}
             color="bg-yellow-100"
-            isLoading={kpisLoading}
+            isLoading={kpisLoading && kpiData.totalRevenue === 0}
           />
           <KPICard
             icon={ShoppingBag}
             label="Total Orders"
-            value={kpiData.totalOrders.toString()}
+            value={kpisLoading ? "..." : kpiData.totalOrders.toString()}
             color="bg-blue-100"
-            isLoading={kpisLoading}
+            isLoading={kpisLoading && kpiData.totalOrders === 0}
           />
           <KPICard
             icon={Star}
             label="Avg. Rating"
-            value={`${kpiData.avgRating}`}
+            value={kpisLoading ? "..." : `${kpiData.avgRating}`}
             color="bg-orange-100"
-            isLoading={kpisLoading}
+            isLoading={kpisLoading && kpiData.avgRating === 0}
           />
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
             <p className="text-xs text-gray-600 mb-3">Customer Retention</p>
@@ -461,19 +523,25 @@ export default function AnalyticsPage() {
             </button>
           </div>
           
-          {dishesLoading ? (
-            <div className="space-y-5">
-              {[1, 2, 3, 4].map((i) => (
+          {/* Always show structure - render empty state or data */}
+          <div className="space-y-5">
+            {dishesLoading && topDishes.length === 0 ? (
+              // Show skeleton only if no data at all
+              [1, 2, 3, 4].map((i) => (
                 <div key={i} className="h-14 bg-gray-200 animate-pulse rounded"></div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-5">
-              {topDishes.map((dish, index) => (
-                <TopDishItem key={dish.name} dish={dish} index={index} />
-              ))}
-            </div>
-          )}
+              ))
+            ) : topDishes.length > 0 ? (
+              // Show actual dishes
+              topDishes.map((dish, index) => (
+                <TopDishItem key={dish.name || `dish-${index}`} dish={dish} index={index} />
+              ))
+            ) : (
+              // Empty state - structure visible but no data
+              <div className="text-center py-8">
+                <p className="text-gray-500">No dish data available yet.</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
