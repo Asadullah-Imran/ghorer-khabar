@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
 import {
   ArrowRight,
   Edit2,
@@ -15,9 +16,21 @@ import { useState } from "react";
 export default function MenuSection({ data, isOwnProfile = false }: { data: any; isOwnProfile?: boolean }) {
   const [activeCategory, setActiveCategory] = useState("All Items");
   const [searchQuery, setSearchQuery] = useState("");
+  const toast = useToast();
   
   // Check if user owns this kitchen (cannot order from own kitchen)
   const isOwner = data?.isOwner || false;
+
+  const handleAddClick = (e: React.MouseEvent, itemName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isOwner) {
+      toast.error(
+        "Cannot Add Dish",
+        "You cannot add your own dishes to cart"
+      );
+    }
+  };
 
   const categories = ["All Items", "Meals", "Snacks", "Desserts"];
 
@@ -113,7 +126,7 @@ export default function MenuSection({ data, isOwnProfile = false }: { data: any;
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-teal-700">৳{item.price}</span>
                   <button 
-                    disabled={isOwner}
+                    onClick={(e) => handleAddClick(e, item.name)}
                     className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1 transition-colors ${
                       isOwner 
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
@@ -259,7 +272,7 @@ export default function MenuSection({ data, isOwnProfile = false }: { data: any;
                   <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                     <span className="font-bold text-teal-700">৳{item.price}</span>
                     <button 
-                      disabled={isOwner}
+                      onClick={(e) => handleAddClick(e, item.name)}
                       className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1 transition-colors ${
                         isOwner 
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed" 

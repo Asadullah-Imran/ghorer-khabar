@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma/prisma";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { calculateKRI } from "@/lib/services/kriCalculation";
 
 async function getAuthenticatedChefId() {
   const supabase = await createClient();
@@ -64,7 +65,6 @@ export async function GET() {
         id: true,
         name: true,
         isOpen: true,
-        kriScore: true,
         totalRevenue: true,
         totalOrders: true,
         rating: true,
@@ -133,12 +133,22 @@ export async function GET() {
       revenueTrend = 100;
     }
 
+    // Calculate KRI score (on-the-fly calculation)
+    let kriScore = 0;
+    try {
+      const kriResult = await calculateKRI(kitchen.id);
+      kriScore = kriResult.kriScore;
+    } catch (error) {
+      console.error("Error calculating KRI for dashboard metrics:", error);
+      // Fallback to 0 if calculation fails
+    }
+
     const dashboardData = {
       revenueToday: `৳ ${todayRevenue.toLocaleString()}`,
       revenueTodayAmount: todayRevenue,
       activeOrders: activeOrders.length,
-      kriScore: `${kitchen.kriScore || 0}/100`,
-      kriScoreAmount: kitchen.kriScore || 0,
+      kriScore: `${kriScore}/100`,
+      kriScoreAmount: kriScore,
       kitchenOpen: kitchen.isOpen,
       monthlyRevenue,
       revenueTrend,

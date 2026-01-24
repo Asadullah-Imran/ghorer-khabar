@@ -167,7 +167,7 @@ export async function PATCH(
       `/orders/${id}/track` // Add tracking URL
     );
 
-    // If status is COMPLETED, add revenue to kitchen
+    // If status is COMPLETED, add revenue to kitchen and update KRI
     if (status === "COMPLETED") {
       // Calculate chef revenue: items total - platform fee (৳10)
       // Import the calculation function
@@ -185,6 +185,15 @@ export async function PATCH(
           },
         },
       });
+
+      // Update KRI score after order completion (async, don't wait)
+      // This ensures KRI reflects latest order completion and delivery performance
+      import("@/lib/services/kriCalculation")
+        .then(({ updateKRIScore }) => updateKRIScore(kitchen.id))
+        .catch((error) => {
+          console.error("Error updating KRI after order completion:", error);
+          // Don't fail the order completion if KRI update fails
+        });
 
       // Notify kitchen about payment
       await createNotification({
