@@ -231,6 +231,7 @@ export async function DELETE(req: NextRequest) {
     });
 
     if (!notification) {
+      console.warn(`[Notifications DELETE] Notification ${notificationId} not found`);
       return NextResponse.json(
         { error: "Notification not found" },
         { status: 404 }
@@ -238,6 +239,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     if (notification.kitchenId !== kitchen.id) {
+      console.warn(`[Notifications DELETE] Unauthorized: Notification ${notificationId} belongs to kitchen ${notification.kitchenId}, but user ${userId} owns kitchen ${kitchen.id}`);
       return NextResponse.json(
         { error: "Unauthorized to delete this notification" },
         { status: 403 }

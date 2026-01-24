@@ -1,14 +1,14 @@
 "use client";
 
 import {
-  AlertCircle,
-  Bell,
-  CheckCircle,
-  Clock,
-  Info,
-  X,
+    AlertCircle,
+    Bell,
+    CheckCircle,
+    Clock,
+    Info,
+    X,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type NotificationType = "info" | "success" | "warning" | "error";
 
@@ -118,6 +118,10 @@ export default function NotificationFeed({
   }, [notifications]);
 
   const handleDismiss = async (id: string) => {
+    // Optimistically update UI
+    const previousItems = [...items];
+    setItems((currentItems) => currentItems.filter((item) => item.id !== id));
+
     try {
       const response = await fetch(`/api/chef/dashboard/notifications?id=${id}`, {
         method: "DELETE",
@@ -125,13 +129,17 @@ export default function NotificationFeed({
       });
 
       if (response.ok) {
-        setItems(items.filter((item) => item.id !== id));
         onDismiss?.(id);
       } else {
-        console.error("Failed to dismiss notification");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Failed to dismiss notification:", errorData.error || response.statusText);
+        // Revert on error
+        setItems(previousItems);
       }
     } catch (error) {
       console.error("Error dismissing notification:", error);
+      // Revert on error
+      setItems(previousItems);
     }
   };
 
