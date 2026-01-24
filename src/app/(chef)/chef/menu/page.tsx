@@ -155,7 +155,7 @@ export default function MenuPage() {
   }, [menuItems]);
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-6 md:p-8 space-y-8">
       {/* Loading State - Inline */}
       {loading ? (
         <Loading variant="inline" size="lg" />
@@ -174,7 +174,7 @@ export default function MenuPage() {
                 setEditingItem(undefined);
                 setIsFormOpen(true);
               }}
-              className="flex items-center gap-2 px-6 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition shadow-md"
+              className="flex items-center gap-2 px-6 py-3 bg-teal-700 text-white font-semibold rounded-lg hover:bg-teal-800 transition shadow-md"
             >
               <Plus size={20} />
               Add New Item

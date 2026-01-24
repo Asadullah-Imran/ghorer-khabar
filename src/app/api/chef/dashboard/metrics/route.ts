@@ -82,45 +82,57 @@ export async function GET() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const todayOrders = await prisma.order.findMany({
-      where: {
-        kitchenId: kitchen.id,
-        createdAt: { gte: today },
-        status: { in: ["CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"] },
-      },
-      select: { total: true },
-    });
-
-    const todayRevenue = todayOrders.reduce((sum, order) => sum + order.total, 0);
-
-    // Get active orders (PENDING or PREPARING)
-    const activeOrders = await prisma.order.findMany({
-      where: {
-        kitchenId: kitchen.id,
-        status: { in: ["PENDING", "CONFIRMED", "PREPARING"] },
-      },
-      select: { id: true },
-    });
-
-    // Get monthly revenue for the last 12 months
-    const monthlyRevenue = await getMonthlyRevenue(kitchen.id);
-
-    // Get yesterday's revenue for trend calculation
+    // Get yesterday's date range for trend calculation
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
     yesterday.setHours(0, 0, 0, 0);
     const yesterdayEnd = new Date(yesterday);
     yesterdayEnd.setHours(23, 59, 59, 999);
 
-    const yesterdayOrders = await prisma.order.findMany({
-      where: {
-        kitchenId: kitchen.id,
-        createdAt: { gte: yesterday, lte: yesterdayEnd },
-        status: { in: ["CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"] },
-      },
-      select: { total: true },
-    });
+    // Run all independent queries in parallel for better performance
+    const [
+      todayOrders,
+      activeOrders,
+      yesterdayOrders,
+      monthlyRevenue,
+      kriResult,
+    ] = await Promise.all([
+      // Today's revenue
+      prisma.order.findMany({
+        where: {
+          kitchenId: kitchen.id,
+          createdAt: { gte: today },
+          status: { in: ["CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"] },
+        },
+        select: { total: true },
+      }),
+      // Active orders count
+      prisma.order.findMany({
+        where: {
+          kitchenId: kitchen.id,
+          status: { in: ["PENDING", "CONFIRMED", "PREPARING"] },
+        },
+        select: { id: true },
+      }),
+      // Yesterday's revenue
+      prisma.order.findMany({
+        where: {
+          kitchenId: kitchen.id,
+          createdAt: { gte: yesterday, lte: yesterdayEnd },
+          status: { in: ["CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"] },
+        },
+        select: { total: true },
+      }),
+      // Monthly revenue (optimized)
+      getMonthlyRevenue(kitchen.id),
+      // KRI calculation (with error handling)
+      calculateKRI(kitchen.id).catch((error) => {
+        console.error("Error calculating KRI for dashboard metrics:", error);
+        return { kriScore: 0 };
+      }),
+    ]);
 
+    const todayRevenue = todayOrders.reduce((sum, order) => sum + order.total, 0);
     const yesterdayRevenue = yesterdayOrders.reduce((sum, order) => sum + order.total, 0);
 
     // Calculate trend percentage
@@ -133,15 +145,7 @@ export async function GET() {
       revenueTrend = 100;
     }
 
-    // Calculate KRI score (on-the-fly calculation)
-    let kriScore = 0;
-    try {
-      const kriResult = await calculateKRI(kitchen.id);
-      kriScore = kriResult.kriScore;
-    } catch (error) {
-      console.error("Error calculating KRI for dashboard metrics:", error);
-      // Fallback to 0 if calculation fails
-    }
+    const kriScore = kriResult.kriScore || 0;
 
     const dashboardData = {
       revenueToday: `৳ ${todayRevenue.toLocaleString()}`,
@@ -216,9 +220,9 @@ export async function PATCH(req: NextRequest) {
 
 /**
  * Helper function to calculate monthly revenue for the last 12 months
+ * Optimized to use a single query instead of 12 sequential queries
  */
 async function getMonthlyRevenue(kitchenId: string) {
-  const monthlyData = [];
   const months = [
     "Jan",
     "Feb",
@@ -234,25 +238,51 @@ async function getMonthlyRevenue(kitchenId: string) {
     "Dec",
   ];
 
+  // Calculate date range for last 12 months
+  const twelveMonthsAgo = new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+  twelveMonthsAgo.setDate(1);
+  twelveMonthsAgo.setHours(0, 0, 0, 0);
+
+  // Single query to get all orders from last 12 months
+  const orders = await prisma.order.findMany({
+    where: {
+      kitchenId,
+      createdAt: { gte: twelveMonthsAgo },
+      status: { in: ["CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"] },
+    },
+    select: {
+      total: true,
+      createdAt: true,
+    },
+  });
+
+  // Group orders by month and calculate revenue
+  const monthlyRevenueMap = new Map<string, number>();
+  
+  // Initialize all 12 months with 0 revenue
   for (let i = 11; i >= 0; i--) {
     const date = new Date();
     date.setMonth(date.getMonth() - i);
-    date.setDate(1);
-    date.setHours(0, 0, 0, 0);
+    const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+    monthlyRevenueMap.set(monthKey, 0);
+  }
 
-    const nextMonth = new Date(date);
-    nextMonth.setMonth(nextMonth.getMonth() + 1);
+  // Sum revenue by month
+  for (const order of orders) {
+    const orderDate = new Date(order.createdAt);
+    const monthKey = `${orderDate.getFullYear()}-${orderDate.getMonth()}`;
+    const currentRevenue = monthlyRevenueMap.get(monthKey) || 0;
+    monthlyRevenueMap.set(monthKey, currentRevenue + order.total);
+  }
 
-    const orders = await prisma.order.findMany({
-      where: {
-        kitchenId,
-        createdAt: { gte: date, lt: nextMonth },
-        status: { in: ["CONFIRMED", "PREPARING", "DELIVERING", "COMPLETED"] },
-      },
-      select: { total: true },
-    });
-
-    const revenue = orders.reduce((sum, order) => sum + order.total, 0);
+  // Convert map to array format
+  const monthlyData = [];
+  for (let i = 11; i >= 0; i--) {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+    const revenue = monthlyRevenueMap.get(monthKey) || 0;
 
     monthlyData.push({
       month: months[date.getMonth()],

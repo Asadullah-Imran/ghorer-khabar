@@ -43,7 +43,7 @@ export default function ChefDashboard() {
   }, [notifications]);
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-6 md:p-8 space-y-8">
       {/* Header Section - Always visible, static content */}
       <div className="flex items-center justify-between">
         <div>
@@ -61,63 +61,47 @@ export default function ChefDashboard() {
         )}
       </div>
 
-      {/* Key Metrics Grid - Show skeleton only if metrics are loading */}
-      {loadingMetrics && !dashboardData ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="h-4 w-24 bg-gray-200 rounded animate-pulse" />
-                <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
-              </div>
-              <div className="mb-4">
-                <div className="h-8 w-32 bg-gray-200 rounded animate-pulse mb-2" />
-                <div className="h-3 w-20 bg-gray-100 rounded animate-pulse" />
-              </div>
-              <div className="pt-4 border-t border-gray-100">
-                <div className="h-3 w-28 bg-gray-100 rounded animate-pulse" />
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Today's Revenue */}
-          <MemoizedStatCard
-            title="Today's Revenue"
-            value={data.revenueToday}
-            subtitle="Last 24 hours"
-            icon={<Banknote size={24} />}
-            iconColor="text-green-600"
-            trend={{
-              value: Math.abs(data.revenueTrend),
-              isPositive: data.revenueTrend >= 0,
-            }}
-          />
+      {/* Key Metrics Grid - Always show cards, use skeleton only if no data at all */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Today's Revenue */}
+        <MemoizedStatCard
+          title="Today's Revenue"
+          value={loadingMetrics && !dashboardData ? "Loading..." : data.revenueToday}
+          subtitle="Last 24 hours"
+          icon={<Banknote size={24} />}
+          iconColor="text-green-600"
+          trend={
+            loadingMetrics && !dashboardData
+              ? undefined
+              : {
+                  value: Math.abs(data.revenueTrend),
+                  isPositive: data.revenueTrend >= 0,
+                }
+          }
+        />
 
-          {/* Active Orders */}
-          <MemoizedStatCard
-            title="Active Orders"
-            value={data.activeOrders}
-            subtitle="In progress"
-            icon={<UtensilsCrossed size={24} />}
-            iconColor="text-blue-600"
-            badge="On Track"
-            badgeColor="bg-blue-100 text-blue-800"
-          />
+        {/* Active Orders */}
+        <MemoizedStatCard
+          title="Active Orders"
+          value={loadingMetrics && !dashboardData ? "..." : data.activeOrders}
+          subtitle="In progress"
+          icon={<UtensilsCrossed size={24} />}
+          iconColor="text-blue-600"
+          badge={loadingMetrics && !dashboardData ? undefined : "On Track"}
+          badgeColor="bg-blue-100 text-blue-800"
+        />
 
-          {/* KRI Score */}
-          <MemoizedStatCard
-            title="Kitchen Reliability Index"
-            value={data.kriScore}
-            subtitle="Excellent standing"
-            icon={<Trophy size={24} />}
-            iconColor="text-yellow-600"
-            badge="Top Rated"
-            badgeColor="bg-yellow-100 text-yellow-800"
-          />
-        </div>
-      )}
+        {/* KRI Score */}
+        <MemoizedStatCard
+          title="Kitchen Reliability Index"
+          value={loadingMetrics && !dashboardData ? "..." : data.kriScore}
+          subtitle="Excellent standing"
+          icon={<Trophy size={24} />}
+          iconColor="text-yellow-600"
+          badge={loadingMetrics && !dashboardData ? undefined : "Top Rated"}
+          badgeColor="bg-yellow-100 text-yellow-800"
+        />
+      </div>
 
       {/* Error message if metrics failed to load */}
       {error && !dashboardData && (
@@ -128,47 +112,22 @@ export default function ChefDashboard() {
 
       {/* Main Content Split */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Revenue Chart - Show skeleton only if metrics are loading and no data */}
+        {/* Left Column: Revenue Chart - Always show, chart handles loading internally */}
         <div className="lg:col-span-2">
-          {loadingMetrics && !dashboardData ? (
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-              <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-6" />
-              <div className="space-y-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <div className="h-4 w-12 bg-gray-100 rounded animate-pulse" />
-                    <div className="flex-1 h-8 bg-gray-200 rounded animate-pulse" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <RevenueChart
-              data={data.monthlyRevenue}
-              currency="৳"
-              title="Monthly Revenue"
-            />
-          )}
+          <RevenueChart
+            data={data.monthlyRevenue}
+            currency="৳"
+            title="Monthly Revenue"
+            isLoading={loadingMetrics && !dashboardData}
+          />
         </div>
 
-        {/* Right Column: Notifications - Show skeleton only if notifications are loading and no data */}
+        {/* Right Column: Notifications - Always show, component handles loading */}
         <div className="lg:col-span-1">
-          {loadingNotifications && notifications.length === 0 ? (
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-              <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-6" />
-              <div className="space-y-3">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-2" />
-                    <div className="h-3 w-32 bg-gray-100 rounded animate-pulse mb-2" />
-                    <div className="h-3 w-20 bg-gray-100 rounded animate-pulse" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <NotificationFeed notifications={displayNotifications} />
-          )}
+          <NotificationFeed 
+            notifications={displayNotifications}
+            isLoading={loadingNotifications && notifications.length === 0}
+          />
         </div>
       </div>
     </div>
