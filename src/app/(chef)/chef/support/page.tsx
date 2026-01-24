@@ -1,7 +1,7 @@
- "use client";
+"use client";
 
 import { ContactForm, FAQSection } from "@/components/support/SupportInteractions";
-import { CONTACT_INFO, USER_SUPPORT_FAQS } from "@/lib/dummy-data/support";
+import { CONTACT_INFO, CHEF_SUPPORT_FAQS } from "@/lib/dummy-data/support";
 import {
   ArrowLeft,
   Mail,
@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export default function SupportPage() {
+export default function ChefSupportPage() {
   const router = useRouter();
 
   return (
@@ -47,12 +47,12 @@ export default function SupportPage() {
                 Frequently Asked Questions
               </h3>
               <p className="text-sm text-teal-700 mt-1">
-                Quick answers to common questions.
+                Quick answers to common chef questions.
               </p>
             </div>
           </div>
 
-          <FAQSection data={USER_SUPPORT_FAQS} />
+          <FAQSection data={CHEF_SUPPORT_FAQS} />
         </div>
 
         {/* 3. Right Column: Contact Info & Form */}

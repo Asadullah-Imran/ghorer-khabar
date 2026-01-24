@@ -4,6 +4,7 @@ import IngredientTransparency from "@/components/dish/IngredientTransparency";
 import ReviewSection from "@/components/dish/ReviewSection";
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
+import { calculateKRI } from "@/lib/services/kriCalculation";
 import {
     AlertTriangle,
     ChevronRight,
@@ -58,6 +59,18 @@ export default async function SingleDishPage({ params }: PageProps) {
       kitchens: dishData.users.kitchens
   });
 
+  // Calculate KRI score for the chef's kitchen (if kitchen exists)
+  let chefKri = 0;
+  if (dishData.users.kitchens[0]?.id) {
+    try {
+      const kriResult = await calculateKRI(dishData.users.kitchens[0].id);
+      chefKri = kriResult.kriScore;
+    } catch (error) {
+      console.error("Error calculating KRI for dish page:", error);
+      // Fallback to 0 if calculation fails
+    }
+  }
+
   // Map database data to UI format
   const dish = {
     id: dishData.id,
@@ -73,7 +86,7 @@ export default async function SingleDishPage({ params }: PageProps) {
         name: dishData.users.kitchens[0]?.name || dishData.users.name || "Unknown Chef",
         image: dishData.users.kitchens[0]?.profileImage || dishData.users.avatar || "https://ui-avatars.com/api/?name=Chef",
         location: dishData.users.kitchens[0]?.location || "Dhaka",
-        kri: dishData.users.kitchens[0]?.kriScore || 85,
+        kri: chefKri,
         badge: "Verified Chef"
     },
     ingredients: dishData.ingredients.map(ing => ({

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCart } from "@/components/cart/CartProvider";
+import { useToast } from "@/contexts/ToastContext";
 import { Minus, Plus, ShieldCheck, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 
@@ -28,6 +29,7 @@ export default function DishActions({
   console.log("DEBUG_DISH_ACTIONS_PROPS:", { id, kitchenId, kitchenName });
   const [qty, setQty] = useState(1);
   const { addItem } = useCart();
+  const toast = useToast();
 
   // Check if user is the creator of this dish
   const isOwnDish = !!(currentUserId && chefId && currentUserId === chefId && userRole?.includes('SELLER'));
@@ -35,6 +37,37 @@ export default function DishActions({
 
   const increment = () => setQty((prev) => prev + 1);
   const decrement = () => setQty((prev) => (prev > 1 ? prev - 1 : 1));
+
+  const handleAddToCart = () => {
+    if (!canAddToCart) {
+      if (isOwnDish) {
+        toast.error(
+          "Cannot Add Dish",
+          "You cannot add your own dishes to cart"
+        );
+      } else {
+        toast.error(
+          "Cannot Add Dish",
+          "This dish is currently unavailable"
+        );
+      }
+      return;
+    }
+
+    const result = addItem({ id, name, image, price, kitchenId, kitchenName }, qty);
+    
+    if (result.success) {
+      toast.success(
+        "Added to Cart",
+        result.message || `${qty > 1 ? `${qty}x ` : ""}${name} added to cart`
+      );
+    } else {
+      toast.error(
+        "Failed to Add",
+        result.message || "Could not add item to cart"
+      );
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-lg shadow-gray-200/50 mt-auto lg:sticky lg:bottom-6">
@@ -73,8 +106,7 @@ export default function DishActions({
                 ? "bg-gray-400 cursor-not-allowed opacity-50"
                 : "bg-teal-700 hover:bg-teal-800 text-white active:scale-[0.98]"
             }`}
-            onClick={() => canAddToCart && addItem({ id, name, image, price, kitchenId, kitchenName }, qty)}
-            disabled={!canAddToCart}
+            onClick={handleAddToCart}
             title={isOwnDish ? "You cannot add your own dishes to cart" : ""}
           >
             <ShoppingBag size={20} />

@@ -52,7 +52,7 @@ export const chefNavItems: ChefNavItem[] = [
   },
   {
     label: "Help & Support",
-    href: "/support",
+    href: "/chef/support",
     icon: <Phone size={20} />,
   },
 ];

@@ -15,9 +15,14 @@ export type CartItem = {
   kitchenReviewCount?: number;
 };
 
+type AddItemResult = {
+  success: boolean;
+  message?: string;
+};
+
 type CartContextType = {
   items: CartItem[];
-  addItem: (item: Omit<CartItem, "quantity">, qty?: number) => void;
+  addItem: (item: Omit<CartItem, "quantity">, qty?: number) => AddItemResult;
   incrementItem: (id: string, delta?: number) => void;
   removeItem: (id: string) => void;
   removeItemsByKitchen: (kitchenId: string) => void;
@@ -59,8 +64,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, isInitialized]);
 
-  const addItem = (item: Omit<CartItem, "quantity">, qty: number = 1) => {
+  const addItem = (item: Omit<CartItem, "quantity">, qty: number = 1): AddItemResult => {
     console.log("DEBUG_CART_ADD_ITEM:", item);
+    
+    // Validation: Check if item has required fields
+    if (!item.kitchenId || item.kitchenId === "unknown") {
+      return {
+        success: false,
+        message: "Cannot add item: Kitchen information is missing",
+      };
+    }
+
     setItems((prev) => {
       const idx = prev.findIndex((i) => i.id === item.id);
       if (idx >= 0) {
@@ -70,6 +84,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       }
       return [...prev, { ...item, quantity: qty }];
     });
+
+    return {
+      success: true,
+      message: qty > 1 
+        ? `${qty}x ${item.name} added to cart`
+        : `${item.name} added to cart`,
+    };
   };
 
   const incrementItem = (id: string, delta: number = 1) => {

@@ -186,6 +186,29 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Update KRI score for the kitchen (async, don't wait)
+    // Reviews affect rating and satisfaction scores in KRI
+    const menuItem = await prisma.menu_items.findUnique({
+      where: { id: menuItemId },
+      select: { chef_id: true },
+    });
+
+    if (menuItem?.chef_id) {
+      const kitchen = await prisma.kitchen.findFirst({
+        where: { sellerId: menuItem.chef_id },
+        select: { id: true },
+      });
+
+      if (kitchen) {
+        import("@/lib/services/kriCalculation")
+          .then(({ updateKRIScore }) => updateKRIScore(kitchen.id))
+          .catch((error) => {
+            console.error("Error updating KRI after review creation:", error);
+            // Don't fail the review creation if KRI update fails
+          });
+      }
+    }
+
     const transformedReview = {
       id: review.id,
       userId: review.userId,

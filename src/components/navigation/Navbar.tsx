@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { useRoleTransition } from "@/contexts/RoleTransitionContext";
 
@@ -25,12 +25,20 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { totalItems } = useCart();
   const { user, role, signOut } = useAuth();
   const { startRoleTransition } = useRoleTransition();
+
+  // Initialize search query from URL params
+  useEffect(() => {
+    const query = searchParams.get("q") || "";
+    setSearchQuery(query);
+  }, [searchParams]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -76,12 +84,23 @@ export default function Navbar() {
       user?.email || "User"
     )}&background=0D8ABC&color=fff`;
 
-  const handleSearch = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
       router.push(
-        `/explore?q=${encodeURIComponent(e.currentTarget.value)}&tab=dishes`
+        `/explore?q=${encodeURIComponent(searchQuery.trim())}&tab=dishes`
       );
     }
+  };
+
+  const handleSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    router.push("/explore?tab=dishes");
   };
 
   return (
@@ -104,17 +123,38 @@ export default function Navbar() {
 
           {/* Search Bar */}
           <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
+            <div className="relative w-full flex items-center">
               <Search
-                className="absolute left-3 top-2.5 text-gray-400"
+                className="absolute left-3 text-gray-400 pointer-events-none"
                 size={18}
               />
               <input
                 type="text"
                 placeholder="Search for bhorta, curry, or chefs..."
-                onKeyDown={handleSearch}
-                className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-brand-teal text-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                className="w-full bg-gray-50 border border-gray-200 rounded-full py-2 pl-10 pr-20 focus:outline-none focus:ring-2 focus:ring-brand-teal text-sm"
               />
+              {/* Clear Button */}
+              {searchQuery && (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute right-12 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X size={16} />
+                </button>
+              )}
+              {/* Search Button */}
+              <button
+                onClick={handleSearch}
+                disabled={!searchQuery.trim()}
+                className="absolute right-2 bg-brand-teal text-white rounded-full p-1.5 hover:bg-teal-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label="Search"
+              >
+                <Search size={16} />
+              </button>
             </div>
           </div>
 

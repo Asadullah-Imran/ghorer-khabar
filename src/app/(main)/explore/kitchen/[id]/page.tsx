@@ -4,6 +4,7 @@ import MenuSection from "@/components/kitchen/MenuSection";
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
 import { calculateDistance, formatDistance, isValidCoordinates } from "@/lib/utils/distance";
+import { calculateKRI } from "@/lib/services/kriCalculation";
 import { Star } from "lucide-react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -135,6 +136,16 @@ export default async function KitchenProfilePage({
     time: item.prepTime ? `${item.prepTime} min` : "30 min"
   }));
 
+  // Calculate KRI score (on-the-fly calculation)
+  let kriScore = 0;
+  try {
+    const kriResult = await calculateKRI(kitchen.id);
+    kriScore = kriResult.kriScore;
+  } catch (error) {
+    console.error("Error calculating KRI for kitchen profile:", error);
+    // Fallback to 0 if calculation fails
+  }
+
   const data = {
     id: kitchen.id,
     name: kitchen.name,
@@ -153,7 +164,7 @@ export default async function KitchenProfilePage({
     profileImage: kitchen.profileImage,
     rating: Number(kitchen.rating) || 0,
     reviewCount: kitchen.reviewCount,
-    kriScore: kitchen.kriScore,
+    kriScore: kriScore,
     isOpen: kitchen.isOpen,
     isActive: kitchen.isActive,
     isOwner, // Pass ownership status

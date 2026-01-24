@@ -142,7 +142,7 @@ export default function ChefNavbar({
                     Settings
                   </Link>
                   <Link
-                    href="/support"
+                    href="/chef/support"
                     className="block px-4 py-3 text-sm font-medium text-gray-900 hover:bg-gray-50 transition border-t border-gray-100"
                   >
                     Help & Support
