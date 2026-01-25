@@ -2,8 +2,8 @@
 
 import { useToast } from "@/contexts/ToastContext";
 import { InventoryItem } from "@/lib/dummy-data/chef";
-import { ChevronDown, X, UtensilsCrossed } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { ChevronDown, UtensilsCrossed, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface AddInventoryItemModalProps {
   onClose: () => void;
@@ -251,7 +251,7 @@ export default function AddInventoryItemModal({
                                     {ingredient.quantity} {ingredient.unit}
                                     {ingredient.cost && (
                                       <span className="ml-2 text-teal-600">
-                                        • ৳{ingredient.cost}
+                                        • ৳{ingredient.cost.toFixed(2)}
                                       </span>
                                     )}
                                   </p>
@@ -333,7 +333,7 @@ export default function AddInventoryItemModal({
                 <div className="flex justify-between items-center mb-2">
                   <span className="text-blue-700">Initial Stock Value</span>
                   <span className="font-bold text-blue-900">
-                    ৳{(parseFloat(formData.stockToAdd) * parseFloat(formData.unitCost)).toFixed(0)}
+                    ৳{(parseFloat(formData.stockToAdd) * parseFloat(formData.unitCost)).toFixed(2)}
                   </span>
                 </div>
                 <p className="text-blue-600 text-xs italic">

@@ -14,13 +14,10 @@ import { prisma } from "@/lib/prisma/prisma";
  * No database fields needed - we calculate from existing order.items and order.total
  */
 
-// Platform fee per order (fixed) — set to 0 when using percentage commission only
-export const PLATFORM_FEE_PER_ORDER = 0;
+// Platform fee per order (fixed)
+export const PLATFORM_FEE_PER_ORDER = 10;
 
-// Platform commission percentage (0% = no commission, only platform fee)
-// Can be changed to a percentage (e.g., 0.05 for 5%)
-// If using commission, chef revenue = itemsTotal - (itemsTotal * commission)
-// If not using commission, chef revenue = itemsTotal - platformFee
+// Platform commission percentage (e.g., 0.05 for 5%)
 export const PLATFORM_COMMISSION_PERCENT = 0.05; // 5% commission per completed sale
 
 export interface OrderRevenueBreakdown {
@@ -49,11 +46,11 @@ export function calculateOrderRevenue(
   const platformFee = PLATFORM_FEE_PER_ORDER;
   const commission = itemsTotal * PLATFORM_COMMISSION_PERCENT;
 
-  // Chef receives items + delivery - discount
-  const chefRevenue = Math.max(0, itemsTotal + deliveryFee - discount);
-
   // Platform receives platform fee + commission
   const platformRevenue = platformFee + commission;
+
+  // Chef receives items + delivery - discount - commission
+  const chefRevenue = Math.max(0, itemsTotal + deliveryFee - discount - commission);
 
   // Order total
   const orderTotal = itemsTotal + deliveryFee + platformFee - discount;
@@ -85,11 +82,12 @@ export function calculateOrderRevenue(
 export async function calculateChefRevenue(
   kitchenId: string,
   startDate?: Date,
-  endDate?: Date
+  endDate?: Date,
+  statuses: string[] = ["COMPLETED"]
 ): Promise<number> {
   const where: any = {
     kitchenId,
-    status: "COMPLETED",
+    status: { in: statuses },
   };
 
   if (startDate || endDate) {
@@ -109,8 +107,15 @@ export async function calculateChefRevenue(
   let totalChefRevenue = 0;
 
   for (const order of orders) {
-    // Chef revenue = order total - platform fee
-    const chefRevenue = order.total - PLATFORM_FEE_PER_ORDER;
+    // Items total for commission calculation
+    const itemsTotal = order.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+    const commission = itemsTotal * PLATFORM_COMMISSION_PERCENT;
+    
+    // Chef revenue = order total - platform fee - commission
+    const chefRevenue = order.total - PLATFORM_FEE_PER_ORDER - commission;
     totalChefRevenue += Math.max(0, chefRevenue);
   }
 
@@ -189,8 +194,15 @@ export async function calculateChefRevenueForOrder(orderId: string): Promise<num
     throw new Error("Order not found");
   }
 
-  // Chef revenue = order total - platform fee
-  const chefRevenue = order.total - PLATFORM_FEE_PER_ORDER;
+  // Items total for commission
+  const itemsTotal = order.items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+  const commission = itemsTotal * PLATFORM_COMMISSION_PERCENT;
+
+  // Chef revenue = order total - platform fee - commission
+  const chefRevenue = order.total - PLATFORM_FEE_PER_ORDER - commission;
   return Math.max(0, chefRevenue);
 }
 

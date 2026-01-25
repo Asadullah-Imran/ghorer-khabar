@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from "@/contexts/ToastContext";
 import { AlertTriangle, ArrowRight, CheckCircle2, Circle, Loader2, RefreshCw, ShoppingCart } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -33,12 +34,18 @@ interface ShoppingListResponse {
   };
 }
 
-export default function MLSmartShoppingList() {
+interface MLSmartShoppingListProps {
+  onSuccess?: () => void;
+}
+
+export default function MLSmartShoppingList({ onSuccess }: MLSmartShoppingListProps) {
   const [data, setData] = useState<ShoppingListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const [includeForecast, setIncludeForecast] = useState(true);
+  const [placingOrder, setPlacingOrder] = useState(false);
+  const { success, error: toastError } = useToast();
 
   const fetchShoppingList = async () => {
     try {
@@ -75,6 +82,51 @@ export default function MLSmartShoppingList() {
       newChecked.add(name);
     }
     setCheckedItems(newChecked);
+  };
+
+  const handlePlaceOrder = async () => {
+    if (checkedItems.size === 0) {
+      toastError("Selection Empty", "Please check at least one item to place an order.");
+      return;
+    }
+
+    try {
+      setPlacingOrder(true);
+      
+      const itemsToProcure = data?.shopping_list
+        .filter(item => checkedItems.has(item.ingredient_name))
+        .map(item => ({
+          name: item.ingredient_name,
+          quantity: item.to_buy
+        }));
+
+      const res = await fetch("/api/chef/inventory/procure", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: itemsToProcure })
+      });
+
+      if (!res.ok) throw new Error("Failed to process order");
+
+      const result = await res.json();
+      
+      success(
+        "Order Processed", 
+        `Successfully added ${result.updatedCount} items to your inventory.`
+      );
+      
+      // Clear checked items and refresh
+      setCheckedItems(new Set());
+      fetchShoppingList();
+      
+      // Notify parent to refresh main inventory status
+      if (onSuccess) onSuccess();
+    } catch (err) {
+      console.error("Error placing order:", err);
+      toastError("Processing Error", "Failed to update inventory. Please try again.");
+    } finally {
+      setPlacingOrder(false);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -152,7 +204,7 @@ export default function MLSmartShoppingList() {
         </div>
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
           <p className="text-sm text-green-600 mb-1">Estimated Cost</p>
-          <p className="text-2xl font-bold text-green-700">৳{data.summary.total_estimated_cost.toFixed(0)}</p>
+          <p className="text-2xl font-bold text-green-700">৳{data.summary.total_estimated_cost.toFixed(2)}</p>
         </div>
       </div>
 
@@ -242,25 +294,25 @@ export default function MLSmartShoppingList() {
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs text-gray-600 mb-2">
                       <div>
                         <span className="text-gray-500">Current:</span>
-                        <p className="font-semibold text-gray-900">{item.current_stock}</p>
+                        <p className="font-semibold text-gray-900">{item.current_stock.toFixed(2)}</p>
                       </div>
                       <div>
-                        <span className="text-gray-500">Orders:</span>
-                        <p className="font-semibold text-blue-700">{item.demand_from_orders}</p>
+                        <span className="text-gray-500">From Orders:</span>
+                        <p className="font-semibold text-blue-700">{item.demand_from_orders.toFixed(2)}</p>
                       </div>
                       <div>
-                        <span className="text-gray-500">Forecast:</span>
-                        <p className="font-semibold text-purple-700">{item.forecast_demand}</p>
+                        <span className="text-gray-500">Forecasted Need:</span>
+                        <p className="font-semibold text-purple-700">{item.forecast_demand.toFixed(2)}</p>
                       </div>
                       <div>
                         <span className="text-gray-500">Total:</span>
-                        <p className="font-semibold text-gray-900">{item.total_demand}</p>
+                        <p className="font-semibold text-gray-900">{item.total_demand.toFixed(2)}</p>
                       </div>
                       <div className="flex items-center gap-1">
                         <ArrowRight size={14} className="text-orange-600" />
                         <div>
                           <span className="text-gray-500">Buy:</span>
-                          <p className="font-bold text-orange-700">{item.to_buy}</p>
+                          <p className="font-bold text-orange-700">{item.to_buy.toFixed(2)}</p>
                         </div>
                       </div>
                     </div>
@@ -268,10 +320,10 @@ export default function MLSmartShoppingList() {
                     {/* Cost */}
                     <div className="flex items-center gap-4 pt-2 border-t border-gray-200">
                       <span className="text-xs text-gray-500">
-                        ৳{item.unit_cost} per {item.unit}
+                        ৳{item.unit_cost.toFixed(2)} per {item.unit}
                       </span>
                       <span className="font-bold text-teal-600">
-                        Subtotal: ৳{item.estimated_cost.toFixed(0)}
+                        Subtotal: ৳{item.estimated_cost.toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -279,9 +331,9 @@ export default function MLSmartShoppingList() {
                   {/* Right Section */}
                   <div className="text-right flex-shrink-0">
                     <p className="text-lg font-bold text-orange-700">
-                      {item.to_buy} {item.unit}
+                      {item.to_buy.toFixed(2)} {item.unit}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">৳{item.estimated_cost.toFixed(0)}</p>
+                    <p className="text-xs text-gray-500 mt-1">৳{item.estimated_cost.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
@@ -302,16 +354,24 @@ export default function MLSmartShoppingList() {
             </div>
             <div>
               <p className="text-xs text-gray-600 mb-1">Total Budget</p>
-              <p className="text-xl font-bold text-teal-700">৳{data.summary.total_estimated_cost.toFixed(0)}</p>
+              <p className="text-xl font-bold text-teal-700">৳{data.summary.total_estimated_cost.toFixed(2)}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Action Button */}
-      <button className="w-full py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition flex items-center justify-center gap-2">
-        <ShoppingCart size={20} />
-        Place Order to Supplier
+      <button 
+        onClick={handlePlaceOrder}
+        disabled={placingOrder || checkedItems.size === 0}
+        className="w-full py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {placingOrder ? (
+          <Loader2 className="animate-spin" size={20} />
+        ) : (
+          <ShoppingCart size={20} />
+        )}
+        {placingOrder ? "Processing Inventory..." : "Place Order & Update Stock"}
       </button>
     </div>
   );

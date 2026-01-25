@@ -63,17 +63,17 @@ export default function StockUpdateModal({
               <div className="grid grid-cols-3 gap-2 text-xs">
                 <div>
                   <p className="text-gray-600">Current Stock</p>
-                  <p className="font-bold text-blue-700">{item.currentStock} {item.unit}</p>
+                  <p className="font-bold text-blue-700">{item.currentStock.toFixed(2)} {item.unit}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">Reorder Level</p>
                   <p className="font-bold text-blue-700">
-                    {item.reorderLevel > 0 ? `${item.reorderLevel} ${item.unit}` : "Not set"}
+                    {item.reorderLevel > 0 ? `${item.reorderLevel.toFixed(2)} ${item.unit}` : "Not set"}
                   </p>
                 </div>
                 <div>
                   <p className="text-gray-600">Unit Cost</p>
-                  <p className="font-bold text-blue-700">৳{item.unitCost}</p>
+                  <p className="font-bold text-blue-700">৳{item.unitCost.toFixed(2)}</p>
                 </div>
               </div>
             </div>
@@ -182,7 +182,7 @@ export default function StockUpdateModal({
               </div>
               {parseFloat(reorderLevel) > 0 && (
                 <p className="text-xs text-gray-500 mt-1">
-                  Current: {item.reorderLevel} {item.unit} → New: {reorderLevel} {item.unit}
+                  Current: {item.reorderLevel.toFixed(2)} {item.unit} → New: {parseFloat(reorderLevel).toFixed(2)} {item.unit}
                 </p>
               )}
             </div>
@@ -195,11 +195,11 @@ export default function StockUpdateModal({
               <div className="grid grid-cols-2 gap-3 mb-3 text-xs">
                 <div className="bg-blue-50 rounded-lg p-2">
                   <p className="text-blue-600 mb-0.5">Orders Demand</p>
-                  <p className="font-bold text-blue-900">{item.demandFromOrders.toFixed(1)} {item.unit}</p>
+                  <p className="font-bold text-blue-900">{item.demandFromOrders.toFixed(2)} {item.unit}</p>
                 </div>
                 <div className="bg-purple-50 rounded-lg p-2">
                   <p className="text-purple-600 mb-0.5">Forecast Demand</p>
-                  <p className="font-bold text-purple-900">{item.forecastDemand.toFixed(1)} {item.unit}</p>
+                  <p className="font-bold text-purple-900">{item.forecastDemand.toFixed(2)} {item.unit}</p>
                 </div>
               </div>
 
@@ -207,16 +207,16 @@ export default function StockUpdateModal({
               <div className="grid grid-cols-3 gap-2 text-xs border-t border-teal-200 pt-3">
                 <div>
                   <p className="text-teal-700 mb-0.5">Total Required</p>
-                  <p className="font-bold text-teal-900">{required.toFixed(1)} {item.unit}</p>
+                  <p className="font-bold text-teal-900">{required.toFixed(2)} {item.unit}</p>
                 </div>
                 <div>
                   <p className="text-teal-700 mb-0.5">New Stock</p>
-                  <p className="font-bold text-teal-900">{updatedStock.toFixed(1)} {item.unit}</p>
+                  <p className="font-bold text-teal-900">{updatedStock.toFixed(2)} {item.unit}</p>
                 </div>
                 <div>
                   <p className="text-teal-700 mb-0.5">Gap</p>
                   <p className={`font-bold ${gap > 0 ? "text-orange-600" : "text-green-600"}`}>
-                    {gap > 0 ? `+${gap.toFixed(1)}` : "✓ Sufficient"}
+                    {gap > 0 ? `+${gap.toFixed(2)}` : "✓ Sufficient"}
                   </p>
                 </div>
               </div>
@@ -228,7 +228,7 @@ export default function StockUpdateModal({
                   : "bg-green-100 text-green-800 border border-green-200"
               }`}>
                 {gap > 0 
-                  ? `⚠️ Still need to buy ${gap.toFixed(1)} ${item.unit} after this update`
+                  ? `⚠️ Still need to buy ${gap.toFixed(2)} ${item.unit} after this update`
                   : "✓ Stock will be sufficient after this update"
                 }
               </div>
@@ -236,7 +236,7 @@ export default function StockUpdateModal({
               {/* Cost Impact (if gap remains) */}
               {gap > 0 && item.unitCost > 0 && (
                 <div className="mt-2 text-xs text-gray-600">
-                  Estimated additional cost: ৳{(gap * item.unitCost).toFixed(0)}
+                  Estimated additional cost: ৳{(gap * item.unitCost).toFixed(2)}
                 </div>
               )}
             </div>

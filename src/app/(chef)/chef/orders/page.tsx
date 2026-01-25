@@ -1,19 +1,19 @@
 "use client";
 
 import { KanbanColumn } from "@/components/chef/Kanban/KanbanColumn.memo";
+import Loading from "@/components/ui/Loading";
 import { useToast } from "@/contexts/ToastContext";
+import { useChefOrdersRealtime } from "@/lib/hooks/useChefOrdersRealtime";
 import {
     CheckCircle,
     Clock,
+    History,
     PackageCheck,
     Zap,
-    History,
 } from "lucide-react";
-import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { useChefOrdersRealtime } from "@/lib/hooks/useChefOrdersRealtime";
-import Loading from "@/components/ui/Loading";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 type ViewMode = "live" | "history";
 
@@ -34,9 +34,11 @@ export default function OrdersPage() {
   const [historyStatusFilter, setHistoryStatusFilter] = useState<string>("ALL");
   const toast = useToast();
 
-  // Memoize total orders count
-  const totalOrders = useMemo(() => {
-    return Object.values(orders).flat().length;
+  // Memoize active orders count (excluding handover/completed)
+  const activeOrdersCount = useMemo(() => {
+    return (orders.new?.length || 0) + 
+           (orders.cooking?.length || 0) + 
+           (orders.ready?.length || 0);
   }, [orders]);
 
   const handleMoveOrder = useCallback(async (orderId: string, newStatus: string) => {
@@ -205,7 +207,7 @@ export default function OrdersPage() {
           </h1>
           <p className="text-gray-500 mt-2">
             {viewMode === "live" 
-              ? `Manage your kitchen workflow - ${totalOrders} active orders`
+              ? `Manage your kitchen workflow - ${activeOrdersCount} active orders`
               : `View all past orders - ${historyOrders.length} orders`
             }
           </p>

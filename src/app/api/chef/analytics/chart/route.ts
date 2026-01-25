@@ -1,7 +1,7 @@
 import { verifyToken } from "@/lib/auth/jwt";
 import { prisma } from "@/lib/prisma/prisma";
-import { createClient } from "@/lib/supabase/server";
 import { calculateChefRevenue } from "@/lib/services/revenueCalculation";
+import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -71,6 +71,9 @@ export async function GET(req: NextRequest) {
     const orders = await prisma.order.findMany({
       where: {
         kitchenId: kitchen.id,
+        status: {
+          not: 'CANCELLED',
+        },
         createdAt: {
           gte: startDate,
         },

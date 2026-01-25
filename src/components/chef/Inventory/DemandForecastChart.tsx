@@ -174,7 +174,7 @@ export default function DemandForecastChart() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
           <p className="text-sm text-purple-600 mb-1">Avg Daily Orders</p>
-          <p className="text-2xl font-bold text-purple-700">{data.summary.avg_daily_orders?.toFixed(1) || "N/A"}</p>
+          <p className="text-2xl font-bold text-purple-700">{data.summary.avg_daily_orders?.toFixed(2) || "N/A"}</p>
         </div>
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-sm text-blue-600 mb-1">History Used</p>
@@ -209,10 +209,10 @@ export default function DemandForecastChart() {
                 {/* Items Bar (Primary) */}
                 <div className="flex-1">
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="text-gray-600">{day.predicted_orders.toFixed(1)} orders</span>
+                    <span className="text-gray-600">{day.predicted_orders.toFixed(2)} orders</span>
                     <div className="flex items-center gap-3">
-                      <span className="font-bold text-purple-700">{day.predicted_items.toFixed(1)} items</span>
-                      <span className="text-gray-500 text-xs">৳{day.predicted_revenue.toFixed(0)}</span>
+                      <span className="font-bold text-purple-700">{day.predicted_items.toFixed(2)} items</span>
+                      <span className="text-gray-500 text-xs">৳{day.predicted_revenue.toFixed(2)}</span>
                     </div>
                   </div>
                   <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
@@ -252,10 +252,10 @@ export default function DemandForecastChart() {
                 </div>
                 <div className="text-right">
                   <p className="font-bold text-purple-700 text-lg">
-                    {ing.predicted_demand.toFixed(1)} {ing.unit}
+                    {ing.predicted_demand.toFixed(2)} {ing.unit}
                   </p>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    Est. cost: ৳{ing.estimated_cost.toFixed(0)}
+                    Est. cost: ৳{ing.estimated_cost.toFixed(2)}
                   </p>
                 </div>
               </div>
