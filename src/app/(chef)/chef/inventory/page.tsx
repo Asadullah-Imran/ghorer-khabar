@@ -340,7 +340,7 @@ export default function InventoryPage() {
               <Sparkles className="text-teal-600" size={24} />
               Smart Shopping List
             </h2>
-            <MLSmartShoppingList />
+            <MLSmartShoppingList onSuccess={fetchItems} />
           </div>
         )}
       </div>

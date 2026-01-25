@@ -131,14 +131,14 @@ export default function InventoryTable({ items, onUpdateStock }: InventoryTableP
                           {item.demandFromOrders.toFixed(2)}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500">Orders</p>
+                      <p className="text-xs text-gray-500">From Orders</p>
                       <div className="flex items-center justify-center gap-1 bg-purple-50 rounded px-2 py-1">
                         <TrendingDown size={14} className="text-purple-600" />
                         <span className="text-sm font-semibold text-purple-700">
                           {item.forecastDemand.toFixed(2)}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500">Forecast</p>
+                      <p className="text-xs text-gray-500">Forecasted Need</p>
                     </div>
                   </td>
 
