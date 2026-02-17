@@ -2,15 +2,16 @@ import DishActions from "@/components/dish/DishActions";
 import DishGallery from "@/components/dish/DishGallery";
 import IngredientTransparency from "@/components/dish/IngredientTransparency";
 import ReviewSection from "@/components/dish/ReviewSection";
+import DishCard from "@/components/shared/DishCard";
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
 import { calculateKRI } from "@/lib/services/kriCalculation";
 import {
-    AlertTriangle,
-    ChevronRight,
-    Clock,
-    Flame,
-    ShieldCheck,
+  AlertTriangle,
+  ChevronRight,
+  Clock,
+  Flame,
+  ShieldCheck,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -100,11 +101,12 @@ export default async function SingleDishPage({ params }: PageProps) {
             icon = "droplets";
         }
         
-        // Build detail string with quantity, unit, and cost if available
+        // Build detail string with quantity, unit
         let detail = `${ing.quantity} ${ing.unit}`;
-        if (ing.cost && ing.cost > 0) {
-            detail += ` • Cost: ৳${ing.cost.toFixed(2)}`;
-        }
+        // Cost is hidden from regular users
+        // if (ing.cost && ing.cost > 0) {
+        //     detail += ` • Cost: ৳${ing.cost.toFixed(2)}`;
+        // }
         
         return {
             name: ing.name,
@@ -115,6 +117,88 @@ export default async function SingleDishPage({ params }: PageProps) {
     // No reviews table yet, providing empty array
     reviews: [] as any[]
   };
+
+  // --- SUGGESTION LOGIC ---
+  const currentKitchenId = dishData.users.kitchens[0]?.id;
+  const currentCategory = dishData.category;
+  
+  // 1. Fetch dishes from SAME kitchen (max 3)
+  // Logic: "Most user take dish B when take dish A" -> approximated by random for now, or same category
+  let sameKitchenDishes: any[] = [];
+  if (currentKitchenId) {
+    sameKitchenDishes = await prisma.menu_items.findMany({
+      where: {
+        chef_id: dishData.chef_id, // Same chef/kitchen
+        id: { not: id }, // Exclude current dish
+        isAvailable: true,
+      },
+      include: {
+        menu_item_images: true,
+        reviews: { select: { rating: true } },
+        users: { include: { kitchens: true } }
+      },
+      take: 3,
+      orderBy: { 
+        // Simple heuristic: popular items (more reviews) could be "frequently bought together"
+        reviewCount: 'desc' 
+      }
+    });
+  }
+
+  // 2. Fetch dishes from OTHER kitchens (max 2)
+  // Logic: "Suggestion come from interest of foods of matching dishes" -> same category
+  const otherKitchenDishes = await prisma.menu_items.findMany({
+    where: {
+      chef_id: { not: dishData.chef_id }, // Different chef
+      category: currentCategory, // Same category ~ "matching interest"
+      isAvailable: true,
+      users: {
+        kitchens: {
+          some: {
+             isActive: true,
+             isOpen: true
+          }
+        }
+      }
+    },
+    include: {
+      menu_item_images: true,
+      reviews: { select: { rating: true } },
+      users: { include: { kitchens: true } }
+    },
+    take: 2,
+    orderBy: { rating: 'desc' } // Best rated from others
+  });
+
+  // Combine suggestions
+  // Format them for DishCard
+  const mapToCardData = (item: any) => {
+    const calculatedRating = item.reviews.length > 0
+      ? Math.round((item.reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / item.reviews.length) * 10) / 10
+      : (item.rating || 0);
+
+    return {
+       id: item.id,
+       name: item.name,
+       price: item.price,
+       rating: calculatedRating,
+       image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
+       kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
+       kitchenId: item.users.kitchens[0]?.id,
+       kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
+       kitchenLocation: item.users.kitchens[0]?.location,
+       kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
+       kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
+       deliveryTime: "30-45 min", 
+       chefId: item.chef_id,
+       allergyAlerts: item.allergyAlerts
+    };
+  };
+
+  const sameKitchenSuggestions = sameKitchenDishes.map(mapToCardData);
+  const otherKitchenSuggestions = otherKitchenDishes.map(mapToCardData);
+  
+  const allSuggestions = [...sameKitchenSuggestions, ...otherKitchenSuggestions];
 
   return (
     <main className="min-h-screen bg-gray-50 pb-20">
@@ -145,6 +229,8 @@ export default async function SingleDishPage({ params }: PageProps) {
               currentRating={dish.rating}
               reviewCount={dish.reviewsCount}
             />
+
+
           </div>
 
           {/* --- RIGHT COLUMN (Details & Actions) --- */}
@@ -235,6 +321,29 @@ export default async function SingleDishPage({ params }: PageProps) {
             {/* Ingredient Transparency (Client) */}
             <IngredientTransparency ingredients={dish.ingredients} />
 
+            {/* "You may like this" Section (Moved to Right Column) */}
+            {allSuggestions.length > 0 && (
+              <section className="pt-4 border-t border-gray-100 mt-4">
+                <div className="flex items-center gap-2 mb-4">
+                   <Flame className="text-orange-500 fill-current" />
+                   <h2 className="text-lg font-bold text-gray-900">You may also like</h2>
+                </div>
+                
+                <div className="flex flex-col gap-4">
+                  {allSuggestions.map((item) => (
+                    <div key={item.id} className="w-full">
+                      <DishCard 
+                        data={item as any} 
+                        featured={false}
+                        currentUserId={userId}
+                        userRole={userRole}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* Sticky Action Bar (Client) */}
             {/* Sticky Action Bar (Client) */}
             {dishData.users.kitchens[0] ? (
@@ -259,6 +368,9 @@ export default async function SingleDishPage({ params }: PageProps) {
           </div>
         </div>
       </div>
+
+      {/* 3. "You may like this" Section */}
+
     </main>
   );
 }
