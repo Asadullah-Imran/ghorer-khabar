@@ -1,15 +1,16 @@
 "use client";
 
+import { getCategoryMarketData } from "@/lib/actions/pricing";
+import { Calculator, X as CloseIcon, Loader2, Plus, Trash2, TrendingUp, Upload, X } from "lucide-react";
 import Image from "next/image";
-import { X, Plus, Trash2, Upload, X as CloseIcon, Loader2 } from "lucide-react";
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 
 interface Ingredient {
   id?: string;
   name: string;
   quantity: number;
   unit: string;
-  cost?: number;
+  cost?: number | null; // Allow null for optional cost
 }
 
 interface MenuImage {
@@ -63,6 +64,8 @@ export default function MenuItemForm({
     calories: item?.calories || 0,
     spiciness: item?.spiciness || "Medium",
     isVegetarian: item?.isVegetarian || false,
+    // Logic to extract existing additional cost if present in ingredients
+    additionalCost: item?.ingredients?.find(i => i.name === "Additional Expenses (Oil, Spices, Gas, Packaging)")?.cost || 0,
   });
 
   const [allergyAlerts, setAllergyAlerts] = useState<string[]>(
@@ -90,10 +93,19 @@ export default function MenuItemForm({
   const [deletedImageIds, setDeletedImageIds] = useState<string[]>([]);
 
   const [ingredients, setIngredients] = useState<Ingredient[]>(
-    item?.ingredients || []
+    item?.ingredients?.filter(i => i.name !== "Additional Expenses (Oil, Spices, Gas, Packaging)") || []
   );
 
   const [errors, setErrors] = useState<string[]>([]);
+  
+  // Pricing Assistant State
+  const [showPricingAssistant, setShowPricingAssistant] = useState(false);
+  const [pricingData, setPricingData] = useState<{
+    avgPrice: number;
+    recommendedPrice: number;
+    margin: number;
+  } | null>(null);
+  const [loadingPricing, setLoadingPricing] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,12 +128,23 @@ export default function MenuItemForm({
       return;
     }
 
+    // Prepare ingredients including the additional cost item
+    const finalIngredients = [...ingredients];
+    if (formData.additionalCost && formData.additionalCost > 0) {
+      finalIngredients.push({
+        name: "Additional Expenses (Oil, Spices, Gas, Packaging)",
+        quantity: 1,
+        unit: "unit",
+        cost: formData.additionalCost
+      });
+    }
+
     const menuItem: MenuItem = {
       id: item?.id,
       ...formData,
       allergyAlerts: allergyAlerts,
       images: images,
-      ingredients: ingredients,
+      ingredients: finalIngredients,
       deletedImageIds: deletedImageIds,
     };
 
@@ -198,7 +221,8 @@ export default function MenuItemForm({
   const addIngredient = () => {
     setIngredients([
       ...ingredients,
-      { name: "", quantity: 0, unit: "gm", cost: 0 },
+      ...ingredients,
+      { name: "", quantity: 0, unit: "gm", cost: null }, // Default cost to null
     ]);
   };
 
@@ -219,12 +243,48 @@ export default function MenuItemForm({
   const totalIngredientCost = ingredients.reduce(
     (sum, ing) => sum + (ing.cost || 0),
     0
-  );
+  ) + (formData.additionalCost || 0);
   const profitMargin = formData.price - totalIngredientCost;
   const profitMarginPercent =
     totalIngredientCost > 0
       ? Math.round((profitMargin / formData.price) * 100)
       : 0;
+
+  const handleGetPricingSuggestion = async () => {
+    if (totalIngredientCost <= 0) {
+      setErrors(["Please add ingredients and costs first to get a suggestion."]);
+      return;
+    }
+
+    setLoadingPricing(true);
+    try {
+      // 1. Get Market Data
+      const marketRes = await getCategoryMarketData(formData.category);
+      
+      // 2. Calculate Cost-Plus Price (Target 35% Margin)
+      // Forumla: Price = Cost / (1 - DesiredMargin)
+      const targetMargin = 0.35;
+      const costPlusPrice = Math.ceil(totalIngredientCost / (1 - targetMargin));
+
+      setPricingData({
+        avgPrice: marketRes.success ? Math.round(marketRes.avgPrice) : 0,
+        recommendedPrice: costPlusPrice,
+        margin: Math.round(targetMargin * 100)
+      });
+      setShowPricingAssistant(true);
+    } catch (err) {
+      console.error("Pricing error:", err);
+    } finally {
+      setLoadingPricing(false);
+    }
+  };
+
+  const applyRecommendedPrice = () => {
+    if (pricingData) {
+      setFormData({ ...formData, price: pricingData.recommendedPrice });
+      setShowPricingAssistant(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -317,51 +377,7 @@ export default function MenuItemForm({
           </div>
 
           {/* Price & Calories */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Price (৳) *
-              </label>
-              <input
-                type="number"
-                required
-                disabled={uploading || isLoading}
-                value={formData.price}
-                onChange={(e) =>
-                  setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })
-                }
-                onFocus={(e) => {
-                  if (e.target.value === "0" || e.target.value === "") {
-                    e.target.value = "";
-                  }
-                }}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-gray-100"
-                min="0"
-                step="0.01"
-              />
-            </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Calories
-              </label>
-              <input
-                type="number"
-                onFocus={(e) => {
-                  if (e.target.value === "0" || e.target.value === "") {
-                    e.target.value = "";
-                  }
-                }}
-                disabled={uploading || isLoading}
-                value={formData.calories}
-                onChange={(e) =>
-                  setFormData({ ...formData, calories: parseInt(e.target.value) || 0 })
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-gray-100"
-                min="0"
-              />
-            </div>
-          </div>
 
           {/* Spiciness & Vegetarian */}
           <div className="grid grid-cols-2 gap-4">
@@ -403,6 +419,8 @@ export default function MenuItemForm({
               </label>
             </div>
           </div>
+
+
 
           {/* Allergy Alerts */}
           <div>
@@ -625,18 +643,14 @@ export default function MenuItemForm({
                         Cost (৳)
                       </label>
                       <input
-                        onFocus={(e) => {
-                          if (e.target.value === "0" || e.target.value === "") {
-                            e.target.value = "";
-                          }
-                        }}
                         type="number"
-                        value={ingredient.cost || 0}
-                        onChange={(e) =>
-                          updateIngredient(index, "cost", parseFloat(e.target.value) || 0)
-                        }
+                        value={ingredient.cost === null ? "" : ingredient.cost}
+                        onChange={(e) => {
+                          const val = e.target.value === "" ? null : parseFloat(e.target.value);
+                          updateIngredient(index, "cost", val);
+                        }}
                         className="w-full px-2 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
-                        placeholder="0"
+                        placeholder="Optional"
                         min="0"
                       />
                     </div>
@@ -653,6 +667,26 @@ export default function MenuItemForm({
                 ))}
               </div>
             )}
+
+            {/* Additional Cost (Miscellaneous) - Integrated inside Ingredients Section */}
+            <div className="mb-4">
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                Additional Expenses (Oil, Spices, Gas, Packaging)
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">৳</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.additionalCost || ""}
+                  onChange={(e) =>
+                    setFormData({ ...formData, additionalCost: parseFloat(e.target.value) || 0 })
+                  }
+                  className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-teal-500"
+                  placeholder="0"
+                />
+              </div>
+            </div>
 
             {/* Cost Summary */}
             {ingredients.length > 0 && (
@@ -687,6 +721,61 @@ export default function MenuItemForm({
             )}
           </div>
 
+          {/* Price & Calories - Moved to bottom */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Price (৳) *
+              </label>
+              <input
+                type="number"
+                required
+                disabled={uploading || isLoading}
+                value={formData.price}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })
+                }
+                onFocus={(e) => {
+                  if (e.target.value === "0" || e.target.value === "") {
+                    e.target.value = "";
+                  }
+                }}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-gray-100"
+                min="0"
+                step="0.01"
+              />
+              <button
+                type="button"
+                onClick={handleGetPricingSuggestion}
+                className="mt-2 text-xs flex items-center gap-1 text-teal-600 font-medium hover:underline"
+              >
+                <Calculator size={14} />
+                Get AI Price Suggestion
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Calories
+              </label>
+              <input
+                type="number"
+                onFocus={(e) => {
+                  if (e.target.value === "0" || e.target.value === "") {
+                    e.target.value = "";
+                  }
+                }}
+                disabled={uploading || isLoading}
+                value={formData.calories}
+                onChange={(e) =>
+                  setFormData({ ...formData, calories: parseInt(e.target.value) || 0 })
+                }
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 disabled:bg-gray-100"
+                min="0"
+              />
+            </div>
+          </div>
+
           {/* Actions */}
           <div className="flex gap-3 pt-4">
             <button
@@ -707,6 +796,55 @@ export default function MenuItemForm({
             </button>
           </div>
         </form>
+
+        {/* Pricing Assistant Modal */}
+        {showPricingAssistant && pricingData && (
+          <div className="absolute inset-0 bg-black/10 flex items-center justify-center p-4 z-50 rounded-xl">
+             <div className="bg-white p-6 rounded-xl shadow-xl border border-teal-100 max-w-sm w-full animate-in fade-in zoom-in duration-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2 text-teal-700">
+                    <TrendingUp size={20} />
+                    <h3 className="font-bold text-lg">Pricing Assistant</h3>
+                  </div>
+                  <button onClick={() => setShowPricingAssistant(false)} className="text-gray-400 hover:text-gray-600">
+                    <X size={18} />
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-xs text-gray-500 mb-1">Your Total Cost</p>
+                    <p className="text-lg font-bold text-gray-900">৳{totalIngredientCost.toFixed(0)}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                      <p className="text-xs text-blue-600 mb-1">Market Avg ({formData.category})</p>
+                      <p className="text-base font-bold text-blue-800">
+                        {pricingData.avgPrice > 0 ? `৳${pricingData.avgPrice}` : "N/A"}
+                      </p>
+                    </div>
+                    <div className="bg-green-50 p-3 rounded-lg border border-green-100">
+                      <p className="text-xs text-green-600 mb-1">Target Margin</p>
+                      <p className="text-base font-bold text-green-800">{pricingData.margin}%</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-teal-50 p-4 rounded-lg border border-teal-200 text-center">
+                    <p className="text-sm text-teal-700 font-medium mb-1">Recommended Price</p>
+                    <p className="text-3xl font-black text-teal-800">৳{pricingData.recommendedPrice}</p>
+                  </div>
+
+                  <button
+                    onClick={applyRecommendedPrice}
+                    className="w-full py-3 bg-teal-600 text-white font-bold rounded-lg hover:bg-teal-700 transition"
+                  >
+                    Apply Price
+                  </button>
+                </div>
+             </div>
+          </div>
+        )}
       </div>
     </div>
   );
