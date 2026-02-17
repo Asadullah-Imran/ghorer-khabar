@@ -359,19 +359,21 @@ export default function MenuItemForm({
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
-                Prep Time (mins)
+                Prep Time (Hours:Minutes)
               </label>
               <input
-                type="number"
-                value={formData.prepTime}
-                onChange={(e) =>
-                  setFormData({ ...formData, prepTime: parseInt(e.target.value) })
-                }                onFocus={(e) => {
-                  if (e.target.value === "30") {
-                    e.target.value = "";
-                  }
-                }}                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                min="10"
+                type="time"
+                value={`${Math.floor(formData.prepTime / 60)
+                  .toString()
+                  .padStart(2, "0")}:${(formData.prepTime % 60)
+                  .toString()
+                  .padStart(2, "0")}`}
+                onChange={(e) => {
+                  const [h, m] = e.target.value.split(":");
+                  const totalMinutes = parseInt(h) * 60 + parseInt(m);
+                  setFormData({ ...formData, prepTime: totalMinutes || 0 });
+                }}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
               />
             </div>
           </div>
