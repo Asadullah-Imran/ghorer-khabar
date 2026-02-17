@@ -6,6 +6,9 @@ import PlanCard from "@/components/shared/PlanCard";
 import SectionHeader from "@/components/shared/SectionHeader";
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
+import { calculateDistance, formatDistance } from "@/lib/utils/distance";
+
+export const dynamic = "force-dynamic";
 
 
 export default async function FeedPage() {
@@ -25,9 +28,73 @@ export default async function FeedPage() {
       userRole = user.role;
     }
   }
-
   // Calculate date 7 days ago for weekly filtering
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  // Get user location for nearby calculation
+  let userLocation: { lat: number; longitude: number } | null = null;
+  if (userId) {
+    const address = await prisma.address.findFirst({
+      where: { userId },
+      orderBy: { isDefault: 'desc' }, // Prefer default, but take any if default not set
+      select: { latitude: true, longitude: true }
+    });
+    
+    if (address?.latitude && address?.longitude) {
+      userLocation = { lat: address.latitude, longitude: address.longitude };
+    }
+  }
+
+  // Fetch nearby kitchens if user location is available
+  let nearbyKitchens: any[] = [];
+  if (userLocation) {
+    const allKitchens = await prisma.kitchen.findMany({
+      where: {
+        isActive: true,
+        isVerified: true,
+        isOpen: true,
+        latitude: { not: null },
+        longitude: { not: null },
+      },
+      select: {
+        id: true,
+        name: true,
+        rating: true,
+        reviewCount: true,
+        coverImage: true,
+        type: true,
+        isOpen: true,
+        latitude: true,
+        longitude: true,
+      }
+    });
+
+    nearbyKitchens = allKitchens
+      .map(kitchen => {
+        const distance = calculateDistance(
+          userLocation!.lat,
+          userLocation!.longitude,
+          kitchen.latitude!,
+          kitchen.longitude!
+        );
+        return {
+          ...kitchen,
+          distance
+        };
+      })
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 8)
+      .map(kitchen => ({
+        id: kitchen.id,
+        name: kitchen.name,
+        rating: Number(kitchen.rating) || 0,
+        reviews: kitchen.reviewCount,
+        image: kitchen.coverImage || "/placeholder-kitchen.jpg",
+        specialty: kitchen.type || "Home Kitchen",
+        isOpen: kitchen.isOpen,
+        distanceStr: formatDistance(kitchen.distance)
+      }));
+  }
 
   // Fetch newly uploaded dishes sorted by time
   const newDishesData = await prisma.menu_items.findMany({
@@ -359,6 +426,27 @@ export default async function FeedPage() {
             ))}
           </div>
         </section>
+
+        {/* Nearby Kitchens (Only if user location is known) */}
+        {nearbyKitchens.length > 0 && (
+          <section>
+            <SectionHeader
+              title="Nearby Kitchens"
+              subtitle="Fresh food from your neighborhood"
+              href="/explore?tab=kitchens&sort=nearest"
+            />
+            <div className="flex overflow-x-auto gap-4 px-4 md:px-0 pb-4 scrollbar-hide snap-x">
+              {nearbyKitchens.map((kitchen) => (
+                <div key={kitchen.id} className="snap-center">
+                  <KitchenCard 
+                    data={kitchen} 
+                    isFavorite={favoriteKitchenIds.has(kitchen.id)} 
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* 3. Weekly Best Dishes */}
         <section>

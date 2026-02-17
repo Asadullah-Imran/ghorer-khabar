@@ -2,9 +2,6 @@ import BecomeSellerButton from "@/components/profile/BecomeSellerButton";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SubscriptionActions } from "@/components/profile/ProfileInteractions";
 import {
-    USER_PROFILE
-} from "@/lib/dummy-data/profile";
-import {
     CalendarCheck,
     ChevronRight,
     Heart,
@@ -511,7 +508,7 @@ export default async function ProfilePage() {
               </Link>
 
               <Link
-                href="/profile/subscription"
+                href="/profile/my-subscription"
                 className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-gradient-to-r hover:from-brand-teal/10 hover:to-brand-teal/5 text-gray-700 transition-all text-left group border border-transparent hover:border-brand-teal/30"
               >
                 <div className="bg-brand-teal/10 p-2.5 rounded-xl text-brand-teal group-hover:bg-brand-teal group-hover:text-white transition-all shadow-sm">

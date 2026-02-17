@@ -1,13 +1,15 @@
  "use client";
 
+export const dynamic = "force-dynamic";
+
 import { ContactForm, FAQSection } from "@/components/support/SupportInteractions";
 import { CONTACT_INFO, USER_SUPPORT_FAQS } from "@/lib/dummy-data/support";
 import {
-  ArrowLeft,
-  Mail,
-  MapPin,
-  MessageCircleQuestion,
-  Phone,
+    ArrowLeft,
+    Mail,
+    MapPin,
+    MessageCircleQuestion,
+    Phone,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 

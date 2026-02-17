@@ -1,6 +1,5 @@
 import { verifyToken } from "@/lib/auth/jwt";
 import { prisma } from "@/lib/prisma/prisma";
-import { calculateChefRevenue } from "@/lib/services/revenueCalculation";
 import { createClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
@@ -95,74 +94,87 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    // Generate monthly data
-    const monthlyData: Array<{
-      month: string;
+    // Generate weekly data (4 weeks)
+    const weeklyData: Array<{
+      week: string;
       revenue: number;
       profit: number;
     }> = [];
 
-    // Group orders by month
-    const monthMap = new Map<string, any[]>();
+    const weeksCount = 4;
+    const intervalDays = Math.ceil(days / weeksCount);
 
-    orders.forEach((order: any) => {
-      const orderDate = new Date(order.createdAt);
-      const monthKey = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
-      if (!monthMap.has(monthKey)) {
-        monthMap.set(monthKey, []);
-      }
-      monthMap.get(monthKey)!.push(order);
-    });
-
-    // Process each month
-    const sortedMonths = Array.from(monthMap.keys()).sort();
-    
-    for (const monthKey of sortedMonths) {
-      const monthOrders = monthMap.get(monthKey)!;
-      const [year, month] = monthKey.split('-');
-      const monthDate = new Date(parseInt(year), parseInt(month) - 1);
-      const monthName = monthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-
-      // Calculate month start and end dates
-      const monthStart = new Date(parseInt(year), parseInt(month) - 1, 1);
-      const monthEnd = new Date(parseInt(year), parseInt(month), 0, 23, 59, 59, 999);
-
-      // Calculate chef revenue for this month (using proper revenue calculation)
-      const monthRevenue = await calculateChefRevenue(kitchen.id, monthStart, monthEnd);
-
-      // Calculate cost from ingredients (only for completed orders)
-      let monthCost = 0;
-      const completedMonthOrders = monthOrders.filter((o: any) => o.status === 'COMPLETED');
+    for (let i = 0; i < weeksCount; i++) {
+      // Calculate week start and end
+      // We want Week 1 (Oldest) to Week 4 (Newest)
+      // We'll work backwards from today for cleaner ranges, but populate array such that index 0 is oldest.
+      // Actually, easier to go forward from startDate.
       
-      completedMonthOrders.forEach((order: any) => {
+      const weekStart = new Date(startDate);
+      weekStart.setDate(startDate.getDate() + (i * intervalDays));
+      
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + intervalDays);
+      
+      // Adjust last week to end of today
+      if (i === weeksCount - 1) {
+        weekEnd.setHours(23, 59, 59, 999);
+      }
+
+      const weekLabel = `Week ${i + 1}`;
+      
+      // Filter completed orders for this week
+      const weekOrders = orders.filter((o: any) => {
+        const orderDate = new Date(o.createdAt);
+        return orderDate >= weekStart && orderDate < weekEnd && o.status === 'COMPLETED';
+      });
+
+      let weekRevenue = 0;
+      let weekCost = 0;
+
+      // Calculate revenue and cost
+      weekOrders.forEach((order: any) => {
+        // Calculate Revenue
+        const itemsTotal = order.items.reduce(
+          (sum: number, item: any) => sum + (item.price * item.quantity),
+          0
+        );
+        // Using constants hardcoded to match service (or could import, but inline is safe here)
+        const PLATFORM_FEE_PER_ORDER = 10;
+        const PLATFORM_COMMISSION_PERCENT = 0.05;
+        
+        const commission = itemsTotal * PLATFORM_COMMISSION_PERCENT;
+        const orderRevenue = Math.max(0, order.total - PLATFORM_FEE_PER_ORDER - commission);
+        weekRevenue += orderRevenue;
+
+        // Calculate Cost
         order.items.forEach((item: any) => {
           if (item.menuItem?.ingredients) {
             const ingredientCost = item.menuItem.ingredients.reduce(
               (sum: number, ing: any) => sum + (ing.cost || 0),
               0
             );
-            monthCost += ingredientCost * item.quantity;
+            weekCost += ingredientCost * item.quantity;
           }
         });
       });
 
-      // Profit = Chef Revenue - Ingredient Costs
-      // If no ingredient costs are set, use estimated 35% profit margin
-      const monthProfit = monthCost > 0 
-        ? Math.round(monthRevenue - monthCost)
-        : Math.round(monthRevenue * 0.35);
+      // Profit Calculation
+      const weekProfit = weekCost > 0 
+        ? Math.round(weekRevenue - weekCost) 
+        : Math.round(weekRevenue * 0.35);
 
-      monthlyData.push({
-        month: monthName,
-        revenue: Math.round(monthRevenue),
-        profit: monthProfit,
+      weeklyData.push({
+        week: weekLabel,
+        revenue: Math.round(weekRevenue),
+        profit: weekProfit
       });
     }
 
     return NextResponse.json({
-      weeks: monthlyData.map(m => m.month),
-      revenue: monthlyData.map(m => m.revenue),
-      profit: monthlyData.map(m => m.profit),
+      weeks: weeklyData.map(w => w.week),
+      revenue: weeklyData.map(w => w.revenue),
+      profit: weeklyData.map(w => w.profit),
     });
   } catch (error) {
     console.error("Error fetching chart data:", error);

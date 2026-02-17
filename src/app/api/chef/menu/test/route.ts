@@ -1,5 +1,5 @@
+import { prisma } from "@/lib/prisma/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma/client";
 
 /**
  * POST /api/chef/menu/test

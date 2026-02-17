@@ -1,10 +1,10 @@
+import KitchenContent from "@/components/kitchen/KitchenContent";
 import KitchenGallery from "@/components/kitchen/KitchenGallery";
 import KitchenHeader from "@/components/kitchen/KitchenHeader";
-import MenuSection from "@/components/kitchen/MenuSection";
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
-import { calculateDistance, formatDistance, isValidCoordinates } from "@/lib/utils/distance";
 import { calculateKRI } from "@/lib/services/kriCalculation";
+import { calculateDistance, formatDistance, isValidCoordinates } from "@/lib/utils/distance";
 import { Star } from "lucide-react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
@@ -146,6 +146,32 @@ export default async function KitchenProfilePage({
     // Fallback to 0 if calculation fails
   }
 
+  // Fetch reviews (NEW)
+  const reviews = await prisma.review.findMany({
+    where: {
+      menuItem: {
+        chef_id: kitchen.sellerId
+      }
+    },
+    include: {
+      user: {
+        select: {
+          name: true,
+          avatar: true
+        }
+      },
+      menuItem: {
+        select: {
+          name: true
+        }
+      }
+    },
+    orderBy: {
+      createdAt: 'desc'
+    },
+    take: 20
+  });
+
   const data = {
     id: kitchen.id,
     name: kitchen.name,
@@ -211,25 +237,12 @@ export default async function KitchenProfilePage({
 
       <div className="max-w-[1280px] mx-auto px-4 lg:px-8">
         
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-8 border-b border-gray-200 mb-8 overflow-x-auto scrollbar-hide">
-          <button className="flex items-center gap-2 px-1 py-4 border-b-2 border-teal-700 text-teal-700 font-bold transition-all whitespace-nowrap">
-            Menu
-          </button>
-          <button className="flex items-center gap-2 px-1 py-4 border-b-2 border-transparent text-gray-500 font-bold hover:text-gray-700 transition-all whitespace-nowrap">
-            About Kitchen
-          </button>
-          <button className="flex items-center gap-2 px-1 py-4 border-b-2 border-transparent text-gray-500 font-bold hover:text-gray-700 transition-all whitespace-nowrap">
-            Reviews
-          </button>
-        </div>
-
         {/* 2. Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
           
           {/* Main Content (Left) */}
           <div className="lg:col-span-8">
-            <MenuSection data={data} />
+            <KitchenContent kitchenData={data} reviews={reviews} />
           </div>
 
           {/* Sidebar (Right) */}
