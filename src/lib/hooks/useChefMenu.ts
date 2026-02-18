@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface MenuItem {
   id?: string;
   name: string;
   description?: string;
   category: string;
+  tags?: string[];  // Searchable tags
   price: number;
   prepTime?: number;
   calories?: number;
@@ -93,6 +94,7 @@ export function useChefMenu(): UseChefMenuReturn {
       formData.append("spiciness", formItem.spiciness || "Medium");
       formData.append("isVegetarian", (formItem.isVegetarian || false).toString());
       formData.append("allergyAlerts", JSON.stringify(formItem.allergyAlerts || []));
+      formData.append("tags", JSON.stringify(formItem.tags || []));
       formData.append("ingredients", JSON.stringify(formItem.ingredients || []));
       
       if (formItem.deletedImageIds && formItem.deletedImageIds.length > 0) {

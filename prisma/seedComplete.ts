@@ -1,8 +1,8 @@
 import { PrismaPg } from '@prisma/adapter-pg'
+import bcrypt from 'bcryptjs'
 import { config } from 'dotenv'
 import pg from 'pg'
 import { PrismaClient } from '../generated/prisma/client'
-import bcrypt from 'bcryptjs'
 
 config()
 
@@ -307,34 +307,34 @@ async function main() {
 
   const dishTemplates = [
     // Main Courses
-    { name: 'Hyderabadi Chicken Biryani', category: 'Main Course', price: 350, prepTime: 45, calories: 800, spiciness: 'Medium', isVegetarian: false },
-    { name: 'Beef Bhuna Khichuri', category: 'Main Course', price: 420, prepTime: 50, calories: 950, spiciness: 'High', isVegetarian: false },
-    { name: 'Mutton Kacchi Biryani', category: 'Main Course', price: 550, prepTime: 120, calories: 1200, spiciness: 'Medium', isVegetarian: false },
-    { name: 'Chicken Korma', category: 'Main Course', price: 280, prepTime: 40, calories: 550, spiciness: 'Mild', isVegetarian: false },
-    { name: 'Shorshe Ilish', category: 'Main Course', price: 650, prepTime: 40, calories: 600, spiciness: 'High', isVegetarian: false },
-    { name: 'Vegetable Khichuri', category: 'Main Course', price: 180, prepTime: 35, calories: 400, spiciness: 'Medium', isVegetarian: true },
-    { name: 'Rui Macher Kalia', category: 'Main Course', price: 280, prepTime: 35, calories: 480, spiciness: 'Medium', isVegetarian: false },
-    { name: 'Chingri Malai Curry', category: 'Main Course', price: 480, prepTime: 30, calories: 520, spiciness: 'Mild', isVegetarian: false },
-    { name: 'Chicken Rezala', category: 'Main Course', price: 320, prepTime: 45, calories: 620, spiciness: 'Medium', isVegetarian: false },
-    { name: 'Paneer Butter Masala', category: 'Main Course', price: 240, prepTime: 30, calories: 450, spiciness: 'Mild', isVegetarian: true },
+    { name: 'Hyderabadi Chicken Biryani', category: 'MAIN_COURSE', tags: ['Rice', 'Chicken', 'Spicy', 'Biryani'], price: 350, prepTime: 45, calories: 800, spiciness: 'Medium', isVegetarian: false },
+    { name: 'Beef Bhuna Khichuri', category: 'MAIN_COURSE', tags: ['Rice', 'Beef', 'Spicy', 'Traditional'], price: 420, prepTime: 50, calories: 950, spiciness: 'High', isVegetarian: false },
+    { name: 'Mutton Kacchi Biryani', category: 'MAIN_COURSE', tags: ['Rice', 'Mutton', 'Biryani', 'Premium'], price: 550, prepTime: 120, calories: 1200, spiciness: 'Medium', isVegetarian: false },
+    { name: 'Chicken Korma', category: 'MAIN_COURSE', tags: ['Chicken', 'Curry', 'Mild', 'Creamy'], price: 280, prepTime: 40, calories: 550, spiciness: 'Mild', isVegetarian: false },
+    { name: 'Shorshe Ilish', category: 'MAIN_COURSE', tags: ['Fish', 'Ilish', 'Mustard', 'Traditional'], price: 650, prepTime: 40, calories: 600, spiciness: 'High', isVegetarian: false },
+    { name: 'Vegetable Khichuri', category: 'MAIN_COURSE', tags: ['Rice', 'Vegetarian', 'Healthy', 'Comfort'], price: 180, prepTime: 35, calories: 400, spiciness: 'Medium', isVegetarian: true },
+    { name: 'Rui Macher Kalia', category: 'MAIN_COURSE', tags: ['Fish', 'Rui', 'Curry', 'Homestyle'], price: 280, prepTime: 35, calories: 480, spiciness: 'Medium', isVegetarian: false },
+    { name: 'Chingri Malai Curry', category: 'MAIN_COURSE', tags: ['Prawn', 'Coconut', 'Mild', 'Premium'], price: 480, prepTime: 30, calories: 520, spiciness: 'Mild', isVegetarian: false },
+    { name: 'Chicken Rezala', category: 'MAIN_COURSE', tags: ['Chicken', 'Curry', 'Yogurt', 'Festive'], price: 320, prepTime: 45, calories: 620, spiciness: 'Medium', isVegetarian: false },
+    { name: 'Paneer Butter Masala', category: 'MAIN_COURSE', tags: ['Vegetarian', 'Paneer', 'Creamy', 'Mild'], price: 240, prepTime: 30, calories: 450, spiciness: 'Mild', isVegetarian: true },
     
     // Breakfast Items
-    { name: 'Aloo Paratha with Curd', category: 'Breakfast', price: 120, prepTime: 25, calories: 450, spiciness: 'Mild', isVegetarian: true },
-    { name: 'Egg Bhurji with Ruti', category: 'Breakfast', price: 150, prepTime: 20, calories: 380, spiciness: 'Medium', isVegetarian: false },
-    { name: 'Puri with Aloo Bhaji', category: 'Breakfast', price: 130, prepTime: 30, calories: 520, spiciness: 'Mild', isVegetarian: true },
+    { name: 'Aloo Paratha with Curd', category: 'BREAKFAST', tags: ['Bread', 'Potato', 'Vegetarian', 'Homestyle'], price: 120, prepTime: 25, calories: 450, spiciness: 'Mild', isVegetarian: true },
+    { name: 'Egg Bhurji with Ruti', category: 'BREAKFAST', tags: ['Egg', 'Bread', 'Protein', 'Quick'], price: 150, prepTime: 20, calories: 380, spiciness: 'Medium', isVegetarian: false },
+    { name: 'Puri with Aloo Bhaji', category: 'BREAKFAST', tags: ['Bread', 'Potato', 'Vegetarian', 'Fried'], price: 130, prepTime: 30, calories: 520, spiciness: 'Mild', isVegetarian: true },
     
     // Side Dishes
-    { name: 'Dal Tadka', category: 'Side Dish', price: 100, prepTime: 20, calories: 200, spiciness: 'Mild', isVegetarian: true },
-    { name: 'Mixed Vegetable Bhaji', category: 'Side Dish', price: 80, prepTime: 25, calories: 150, spiciness: 'Mild', isVegetarian: true },
-    { name: 'Begun Bhaji', category: 'Side Dish', price: 70, prepTime: 20, calories: 120, spiciness: 'Medium', isVegetarian: true },
-    { name: 'Raita', category: 'Side Dish', price: 50, prepTime: 10, calories: 80, spiciness: 'None', isVegetarian: true },
+    { name: 'Dal Tadka', category: 'SIDE_DISH', tags: ['Dal', 'Lentils', 'Vegetarian', 'Healthy'], price: 100, prepTime: 20, calories: 200, spiciness: 'Mild', isVegetarian: true },
+    { name: 'Mixed Vegetable Bhaji', category: 'SIDE_DISH', tags: ['Vegetarian', 'Vegetables', 'Healthy', 'Light'], price: 80, prepTime: 25, calories: 150, spiciness: 'Mild', isVegetarian: true },
+    { name: 'Begun Bhaji', category: 'SIDE_DISH', tags: ['Vegetarian', 'Eggplant', 'Fried', 'Traditional'], price: 70, prepTime: 20, calories: 120, spiciness: 'Medium', isVegetarian: true },
+    { name: 'Raita', category: 'SIDE_DISH', tags: ['Yogurt', 'Vegetarian', 'Cooling', 'Light'], price: 50, prepTime: 10, calories: 80, spiciness: 'None', isVegetarian: true },
     
     // Desserts
-    { name: 'Payesh', category: 'Dessert', price: 150, prepTime: 60, calories: 350, spiciness: 'None', isVegetarian: true },
-    { name: 'Mishti Doi', category: 'Dessert', price: 120, prepTime: 30, calories: 280, spiciness: 'None', isVegetarian: true },
-    { name: 'Rosogolla', category: 'Dessert', price: 100, prepTime: 40, calories: 250, spiciness: 'None', isVegetarian: true },
-    { name: 'Gulab Jamun', category: 'Dessert', price: 130, prepTime: 45, calories: 300, spiciness: 'None', isVegetarian: true },
-  ]
+    { name: 'Payesh', category: 'DESSERT', tags: ['Sweet', 'Rice', 'Milk', 'Traditional'], price: 150, prepTime: 60, calories: 350, spiciness: 'None', isVegetarian: true },
+    { name: 'Mishti Doi', category: 'DESSERT', tags: ['Sweet', 'Yogurt', 'Traditional', 'Bengali'], price: 120, prepTime: 30, calories: 280, spiciness: 'None', isVegetarian: true },
+    { name: 'Rosogolla', category: 'DESSERT', tags: ['Sweet', 'Syrup', 'Traditional', 'Bengali'], price: 100, prepTime: 40, calories: 250, spiciness: 'None', isVegetarian: true },
+    { name: 'Gulab Jamun', category: 'DESSERT', tags: ['Sweet', 'Fried', 'Syrup', 'Festive'], price: 130, prepTime: 45, calories: 300, spiciness: 'None', isVegetarian: true },
+  ];
 
   const descriptions = [
     'Authentic Bengali recipe made with love and care.',
@@ -363,7 +363,8 @@ async function main() {
           chef_id: seller.id,
           name: `${dishTemplate.name}`,
           description: descriptions[Math.floor(Math.random() * descriptions.length)],
-          category: dishTemplate.category,
+          category: dishTemplate.category as any,
+          tags: dishTemplate.tags,
           price: generatePrice(dishTemplate.price - 25, dishTemplate.price + 25),
           prepTime: dishTemplate.prepTime,
           calories: dishTemplate.calories,

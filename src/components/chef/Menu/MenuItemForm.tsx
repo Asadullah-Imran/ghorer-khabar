@@ -1,9 +1,9 @@
 "use client";
 
-import { getCategoryMarketData } from "@/lib/actions/pricing";
+import { getMLPricingSuggestion } from "@/lib/actions/pricing";
 import { Calculator, X as CloseIcon, Loader2, Plus, Trash2, TrendingUp, Upload, X } from "lucide-react";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Ingredient {
   id?: string;
@@ -25,6 +25,7 @@ interface MenuItem {
   name: string;
   description?: string;
   category: string;
+  tags?: string[];  // Searchable tags: Rice, Beef, Chicken, Fish, etc.
   price: number;
   prepTime?: number;
   calories?: number;
@@ -58,7 +59,7 @@ export default function MenuItemForm({
   const [formData, setFormData] = useState({
     name: item?.name || "",
     description: item?.description || "",
-    category: item?.category || "Rice",
+    category: item?.category || "MAIN_COURSE",
     price: item?.price || 0,
     prepTime: item?.prepTime || 30,
     calories: item?.calories || 0,
@@ -67,6 +68,11 @@ export default function MenuItemForm({
     // Logic to extract existing additional cost if present in ingredients
     additionalCost: item?.ingredients?.find(i => i.name === "Additional Expenses (Oil, Spices, Gas, Packaging)")?.cost || 0,
   });
+
+  const [tags, setTags] = useState<string[]>(item?.tags || []);
+  const [tagInput, setTagInput] = useState("");
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
+  const [loadingTags, setLoadingTags] = useState(false);
 
   const [allergyAlerts, setAllergyAlerts] = useState<string[]>(
     item?.allergyAlerts || []
@@ -101,9 +107,21 @@ export default function MenuItemForm({
   // Pricing Assistant State
   const [showPricingAssistant, setShowPricingAssistant] = useState(false);
   const [pricingData, setPricingData] = useState<{
-    avgPrice: number;
-    recommendedPrice: number;
-    margin: number;
+    suggested_price: number;
+    price_range: { min: number; max: number; optimal: number };
+    market_insights: {
+      category_avg_price: number;
+      total_dishes: number;
+      price_std_dev: number;
+      demand_factor: number;
+    };
+    cost_analysis: {
+      ingredient_cost: number;
+      suggested_margin_percent: number;
+      profit_per_unit: number;
+    };
+    competitive_position: string;
+    recommendations: string[];
   } | null>(null);
   const [loadingPricing, setLoadingPricing] = useState(false);
 
@@ -142,6 +160,7 @@ export default function MenuItemForm({
     const menuItem: MenuItem = {
       id: item?.id,
       ...formData,
+      tags: tags,  // Include tags for searchability
       allergyAlerts: allergyAlerts,
       images: images,
       ingredients: finalIngredients,
@@ -240,6 +259,68 @@ export default function MenuItemForm({
     setIngredients(updated);
   };
 
+  // Tag handling functions
+  const addTag = (tag: string) => {
+    const trimmedTag = tag.trim();
+    if (trimmedTag && !tags.includes(trimmedTag)) {
+      setTags([...tags, trimmedTag]);
+      setTagInput("");
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(t => t !== tagToRemove));
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTag(tagInput);
+    }
+  };
+
+
+  // Fetch existing tags from database and combine with defaults
+  useEffect(() => {
+    const fetchExistingTags = async () => {
+      setLoadingTags(true);
+      try {
+        const response = await fetch('/api/chef/menu/tags');
+        if (response.ok) {
+          const data = await response.json();
+          const existingTags = data.tags || [];
+          
+          // Default tags
+          const defaultTags = [
+            'Rice', 'Beef', 'Chicken', 'Fish', 'Mutton',
+            'Vegetarian', 'Spicy', 'Mild', 'Traditional', 'Homestyle'
+          ];
+          
+          // Combine and deduplicate
+          const combined = [...new Set([...defaultTags, ...existingTags])];
+          setSuggestedTags(combined);
+        } else {
+          // Fallback to default tags only
+          setSuggestedTags([
+            'Rice', 'Beef', 'Chicken', 'Fish', 'Mutton',
+            'Vegetarian', 'Spicy', 'Mild', 'Traditional', 'Homestyle'
+          ]);
+        }
+      } catch (error) {
+        console.error('Error fetching tags:', error);
+        // Fallback to default tags
+        setSuggestedTags([
+          'Rice', 'Beef', 'Chicken', 'Fish', 'Mutton',
+          'Vegetarian', 'Spicy', 'Mild', 'Traditional', 'Homestyle'
+        ]);
+      } finally {
+        setLoadingTags(false);
+      }
+    };
+
+    fetchExistingTags();
+  }, []);
+
   const totalIngredientCost = ingredients.reduce(
     (sum, ing) => sum + (ing.cost || 0),
     0
@@ -258,22 +339,17 @@ export default function MenuItemForm({
 
     setLoadingPricing(true);
     try {
-      // 1. Get Market Data
-      const marketRes = await getCategoryMarketData(formData.category);
+      // Call ML Service for intelligent pricing
+      const mlResult = await getMLPricingSuggestion(
+        formData.category,
+        totalIngredientCost
+      );
       
-      // 2. Calculate Cost-Plus Price (Target 35% Margin)
-      // Forumla: Price = Cost / (1 - DesiredMargin)
-      const targetMargin = 0.35;
-      const costPlusPrice = Math.ceil(totalIngredientCost / (1 - targetMargin));
-
-      setPricingData({
-        avgPrice: marketRes.success ? Math.round(marketRes.avgPrice) : 0,
-        recommendedPrice: costPlusPrice,
-        margin: Math.round(targetMargin * 100)
-      });
+      setPricingData(mlResult);
       setShowPricingAssistant(true);
     } catch (err) {
       console.error("Pricing error:", err);
+      setErrors(["Failed to get pricing suggestion. Please try again."]);
     } finally {
       setLoadingPricing(false);
     }
@@ -281,7 +357,7 @@ export default function MenuItemForm({
 
   const applyRecommendedPrice = () => {
     if (pricingData) {
-      setFormData({ ...formData, price: pricingData.recommendedPrice });
+      setFormData({ ...formData, price: pricingData.suggested_price });
       setShowPricingAssistant(false);
     }
   };
@@ -335,6 +411,73 @@ export default function MenuItemForm({
             />
           </div>
 
+          {/* Tags (Searchable) */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-2">
+              Tags (for search) 🔍
+            </label>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  placeholder="e.g., Rice, Chicken, Spicy (press Enter)"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => addTag(tagInput)}
+                  className="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition"
+                >
+                  Add
+                </button>
+              </div>
+              {tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag, index) => (
+                    <span
+                      key={index}
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-teal-100 text-teal-700 rounded-full text-sm font-medium"
+                    >
+                      {tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="hover:text-teal-900"
+                      >
+                        <X size={14} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              {/* Suggested Tags - Clickable */}
+              <div>
+                <p className="text-xs font-medium text-gray-700 mb-2">💡 Suggested tags (click to add):</p>
+                <div className="flex flex-wrap gap-2">
+                  {suggestedTags
+                    .filter(suggestedTag => !tags.includes(suggestedTag))
+                    .map((suggestedTag, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => addTag(suggestedTag)}
+                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium hover:bg-teal-100 hover:text-teal-700 transition-colors border border-gray-200 hover:border-teal-300"
+                      >
+                        + {suggestedTag}
+                      </button>
+                    ))
+                  }
+                  {loadingTags && (
+                    <span className="text-xs text-gray-400 italic">Loading suggestions...</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Category & Prep Time */}
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -349,11 +492,13 @@ export default function MenuItemForm({
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
               >
-                <option value="Rice">Rice</option>
-                <option value="Beef">Beef</option>
-                <option value="Chicken">Chicken</option>
-                <option value="Fish">Fish</option>
-                <option value="Vegetarian">Vegetarian</option>
+                <option value="BREAKFAST">🌅 Breakfast</option>
+                <option value="MAIN_COURSE">🍛 Main Course</option>
+                <option value="SIDE_DISH">🥗 Side Dish</option>
+                <option value="APPETIZER">🥟 Appetizer</option>
+                <option value="DESSERT">🍰 Dessert</option>
+                <option value="BEVERAGE">🥤 Beverage</option>
+                <option value="SNACK">🍿 Snack</option>
               </select>
             </div>
 
@@ -823,18 +968,18 @@ export default function MenuItemForm({
                     <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
                       <p className="text-xs text-blue-600 mb-1">Market Avg ({formData.category})</p>
                       <p className="text-base font-bold text-blue-800">
-                        {pricingData.avgPrice > 0 ? `৳${pricingData.avgPrice}` : "N/A"}
+                        {pricingData.market_insights.category_avg_price > 0 ? `৳${pricingData.market_insights.category_avg_price.toFixed(0)}` : "N/A"}
                       </p>
                     </div>
                     <div className="bg-green-50 p-3 rounded-lg border border-green-100">
                       <p className="text-xs text-green-600 mb-1">Target Margin</p>
-                      <p className="text-base font-bold text-green-800">{pricingData.margin}%</p>
+                      <p className="text-base font-bold text-green-800">{pricingData.cost_analysis.suggested_margin_percent.toFixed(0)}%</p>
                     </div>
                   </div>
 
                   <div className="bg-teal-50 p-4 rounded-lg border border-teal-200 text-center">
                     <p className="text-sm text-teal-700 font-medium mb-1">Recommended Price</p>
-                    <p className="text-3xl font-black text-teal-800">৳{pricingData.recommendedPrice}</p>
+                    <p className="text-3xl font-black text-teal-800">৳{pricingData.suggested_price.toFixed(0)}</p>
                   </div>
 
                   <button

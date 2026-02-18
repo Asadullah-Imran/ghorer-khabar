@@ -1,0 +1,41 @@
+// Add this useEffect hook after the tag handling functions (around line 280)
+// Fetch existing tags from database and combine with defaults
+useEffect(() => {
+  const fetchExistingTags = async () => {
+    setLoadingTags(true);
+    try {
+      const response = await fetch('/api/chef/menu/tags');
+      if (response.ok) {
+        const data = await response.json();
+        const existingTags = data.tags || [];
+        
+        // Default tags
+        const defaultTags = [
+          'Rice', 'Beef', 'Chicken', 'Fish', 'Mutton',
+          'Vegetarian', 'Spicy', 'Mild', 'Traditional', 'Homestyle'
+        ];
+        
+        // Combine and deduplicate
+        const combined = [...new Set([...defaultTags, ...existingTags])];
+        setSuggestedTags(combined);
+      } else {
+        // Fallback to default tags only
+        setSuggestedTags([
+          'Rice', 'Beef', 'Chicken', 'Fish', 'Mutton',
+          'Vegetarian', 'Spicy', 'Mild', 'Traditional', 'Homestyle'
+        ]);
+      }
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+      // Fallback to default tags
+      setSuggestedTags([
+        'Rice', 'Beef', 'Chicken', 'Fish', 'Mutton',
+        'Vegetarian', 'Spicy', 'Mild', 'Traditional', 'Homestyle'
+      ]);
+    } finally {
+      setLoadingTags(false);
+    }
+  };
+
+  fetchExistingTags();
+}, []);

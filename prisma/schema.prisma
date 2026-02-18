@@ -101,7 +101,8 @@ model menu_items {
   chef_id          String
   name             String
   description      String?
-  category         String
+  category         DishCategory       // Meal type: Breakfast, Main Course, etc.
+  tags             String[]           @default([]) // Searchable: Rice, Beef, Chicken, Fish, etc.
   price            Float
   prepTime         Int?
   calories         Int?
@@ -121,6 +122,8 @@ model menu_items {
   reviews          Review[]
 
   @@index([chef_id])
+  @@index([category])
+  @@index([tags])
 }
 
 model Kitchen {
@@ -460,4 +463,14 @@ enum SupportTicketStatus {
 enum AdminNotificationType {
   SUPPORT_TICKET
   SELLER_APPROVAL
+}
+
+enum DishCategory {
+  BREAKFAST       // Morning items: Paratha, Puri, Halwa, etc.
+  MAIN_COURSE     // Primary dishes: Biryani, Polao, Khichuri, etc.
+  SIDE_DISH       // Accompaniments: Dal, Vegetables, Vorta, etc.
+  APPETIZER       // Starters: Samosa, Pakora, Chop, etc.
+  DESSERT         // Sweets: Pitha, Payesh, Firni, etc.
+  BEVERAGE        // Drinks: Lassi, Borhani, Sherbet, etc.
+  SNACK           // Light bites: Jhal Muri, Fuchka, etc.
 }
