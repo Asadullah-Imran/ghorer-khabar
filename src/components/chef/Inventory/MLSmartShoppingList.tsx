@@ -164,49 +164,32 @@ export default function MLSmartShoppingList({ onSuccess }: MLSmartShoppingListPr
     );
   }
 
-  if (!data || data.shopping_list.length === 0) {
-    return (
-      <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-        <div className="bg-green-100 p-4 rounded-full inline-flex mb-4">
-          <CheckCircle2 size={32} className="text-green-600" />
-        </div>
-        <h3 className="text-xl font-bold text-gray-900 mb-2">All Set!</h3>
-        <p className="text-gray-600">Your current inventory is sufficient for the next {includeForecast ? "7 days" : "pending orders"}.</p>
-        <button
-          onClick={fetchShoppingList}
-          className="mt-4 px-4 py-2 text-teal-600 hover:underline flex items-center gap-2 mx-auto"
-        >
-          <RefreshCw size={16} />
-          Refresh
-        </button>
-      </div>
-    );
-  }
-
   const checkedCount = checkedItems.size;
-  const totalItems = data.shopping_list.length;
+  const totalItems = data?.shopping_list.length || 0;
 
   return (
     <div className="space-y-4">
       {/* Header Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <p className="text-sm text-blue-600 mb-1">Items to Buy</p>
-          <p className="text-2xl font-bold text-blue-700">{data.summary.total_items}</p>
+      {data && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-600 mb-1">Items to Buy</p>
+            <p className="text-2xl font-bold text-blue-700">{data.summary.total_items}</p>
+          </div>
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+            <p className="text-sm text-orange-600 mb-1">Orders Analyzed</p>
+            <p className="text-2xl font-bold text-orange-700">{data.summary.orders_processed}</p>
+          </div>
+          <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+            <p className="text-sm text-purple-600 mb-1">Forecast Days</p>
+            <p className="text-2xl font-bold text-purple-700">{data.summary.forecast_days}</p>
+          </div>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <p className="text-sm text-green-600 mb-1">Estimated Cost</p>
+            <p className="text-2xl font-bold text-green-700">৳{data.summary.total_estimated_cost.toFixed(2)}</p>
+          </div>
         </div>
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-          <p className="text-sm text-orange-600 mb-1">Orders Analyzed</p>
-          <p className="text-2xl font-bold text-orange-700">{data.summary.orders_processed}</p>
-        </div>
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-          <p className="text-sm text-purple-600 mb-1">Forecast Days</p>
-          <p className="text-2xl font-bold text-purple-700">{data.summary.forecast_days}</p>
-        </div>
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <p className="text-sm text-green-600 mb-1">Estimated Cost</p>
-          <p className="text-2xl font-bold text-green-700">৳{data.summary.total_estimated_cost.toFixed(2)}</p>
-        </div>
-      </div>
+      )}
 
       {/* Toggle Forecast */}
       <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
@@ -224,6 +207,25 @@ export default function MLSmartShoppingList({ onSuccess }: MLSmartShoppingListPr
           />
         </button>
       </div>
+
+      {(!data || data.shopping_list.length === 0) ? (
+        <div className="bg-white border border-gray-200 rounded-lg p-8 text-center mt-4">
+          <div className="bg-green-100 p-4 rounded-full inline-flex mb-4">
+            <CheckCircle2 size={32} className="text-green-600" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">All Set!</h3>
+          <p className="text-gray-600">Your current inventory is sufficient for the next {includeForecast ? "7 days" : "pending orders"}.</p>
+          <button
+            onClick={fetchShoppingList}
+            className="mt-4 px-4 py-2 text-teal-600 hover:underline flex items-center gap-2 mx-auto"
+          >
+            <RefreshCw size={16} />
+            Refresh
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Shopping List Table Content starts here ... */}
 
       {/* Shopping List */}
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -373,6 +375,8 @@ export default function MLSmartShoppingList({ onSuccess }: MLSmartShoppingListPr
         )}
         {placingOrder ? "Processing Inventory..." : "Place Order & Update Stock"}
       </button>
+        </>
+      )}
     </div>
   );
 }

@@ -171,7 +171,13 @@ export default function InventoryPage() {
   });
   const estimatedProcurementCost = itemsNeeded.reduce((sum, item) => {
     const required = item.demandFromOrders + item.forecastDemand;
-    const toBuy = Math.max(0, required - item.currentStock);
+    let toBuy = Math.max(0, required - item.currentStock);
+    
+    // Align with ML logic: If we need to buy, buy at least enough to reach reorder level
+    if (toBuy > 0 && item.currentStock + toBuy < item.reorderLevel) {
+      toBuy = item.reorderLevel - item.currentStock;
+    }
+    
     return sum + toBuy * item.unitCost;
   }, 0);
 
@@ -196,7 +202,7 @@ export default function InventoryPage() {
               </p>
             </div>
           )}
-        <>
+
           {/* Header */}
           <div className="flex items-center justify-between">
         <div>
@@ -344,9 +350,8 @@ export default function InventoryPage() {
           </div>
         )}
       </div>
-        </>
-        </>
-      )}
+    </>
+  )}
 
       {/* Stock Update Modal */}
       {selectedItem && (
