@@ -12,6 +12,7 @@ interface TabbedRecommendationsProps {
   favoriteKitchenIds: Set<string>;
   favoritePlanIds: Set<string>;
   excludeDishIds: string[];
+  userLocation?: { lat: number; longitude: number } | null;
 }
 
 type TabType = 'dishes' | 'kitchens' | 'subscriptions';
@@ -22,7 +23,8 @@ export default function TabbedRecommendations({
   favoriteDishIds,
   favoriteKitchenIds,
   favoritePlanIds,
-  excludeDishIds
+  excludeDishIds,
+  userLocation
 }: TabbedRecommendationsProps) {
   const [activeTab, setActiveTab] = useState<TabType>('dishes');
 
@@ -68,6 +70,7 @@ export default function TabbedRecommendations({
               userRole={userRole}
               favoriteDishIds={favoriteDishIds}
               excludeIds={excludeDishIds}
+              userLocation={userLocation}
             />
           </div>
         )}
@@ -77,6 +80,7 @@ export default function TabbedRecommendations({
             <MLKitchenRecommendations
               userId={userId}
               favoriteKitchenIds={favoriteKitchenIds}
+              userLocation={userLocation}
             />
           </div>
         )}
@@ -86,6 +90,7 @@ export default function TabbedRecommendations({
             <MLSubscriptionRecommendations
               userId={userId}
               favoritePlanIds={favoritePlanIds}
+              userLocation={userLocation}
             />
           </div>
         )}

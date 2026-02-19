@@ -1,4 +1,4 @@
-import { CalendarCheck, Star } from "lucide-react";
+import { CalendarCheck, MapPin, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import FavoriteButton from "./FavoriteButton";
@@ -16,6 +16,7 @@ interface PlanProps {
     mealsPerMonth?: number;
     rating?: number;
     image: string;
+    distance?: string; // Distance from user
   };
   isFavorite?: boolean; // NEW: Pass from parent
 }
@@ -68,9 +69,17 @@ export default function PlanCard({ data, isFavorite }: PlanProps) {
           <p className="text-xs text-gray-500 mb-3">by {kitchenName}</p>
 
           <div className="mt-auto">
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-3 bg-gray-50 p-2 rounded-lg">
-              <CalendarCheck size={12} className="text-teal-600" />
-              <span>{mealsText}</span>
+            <div className="flex items-center gap-2 text-xs text-gray-500 mb-3">
+              <div className="flex items-center gap-1 bg-gray-50 p-2 rounded-lg flex-1">
+                <CalendarCheck size={12} className="text-teal-600" />
+                <span>{mealsText}</span>
+              </div>
+              {data.distance && (
+                <div className="flex items-center gap-1 bg-gray-50 p-2 rounded-lg">
+                  <MapPin size={12} className="text-teal-600" />
+                  <span>{data.distance}</span>
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-between">

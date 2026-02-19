@@ -48,13 +48,6 @@ export default function KitchenCard({ data, isFavorite }: KitchenProps) {
                   </span>
                 )}
              </div>
-             
-             {data.distanceStr && (
-               <span className="flex items-center gap-0.5 text-[10px] font-medium bg-black/60 text-white px-1.5 py-0.5 rounded-sm backdrop-blur-md">
-                 <MapPin size={10} />
-                 {data.distanceStr}
-               </span>
-             )}
           </div>
         </div>
 
@@ -62,11 +55,21 @@ export default function KitchenCard({ data, isFavorite }: KitchenProps) {
           <h3 className="font-bold text-gray-800 text-sm truncate" title={data.name}>
             {data.name}
           </h3>
-          <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-            <span className="flex items-center gap-1 text-orange-500 font-medium">
-              <Star size={12} fill="currentColor" /> {data.rating}
-            </span>
-            <span>({data.reviews})</span>
+          <div className="flex items-center justify-between gap-2 mt-1">
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <span className="flex items-center gap-1 text-orange-500 font-medium">
+                <Star size={12} fill="currentColor" /> {data.rating}
+              </span>
+              <span>({data.reviews})</span>
+            </div>
+            
+            {/* Distance - on the right side with clean design */}
+            {data.distanceStr && (
+              <div className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-lg text-xs text-gray-600">
+                <MapPin size={12} className="text-teal-600" />
+                <span>{data.distanceStr}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

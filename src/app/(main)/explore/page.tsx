@@ -3,10 +3,12 @@ import DishCard from "@/components/shared/DishCard";
 import KitchenCard from "@/components/shared/KitchenCard";
 import PlanCard from "@/components/shared/PlanCard";
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
-import {
-    CATEGORIES
-} from "@/lib/dummy-data/explore";
+// Categories will be fetched dynamically from DB
+// import {
+//     CATEGORIES
+// } from "@/lib/dummy-data/explore";
 import { prisma } from "@/lib/prisma/prisma";
+import { calculateDistance, formatDistance, isValidCoordinates } from "@/lib/utils/distance";
 
 
 // Define the type for URL search params
@@ -26,6 +28,84 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
   const query = (params.q as string) || "";
   const zone = (params.zone as string) || "";
 
+  // 1. Fetch available tags and define categories for the filter UI
+  const DISH_CATEGORIES = [
+    { label: "All", value: "All" },
+    { label: "🌅 Breakfast", value: "BREAKFAST" },
+    { label: "🍛 Main Course", value: "MAIN_COURSE" },
+    { label: "🥗 Side Dish", value: "SIDE_DISH" },
+    { label: "🥟 Appetizer", value: "APPETIZER" },
+    { label: "🍰 Dessert", value: "DESSERT" },
+    { label: "🥤 Beverage", value: "BEVERAGE" },
+    { label: "🍿 Snack", value: "SNACK" },
+  ];
+
+  const dbTagsData = await prisma.menu_items.findMany({
+    where: { isAvailable: true },
+    select: { tags: true },
+  });
+  
+  const uniqueTags = [...new Set(dbTagsData.flatMap(t => t.tags))].sort();
+  
+  // Combine categories and tags for the filter UI
+  const filterPills = [
+    ...DISH_CATEGORIES.map(c => c.label),
+    ...uniqueTags
+  ];
+
+  // Map display labels back to values/tags for the query
+  const getFilterValue = (label: string) => {
+    const cat = DISH_CATEGORIES.find(c => c.label === label);
+    return cat ? cat.value : label;
+  };
+
+  const activeFilterValue = getFilterValue(category);
+
+
+  // Get user info and coordinates for distance calculation
+  const userId = await getAuthUserId();
+  let userRole: string | null = null;
+  let favoriteDishIds = new Set<string>();
+  let favoriteKitchenIds = new Set<string>();
+  let favoritePlanIds = new Set<string>();
+  let userLat: number | null = null;
+  let userLon: number | null = null;
+
+  if (userId) {
+    // Get user role and coordinates in parallel for better performance
+    const [user, userAddress, userFavorites] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true },
+      }),
+      prisma.address.findFirst({
+        where: { userId },
+        select: { latitude: true, longitude: true },
+      }),
+      prisma.favorite.findMany({
+        where: { userId },
+        select: {
+          dishId: true,
+          kitchenId: true,
+          planId: true,
+        },
+      }),
+    ]);
+
+    userRole = user?.role || null;
+
+    if (userAddress && isValidCoordinates(userAddress.latitude, userAddress.longitude)) {
+      userLat = userAddress.latitude!;
+      userLon = userAddress.longitude!;
+    }
+
+    userFavorites.forEach((fav) => {
+      if (fav.dishId) favoriteDishIds.add(fav.dishId);
+      if (fav.kitchenId) favoriteKitchenIds.add(fav.kitchenId);
+      if (fav.planId) favoritePlanIds.add(fav.planId);
+    });
+  }
+
   // --- SERVER SIDE FETCHING ---
   
   // 1. Dishes Fetching (Active only if tab is 'dishes')
@@ -36,9 +116,19 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
       isAvailable: true,
     };
 
-    // Category filter
-    if (category !== "All") {
-      where.category = category;
+    // Category/Tag filter
+    if (activeFilterValue !== "All") {
+      const isEnumCategory = [
+        "BREAKFAST", "MAIN_COURSE", "SIDE_DISH", "APPETIZER", 
+        "DESSERT", "BEVERAGE", "SNACK"
+      ].includes(activeFilterValue);
+
+      if (isEnumCategory) {
+        where.category = activeFilterValue;
+      } else {
+        // Filter by tags if it's not a main category
+        where.tags = { has: activeFilterValue };
+      }
     }
 
     // Search logic
@@ -102,19 +192,29 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
           ? Math.round((d.reviews.reduce((sum, r) => sum + r.rating, 0) / d.reviews.length) * 10) / 10
           : (d.rating || 0);
 
+        // Calculate distance if user and kitchen coordinates are available
+        const kitchen = d.users.kitchens[0];
+        let distance: string | undefined;
+        
+        if (userLat && userLon && kitchen && isValidCoordinates(kitchen.latitude, kitchen.longitude)) {
+          const distanceKm = calculateDistance(userLat, userLon, kitchen.latitude!, kitchen.longitude!);
+          distance = formatDistance(distanceKm);
+        }
+
         return {
           id: d.id,
           name: d.name,
           price: d.price,
           rating: calculatedRating,
           image: d.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
-          kitchen: d.users.kitchens[0]?.name || "Unknown Kitchen",
-          kitchenId: d.users.kitchens[0]?.id || "unknown",
-          kitchenName: d.users.kitchens[0]?.name || "Unknown Kitchen",
-          kitchenLocation: d.users.kitchens[0]?.location || undefined,
-          kitchenRating: Number(d.users.kitchens[0]?.rating) || 0,
-          kitchenReviewCount: d.users.kitchens[0]?.reviewCount || 0,
+          kitchen: kitchen?.name || "Unknown Kitchen",
+          kitchenId: kitchen?.id || "unknown",
+          kitchenName: kitchen?.name || "Unknown Kitchen",
+          kitchenLocation: kitchen?.location || undefined,
+          kitchenRating: Number(kitchen?.rating) || 0,
+          kitchenReviewCount: kitchen?.reviewCount || 0,
           deliveryTime: "30-45 min", // Placeholder as it's not in schema currently
+          distance, // Add distance
           chefId: d.chef_id // Chef/creator ID for permission checking
         };
       });
@@ -164,24 +264,37 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
               name: true,
               rating: true,
               location: true,
+              latitude: true,
+              longitude: true,
             }
           }
         }
       });
 
-      plans = dbPlans.map(p => ({
-        id: p.id,
-        name: p.name,
-        description: p.description,
-        price: p.price,
-        mealsPerDay: p.meals_per_day,
-        servingsPerMeal: p.servings_per_meal,
-        mealsPerMonth: p.meals_per_day * 30,
-        rating: Number(p.rating) || 0,
-        image: p.cover_image || "/placeholder-plan.jpg",
-        kitchen: p.kitchen?.name || "Unknown Kitchen",
-        type: p.meals_per_day >= 3 ? "Full Day" : p.meals_per_day >= 2 ? "Daily Plan" : "Single Meal",
-      }));
+      plans = dbPlans.map(p => {
+        // Calculate distance if kitchen coordinates are available
+        let distance: string | undefined;
+        
+        if (userLat && userLon && p.kitchen && isValidCoordinates(p.kitchen.latitude, p.kitchen.longitude)) {
+          const distanceKm = calculateDistance(userLat, userLon, p.kitchen.latitude!, p.kitchen.longitude!);
+          distance = formatDistance(distanceKm);
+        }
+
+        return {
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          price: p.price,
+          mealsPerDay: p.meals_per_day,
+          servingsPerMeal: p.servings_per_meal,
+          mealsPerMonth: p.meals_per_day * 30,
+          rating: Number(p.rating) || 0,
+          image: p.cover_image || "/placeholder-plan.jpg",
+          kitchen: p.kitchen?.name || "Unknown Kitchen",
+          type: p.meals_per_day >= 3 ? "Full Day" : p.meals_per_day >= 2 ? "Daily Plan" : "Single Meal",
+          distance, // Add distance
+        };
+      });
     } catch (error) {
       console.error("Error fetching subscription plans:", error);
     }
@@ -217,49 +330,29 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
         take: 50,
       });
 
-      kitchens = dbKitchens.map(k => ({
-        id: k.id,
-        name: k.name,
-        rating: Number(k.rating) || 0,
-        reviews: k.reviewCount,
-        image: k.coverImage || "/placeholder-kitchen.jpg",
-        specialty: k.type || "Home Kitchen",
-        isOpen: k.isOpen,
-      }));
+      kitchens = dbKitchens.map(k => {
+        // Calculate distance if coordinates are available
+        let distanceStr: string | undefined;
+        
+        if (userLat && userLon && isValidCoordinates(k.latitude, k.longitude)) {
+          const distanceKm = calculateDistance(userLat, userLon, k.latitude!, k.longitude!);
+          distanceStr = formatDistance(distanceKm);
+        }
+
+        return {
+          id: k.id,
+          name: k.name,
+          rating: Number(k.rating) || 0,
+          reviews: k.reviewCount,
+          image: k.coverImage || "/placeholder-kitchen.jpg",
+          specialty: k.type || "Home Kitchen",
+          isOpen: k.isOpen,
+          distanceStr, // Add distance
+        };
+      });
     } catch (error) {
       console.error("Error fetching kitchens:", error);
     }
-  }
-
-  // Fetch user's favorites once to avoid multiple API calls
-  const userId = await getAuthUserId();
-  let userRole: string | null = null;
-  let favoriteDishIds = new Set<string>();
-  let favoriteKitchenIds = new Set<string>();
-  let favoritePlanIds = new Set<string>();
-
-  if (userId) {
-    // Get user role for permission checking
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { role: true },
-    });
-    userRole = user?.role || null;
-
-    const userFavorites = await prisma.favorite.findMany({
-      where: { userId },
-      select: {
-        dishId: true,
-        kitchenId: true,
-        planId: true,
-      },
-    });
-
-    userFavorites.forEach((fav) => {
-      if (fav.dishId) favoriteDishIds.add(fav.dishId);
-      if (fav.kitchenId) favoriteKitchenIds.add(fav.kitchenId);
-      if (fav.planId) favoritePlanIds.add(fav.planId);
-    });
   }
 
   // --- LEGACY FILTERING LOGIC (No longer needed) ---
@@ -267,7 +360,7 @@ export default async function ExplorePage({ searchParams }: SearchParamsProps) {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* 1. Header & Filters (Client Component) */}
-      <FilterTabs categories={CATEGORIES} />
+      <FilterTabs categories={filterPills} />
 
       {/* 2. Results Content */}
       <div className="max-w-7xl mx-auto px-4 py-6">

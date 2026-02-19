@@ -6,7 +6,7 @@ import PlanCard from "@/components/shared/PlanCard";
 import SectionHeader from "@/components/shared/SectionHeader";
 import { getAuthUserId } from "@/lib/auth/getAuthUser";
 import { prisma } from "@/lib/prisma/prisma";
-import { calculateDistance, formatDistance } from "@/lib/utils/distance";
+import { calculateDistance, formatDistance, isValidCoordinates } from "@/lib/utils/distance";
 
 export const dynamic = "force-dynamic";
 
@@ -135,19 +135,34 @@ export default async function FeedPage() {
       ? Math.round((item.reviews.reduce((sum, r) => sum + r.rating, 0) / item.reviews.length) * 10) / 10
       : (item.rating || 0);
 
+    // Calculate distance if user and kitchen coordinates are available
+    const kitchen = item.users.kitchens[0];
+    let distance: string | undefined;
+    
+    if (userLocation && kitchen && isValidCoordinates(kitchen.latitude, kitchen.longitude)) {
+      const distanceKm = calculateDistance(
+        userLocation.lat,
+        userLocation.longitude,
+        kitchen.latitude!,
+        kitchen.longitude!
+      );
+      distance = formatDistance(distanceKm);
+    }
+
     return {
       id: item.id,
       name: item.name,
       price: item.price,
       rating: calculatedRating,
       image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
-      kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
-      kitchenId: item.users.kitchens[0]?.id || "unknown",
-      kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
-      kitchenLocation: item.users.kitchens[0]?.location || undefined,
-      kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
-      kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
+      kitchen: kitchen?.name || "Unknown Kitchen",
+      kitchenId: kitchen?.id || "unknown",
+      kitchenName: kitchen?.name || "Unknown Kitchen",
+      kitchenLocation: kitchen?.location || undefined,
+      kitchenRating: Number(kitchen?.rating) || 0,
+      kitchenReviewCount: kitchen?.reviewCount || 0,
       deliveryTime: "30-45 min",
+      distance, // Add distance
       chefId: item.chef_id,
     };
   });
@@ -238,19 +253,34 @@ export default async function FeedPage() {
       ? Math.round((item.reviews.reduce((sum, r) => sum + r.rating, 0) / item.reviews.length) * 10) / 10
       : (item.rating || 0);
 
+    // Calculate distance if user and kitchen coordinates are available
+    const kitchen = item.users.kitchens[0];
+    let distance: string | undefined;
+    
+    if (userLocation && kitchen && isValidCoordinates(kitchen.latitude, kitchen.longitude)) {
+      const distanceKm = calculateDistance(
+        userLocation.lat,
+        userLocation.longitude,
+        kitchen.latitude!,
+        kitchen.longitude!
+      );
+      distance = formatDistance(distanceKm);
+    }
+
     return {
       id: item.id,
       name: item.name,
       price: item.price,
       rating: calculatedRating,
       image: item.menu_item_images[0]?.imageUrl || "/placeholder-dish.jpg",
-      kitchen: item.users.kitchens[0]?.name || "Unknown Kitchen",
-      kitchenId: item.users.kitchens[0]?.id || "unknown",
-      kitchenName: item.users.kitchens[0]?.name || "Unknown Kitchen",
-      kitchenLocation: item.users.kitchens[0]?.location || undefined,
-      kitchenRating: Number(item.users.kitchens[0]?.rating) || 0,
-      kitchenReviewCount: item.users.kitchens[0]?.reviewCount || 0,
+      kitchen: kitchen?.name || "Unknown Kitchen",
+      kitchenId: kitchen?.id || "unknown",
+      kitchenName: kitchen?.name || "Unknown Kitchen",
+      kitchenLocation: kitchen?.location || undefined,
+      kitchenRating: Number(kitchen?.rating) || 0,
+      kitchenReviewCount: kitchen?.reviewCount || 0,
       deliveryTime: "30-45 min",
+      distance, // Add distance
       chefId: item.chef_id,
     };
   });
@@ -272,6 +302,8 @@ export default async function FeedPage() {
           name: true,
           rating: true,
           location: true,
+          latitude: true,
+          longitude: true,
         },
       },
     },
@@ -279,19 +311,35 @@ export default async function FeedPage() {
     take: 6, // Show top 6 featured plans
   });
 
-  const featuredPlans = subscriptionPlans.map((plan) => ({
-    id: plan.id,
-    name: plan.name,
-    description: plan.description,
-    price: plan.price,
-    mealsPerDay: plan.meals_per_day,
-    servingsPerMeal: plan.servings_per_meal,
-    mealsPerMonth: plan.meals_per_day * 30,
-    rating: Number(plan.rating) || 0,
-    image: plan.cover_image || "/placeholder-plan.jpg",
-    kitchen: plan.kitchen?.name || "Unknown Kitchen",
-    type: plan.meals_per_day >= 3 ? "Full Day" : plan.meals_per_day >= 2 ? "Daily Plan" : "Single Meal",
-  }));
+  const featuredPlans = subscriptionPlans.map((plan) => {
+    // Calculate distance if kitchen coordinates are available
+    let distance: string | undefined;
+    
+    if (userLocation && plan.kitchen && isValidCoordinates(plan.kitchen.latitude, plan.kitchen.longitude)) {
+      const distanceKm = calculateDistance(
+        userLocation.lat,
+        userLocation.longitude,
+        plan.kitchen.latitude!,
+        plan.kitchen.longitude!
+      );
+      distance = formatDistance(distanceKm);
+    }
+
+    return {
+      id: plan.id,
+      name: plan.name,
+      description: plan.description,
+      price: plan.price,
+      mealsPerDay: plan.meals_per_day,
+      servingsPerMeal: plan.servings_per_meal,
+      mealsPerMonth: plan.meals_per_day * 30,
+      rating: Number(plan.rating) || 0,
+      image: plan.cover_image || "/placeholder-plan.jpg",
+      kitchen: plan.kitchen?.name || "Unknown Kitchen",
+      type: plan.meals_per_day >= 3 ? "Full Day" : plan.meals_per_day >= 2 ? "Daily Plan" : "Single Meal",
+      distance, // Add distance
+    };
+  });
 
   // Fetch top-rated kitchens from database
   const topKitchensData = await prisma.kitchen.findMany({
@@ -305,15 +353,31 @@ export default async function FeedPage() {
     take: 8
   });
 
-  const topKitchens = topKitchensData.map((kitchen) => ({
-    id: kitchen.id,
-    name: kitchen.name,
-    rating: Number(kitchen.rating) || 0,
-    reviews: kitchen.reviewCount,
-    image: kitchen.coverImage || "/placeholder-kitchen.jpg",
-    specialty: kitchen.type || "Home Kitchen",
-    isOpen: kitchen.isOpen,
-  }));
+  const topKitchens = topKitchensData.map((kitchen) => {
+    // Calculate distance if user location and kitchen coordinates are available
+    let distanceStr: string | undefined;
+    
+    if (userLocation && isValidCoordinates(kitchen.latitude, kitchen.longitude)) {
+      const distanceKm = calculateDistance(
+        userLocation.lat,
+        userLocation.longitude,
+        kitchen.latitude!,
+        kitchen.longitude!
+      );
+      distanceStr = formatDistance(distanceKm);
+    }
+
+    return {
+      id: kitchen.id,
+      name: kitchen.name,
+      rating: Number(kitchen.rating) || 0,
+      reviews: kitchen.reviewCount,
+      image: kitchen.coverImage || "/placeholder-kitchen.jpg",
+      specialty: kitchen.type || "Home Kitchen",
+      isOpen: kitchen.isOpen,
+      distanceStr, // Add distance
+    };
+  });
 
   // Fetch user's favorites once to avoid multiple API calls
   let favoriteDishIds = new Set<string>();
@@ -517,6 +581,7 @@ export default async function FeedPage() {
             favoriteKitchenIds={favoriteKitchenIds}
             favoritePlanIds={favoritePlanIds}
             excludeDishIds={[...dishes.map(d => d.id), ...newDishes.map(d => d.id)]}
+            userLocation={userLocation}
           />
           <div className="mt-8 text-center">
             <a

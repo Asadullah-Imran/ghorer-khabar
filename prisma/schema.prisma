@@ -101,8 +101,6 @@ model menu_items {
   chef_id          String
   name             String
   description      String?
-  category         DishCategory       // Meal type: Breakfast, Main Course, etc.
-  tags             String[]           @default([]) // Searchable: Rice, Beef, Chicken, Fish, etc.
   price            Float
   prepTime         Int?
   calories         Int?
@@ -114,6 +112,8 @@ model menu_items {
   createdAt        DateTime           @default(now())
   updatedAt        DateTime
   allergyAlerts    String[]           @default([])
+  tags             String[]           @default([])
+  category         DishCategory
   favorites        Favorite[]
   ingredients      ingredients[]
   menu_item_images menu_item_images[]
@@ -466,11 +466,11 @@ enum AdminNotificationType {
 }
 
 enum DishCategory {
-  BREAKFAST       // Morning items: Paratha, Puri, Halwa, etc.
-  MAIN_COURSE     // Primary dishes: Biryani, Polao, Khichuri, etc.
-  SIDE_DISH       // Accompaniments: Dal, Vegetables, Vorta, etc.
-  APPETIZER       // Starters: Samosa, Pakora, Chop, etc.
-  DESSERT         // Sweets: Pitha, Payesh, Firni, etc.
-  BEVERAGE        // Drinks: Lassi, Borhani, Sherbet, etc.
-  SNACK           // Light bites: Jhal Muri, Fuchka, etc.
+  BREAKFAST
+  MAIN_COURSE
+  SIDE_DISH
+  APPETIZER
+  DESSERT
+  BEVERAGE
+  SNACK
 }

@@ -1,4 +1,4 @@
-import { AlertTriangle, Clock, Star } from "lucide-react";
+import { AlertTriangle, Clock, MapPin, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { AddToCartBtn } from "../feed/DishInteractions";
@@ -18,6 +18,7 @@ interface DishProps {
     kitchenRating?: number;
     kitchenReviewCount?: number;
     deliveryTime: string;
+    distance?: string; // Distance from user (e.g., "2.5 km")
     chefId?: string; // Chef/creator ID
     allergyAlerts?: string[]; // Allergy alerts
   };
@@ -74,9 +75,17 @@ export default function DishCard({ data, featured, isFavorite, currentUserId, us
             </div>
           </div>
 
-          <div className="flex items-center gap-2 mt-3 text-xs text-gray-400">
-            <Clock size={14} />
-            <span>{data.deliveryTime}</span>
+          <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
+            <div className="flex items-center gap-1">
+              <Clock size={14} />
+              <span>{data.deliveryTime}</span>
+            </div>
+            {data.distance && (
+              <div className="flex items-center gap-1">
+                <MapPin size={14} />
+                <span>{data.distance}</span>
+              </div>
+            )}
           </div>
 
           <div className="mt-auto pt-4 flex items-center justify-between">
