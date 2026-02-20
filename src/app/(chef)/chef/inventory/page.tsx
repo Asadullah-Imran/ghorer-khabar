@@ -161,9 +161,31 @@ export default function InventoryPage() {
     }
   };
 
+  // Helper function for status logic (matching InventoryTable.tsx)
+  const getItemStatus = (item: InventoryItem) => {
+    const required = item.demandFromOrders + item.forecastDemand;
+    const toBuy = Math.max(0, required - item.currentStock);
+    
+    if (item.reorderLevel === 0) {
+      if (toBuy > item.currentStock * 2) return "critical";
+      if (toBuy > 0) return "low";
+      return "healthy";
+    }
+    
+    if (item.currentStock <= item.reorderLevel * 0.5 || toBuy > item.currentStock * 2) {
+      return "critical";
+    }
+    
+    if (item.currentStock <= item.reorderLevel || toBuy > 0) {
+      return "low";
+    }
+    
+    return "healthy";
+  };
+
   // Calculate metrics
-  const criticalItems = items.filter((item) => item.currentStock <= item.reorderLevel * 0.5);
-  const lowItems = items.filter((item) => item.currentStock <= item.reorderLevel && item.currentStock > item.reorderLevel * 0.5);
+  const criticalItems = items.filter((item) => getItemStatus(item) === "critical");
+  const lowItems = items.filter((item) => getItemStatus(item) === "low");
   const totalInventoryValue = items.reduce((sum, item) => sum + item.currentStock * item.unitCost, 0);
   const itemsNeeded = items.filter((item) => {
     const required = item.demandFromOrders + item.forecastDemand;
